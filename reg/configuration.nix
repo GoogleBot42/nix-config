@@ -3,11 +3,11 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ./efi.nix
-    ./common.nix
-    ./luks.nix
-    ./touchpad.nix
-    ./de.nix
+    ../common/common.nix
+    ../common/efi.nix
+    ../common/luks.nix
+    ../common/pc/de.nix
+    ../common/pc/touchpad.nix
   ];
 
   networking.hostName = "reg";
