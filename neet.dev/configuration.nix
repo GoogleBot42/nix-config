@@ -8,10 +8,8 @@
 #      ./nsd.nix
       ./thelounge.nix
       ./mumble.nix
-#      ./hedgedoc.nix
-#      ./postgres.nix
-#      ./zerobin.nix
       ./gitlab.nix
+      ./video-stream.nix
     ];
 
   # Use the GRUB 2 boot loader.
@@ -36,6 +34,7 @@
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMVR/R3ZOsv7TZbICGBCHdjh1NDT8SnswUyINeJOC7QG"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE0dcqL/FhHmv+a1iz3f9LJ48xubO7MZHy35rW9SZOYM"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO0VFnn3+Mh0nWeN92jov81qNE9fpzTAHYBphNoY7HUx"
     ];
   };
 
@@ -55,18 +54,6 @@
       dnsProvider = "digitalocean";
       credentialsFile = "/var/lib/secrets/certs.secret";
     };
-#    "neet.space" = {
-#      group = "nginx";
-#      domain = "*.neet.space";
-#      dnsProvider = "digitalocean";
-#      credentialsFile = "/var/lib/secrets/certs.secret";
-#    };
-#    "neet.cloud" = {
-#      group = "nginx";
-#      domain = "*.neet.cloud";
-#      dnsProvider = "digitalocean";
-#      credentialsFile = "/var/lib/secrets/certs.secret";
-#    };
   };
 
   services.nginx = {

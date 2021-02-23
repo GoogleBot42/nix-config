@@ -40,7 +40,8 @@
 
   boot.kernel.sysctl."net.ipv4.ip_forward" = true;
   services.gitlab-runner = {
-    enable = true;
+#    enable = true;
+    enable = false;
     services = {
       # runner for building in docker via host's nix-daemon
       # nix store will be readable in runner, might be insecure
