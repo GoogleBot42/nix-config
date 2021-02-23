@@ -9,6 +9,8 @@
     ./chromium.nix
     ./audio.nix
     ./torbrowser.nix
+    ./pithos.nix
+    ./vscodium.nix
   ];
 
   # allow specific unfree packages
@@ -16,9 +18,13 @@
     "tigervnc" "font-bh-lucidatypewriter" # tigervnc
   ];
 
+  # vulkan
+  hardware.opengl.driSupport = true;
+  hardware.opengl.driSupport32Bit = true;
+
   # Applications
   users.users.googlebot.packages = with pkgs; [
-    firefox chromium keepassxc mumble tigervnc bluez-tools vscodium
+    firefox chromium keepassxc mumble tigervnc bluez-tools vscodium element-desktop mpv
   ];
 
   # Networking

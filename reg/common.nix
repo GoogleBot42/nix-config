@@ -16,7 +16,7 @@
   networking.firewall.allowedUDPPorts = [ ];
 
   environment.systemPackages = with pkgs; [
-    wget kakoune htop git
+    wget kakoune htop git dnsutils
   ];
 
   users.mutableUsers = false;
