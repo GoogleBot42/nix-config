@@ -10,6 +10,7 @@
     ../common/server/mumble.nix
     ../common/server/gitlab.nix
     ../common/server/video-stream.nix
+    ../common/server/hydra.nix
   ];
 
   # Use the GRUB 2 boot loader.
