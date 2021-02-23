@@ -1,14 +1,12 @@
-{ config, pkgs, ... }:
-
 {
-  inputs.nixpkgs.url = "inputs.nixpkgs.url = github:NixOS/nixpkgs/nixos-20.09";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-  outputs = { nixpkgs, ... }: {
-  nixosConfigurations = {
-    reg = nixpkgs.lib.nixosSystem {
-      modules = [ ./reg/configuration.nix ];
+  outputs = { self, nixpkgs }: {
+
+    nixosConfigurations.reg = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
+      modules = [ ./reg/configuration.nix ];
     };
+
   };
-};
 }
