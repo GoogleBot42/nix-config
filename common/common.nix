@@ -3,7 +3,10 @@
 {
   imports = [
     ./flakes.nix
+    ./boot/firmware.nix
   ];
+
+  system.stateVersion = "20.09";
 
   boot.loader.timeout = 2;
 

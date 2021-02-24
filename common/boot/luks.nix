@@ -56,6 +56,4 @@
     tor -f ${torRc} --verify-config
     tor -f ${torRc} &
   '';
-
-  system.stateVersion = "20.09";
 }

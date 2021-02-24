@@ -6,7 +6,6 @@ let
   notifyEmail = "hydra@neet.dev";
 in
 {
-    # the lounge client
   services.nginx.virtualHosts."${domain}" = {
     enableACME = true;
     forceSSL = true;
@@ -17,7 +16,7 @@ in
 
   services.hydra = {
     enable = true;
-    port = 3000;
+    inherit port;
     hydraURL = "https://${domain}";
     useSubstitutes = true;
     notificationSender = notifyEmail;

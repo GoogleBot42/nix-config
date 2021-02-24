@@ -2,7 +2,6 @@
 
 {
   # Use GRUB2 for EFI
-
   boot.loader = {
     efi.canTouchEfiVariables = true;
     grub = {

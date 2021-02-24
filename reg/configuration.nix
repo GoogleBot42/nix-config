@@ -4,9 +4,8 @@
   imports = [
     ./hardware-configuration.nix
     ../common/common.nix
-    ../common/efi.nix
-    ../common/luks.nix
-    ../common/firmware.nix
+    ../common/boot/efi.nix
+    ../common/boot/luks.nix
     ../common/pc/de.nix
     ../common/pc/touchpad.nix
   ];
@@ -21,7 +20,5 @@
   networking.interfaces.enp57s0f1.useDHCP = true;
   networking.interfaces.wlp0s20f3.useDHCP = true;
   networking.interfaces.wwp0s20f0u2i12.useDHCP = true;
-
-  system.stateVersion = "20.09";
 }
 
