@@ -6,6 +6,7 @@
     ../common/common.nix
     ../common/efi.nix
     ../common/luks.nix
+    ../common/firmware.nix
     ../common/pc/de.nix
     ../common/pc/touchpad.nix
   ];
