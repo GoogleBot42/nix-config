@@ -7,6 +7,7 @@
     ./xfce.nix
     ./yubikey.nix
     ./chromium.nix
+    ./firefox.nix
     ./audio.nix
     ./torbrowser.nix
     ./pithos.nix
@@ -24,7 +25,7 @@
 
   # Applications
   users.users.googlebot.packages = with pkgs; [
-    firefox chromium keepassxc mumble tigervnc bluez-tools vscodium element-desktop mpv
+    chromium keepassxc mumble tigervnc bluez-tools vscodium element-desktop mpv
   ];
 
   # Networking
