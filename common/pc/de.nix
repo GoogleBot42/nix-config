@@ -12,11 +12,15 @@
     ./torbrowser.nix
     ./pithos.nix
     ./vscodium.nix
+    ./discord.nix
+    ./steam.nix
   ];
 
   # allow specific unfree packages
   nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
     "tigervnc" "font-bh-lucidatypewriter" # tigervnc
+    "steam" "steam-original" "steam-runtime" # TODO move to steam.nix
+    "discord" # TODO move to discord.nix
   ];
 
   # vulkan
