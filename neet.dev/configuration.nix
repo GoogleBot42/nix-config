@@ -30,7 +30,7 @@
   services.nginx.virtualHosts."tmp.neet.space" = {
     enableACME = true;
     forceSSL = true;
-    root = "/home/googlebot/tmp";
+    root = "/var/www/tmp";
   };
 
   # placeholder
