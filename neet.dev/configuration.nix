@@ -26,6 +26,13 @@
   security.acme.acceptTerms = true;
   security.acme.email = "letsencrypt+5@tar.ninja";
 
+  # tmp
+  services.nginx.virtualHosts."tmp.neet.cloud" = {
+    enableACME = true;
+    forceSSL = true;
+    root = "/home/googlebot/tmp";
+  };
+
   # placeholder
   services.nginx.virtualHosts."radio.neet.space" = {
     enableACME = true;
