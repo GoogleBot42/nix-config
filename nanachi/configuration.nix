@@ -9,6 +9,8 @@
     ../common/server/nginx.nix
   ];
 
+  # uxzq63kr2uuwutpaqjna2sg4gnk3p65e5bkvedzx5dsxx2mvxhjm7fid.onion
+
   boot.loader.grub.device = "/dev/vda";
   networking.hostName = "nanachi";
   boot.initrd.luks.devices.enc-pv.device = "/dev/disk/by-uuid/e57ac752-bd99-421f-a3b9-0cfa9608a54e";

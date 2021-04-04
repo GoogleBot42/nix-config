@@ -15,6 +15,8 @@
     ../common/server/hydra.nix
   ];
 
+  # wt6nczjfvtba6pvjt2qtevwjpq4gcbz46bwjz4hboehgecyqmzqgwnqd.onion
+
   boot.loader.grub.device = "/dev/sda";
   networking.hostName = "neetdev";
   boot.initrd.luks.devices.enc-pv.device = "/dev/disk/by-uuid/06f6b0bf-fe79-4b89-a549-b464c2b162a1";

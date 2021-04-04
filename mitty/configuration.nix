@@ -9,6 +9,8 @@
     ../common/server/nginx.nix
   ];
 
+  # cuxhh3ei2djpgf2zdkboceuhaxavgr3ipu3d7a2swx4giy2wosfxspyd.onion
+
   boot.loader.grub.device = "/dev/vda";
   networking.hostName = "mitty";
   boot.initrd.luks.devices.enc-pv.device = "/dev/disk/by-uuid/6dcf23ea-cb5e-4329-a88b-832209918c40";

@@ -10,6 +10,8 @@
     ../common/pc/touchpad.nix
   ];
 
+  # smcxui7kwoyxpswwage4fkcppxnqzpw33xcmxmlhxvk5gcp5s6lrtfad.onion
+
   networking.hostName = "reg";
   boot.initrd.luks.devices.enc-pv = {
     device = "/dev/disk/by-uuid/975d8427-2c6a-440d-a1d2-18dd15ba5bc2";
