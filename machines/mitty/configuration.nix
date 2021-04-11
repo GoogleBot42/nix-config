@@ -21,4 +21,6 @@
 
   security.acme.acceptTerms = true;
   security.acme.email = "letsencrypt+5@tar.ninja";
+
+  nix.flakes.enable = true;
 }

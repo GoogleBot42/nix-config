@@ -18,6 +18,8 @@
     allowDiscards = true;
   };
 
+  nix.flakes.enable = true;
+
   networking.useDHCP = false;
   networking.interfaces.enp57s0f1.useDHCP = true;
   networking.interfaces.wlp0s20f3.useDHCP = true;
