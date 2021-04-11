@@ -21,4 +21,10 @@
 
   security.acme.acceptTerms = true;
   security.acme.email = "letsencrypt+5@tar.ninja";
+
+  services.nginx.virtualHosts."nanachi.neet.dev" = {
+    enableACME = true;
+    forceSSL = true;
+    root = "/var/www/tmp";
+  };
 }
