@@ -1,5 +1,5 @@
-{ pkgs, ... }:
-
+{ lib, pkgs, config, ... }:
+with lib;
 let
   cfg = config.nix.flakes;
 in {
