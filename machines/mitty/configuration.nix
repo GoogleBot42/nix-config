@@ -3,10 +3,10 @@
 {
   imports =[
     ./hardware-configuration.nix
-    ../common/common.nix
-    ../common/boot/bios.nix
-    ../common/boot/luks.nix
-    ../common/server/nginx.nix
+    ../../common/common.nix
+    ../../common/boot/bios.nix
+    ../../common/boot/luks.nix
+    ../../common/server/nginx.nix
   ];
 
   # cuxhh3ei2djpgf2zdkboceuhaxavgr3ipu3d7a2swx4giy2wosfxspyd.onion

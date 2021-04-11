@@ -3,11 +3,11 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ../common/common.nix
-    ../common/boot/efi.nix
-    ../common/boot/luks.nix
-    ../common/pc/de.nix
-    ../common/pc/touchpad.nix
+    ../../common/common.nix
+    ../../common/boot/efi.nix
+    ../../common/boot/luks.nix
+    ../../common/pc/de.nix
+    ../../common/pc/touchpad.nix
   ];
 
   # smcxui7kwoyxpswwage4fkcppxnqzpw33xcmxmlhxvk5gcp5s6lrtfad.onion

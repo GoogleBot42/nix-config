@@ -3,16 +3,16 @@
 {
   imports =[
     ./hardware-configuration.nix
-    ../common/common.nix
-    ../common/boot/bios.nix
-    ../common/boot/luks.nix
-#   ../common/server/nsd.nix
-    ../common/server/nginx.nix
-    ../common/server/thelounge.nix
-    ../common/server/mumble.nix
-    ../common/server/gitlab.nix
-    ../common/server/video-stream.nix
-    ../common/server/hydra.nix
+    ../../common/common.nix
+    ../../common/boot/bios.nix
+    ../../common/boot/luks.nix
+#   ../../common/server/nsd.nix
+    ../../common/server/nginx.nix
+    ../../common/server/thelounge.nix
+    ../../common/server/mumble.nix
+    ../../common/server/gitlab.nix
+    ../../common/server/video-stream.nix
+    ../../common/server/hydra.nix
   ];
 
   # wt6nczjfvtba6pvjt2qtevwjpq4gcbz46bwjz4hboehgecyqmzqgwnqd.onion
