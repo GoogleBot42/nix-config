@@ -25,6 +25,9 @@
   de.enable = true;
   de.touchpad.enable = true;
 
+  # VNC
+  networking.firewall.allowedTCPPorts = [ 5900 ];
+
   networking.interfaces.enp57s0f1.useDHCP = true;
 }
 
