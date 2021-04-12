@@ -48,7 +48,7 @@
     };
   };
 
-  config.services.murmur = {
+  services.murmur = {
     enable = true;
     port = 23563;
     domain = "voice.neet.space";
