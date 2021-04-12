@@ -4,11 +4,18 @@
   imports = [
     ./flakes.nix
     ./boot/firmware.nix
+    ./boot/efi.nix
+    ./boot/bios.nix
+    ./boot/luks.nix
+    ./server/nginx.nix
+    ./server/thelounge.nix
+    ./server/mumble.nix
+    ./pc/de.nix
   ];
 
   system.stateVersion = "20.09";
 
-  boot.loader.timeout = 2;
+  networking.useDHCP = false;
 
   time.timeZone = "America/New_York";
   i18n.defaultLocale = "en_US.UTF-8";

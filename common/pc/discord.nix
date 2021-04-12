@@ -1,7 +1,11 @@
-{ config, pkgs, ... }:
+{ lib, config, pkgs, ... }:
 
-{
-  users.users.googlebot.packages = [
-    pkgs.discord
-  ];
+let
+  cfg = config.de;
+in {
+  config = lib.mkIf cfg.enable {
+    users.users.googlebot.packages = [
+      pkgs.discord
+    ];
+  };
 }

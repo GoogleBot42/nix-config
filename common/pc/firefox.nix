@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ lib, config, pkgs, ... }:
 
 #
 # Sort of private firefox
@@ -12,6 +12,8 @@
 #
 
 let
+  cfg = config.de;
+
   somewhatPrivateFF = pkgs.firefox-unwrapped.override {
     privacySupport = true;
     webrtcSupport = true; # mostly private ;)
@@ -87,5 +89,7 @@ let
   };
 in
 {
-  users.users.googlebot.packages = [ firefox ];
+  config = lib.mkIf cfg.enable {
+    users.users.googlebot.packages = [ firefox ];
+  };
 }

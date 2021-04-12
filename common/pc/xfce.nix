@@ -1,16 +1,20 @@
-{ config, pkgs, ... }:
+{ lib, config, pkgs, ... }:
 
-{
-  services.xserver = {
-    enable = true;
-    desktopManager = {
-      xterm.enable = false;
-      xfce.enable = true;
+let
+  cfg = config.de;
+in {
+  config = lib.mkIf cfg.enable {
+    services.xserver = {
+      enable = true;
+      desktopManager = {
+        xterm.enable = false;
+        xfce.enable = true;
+      };
+      displayManager.sddm.enable = true;
     };
-    displayManager.sddm.enable = true;
-  };
 
-  # xfce apps
-  users.users.googlebot.packages = with pkgs; [
-  ];  
+    # xfce apps
+    users.users.googlebot.packages = with pkgs; [
+    ];
+  };
 }

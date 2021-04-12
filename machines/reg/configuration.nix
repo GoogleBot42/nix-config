@@ -4,25 +4,27 @@
   imports = [
     ./hardware-configuration.nix
     ../../common/common.nix
-    ../../common/boot/efi.nix
-    ../../common/boot/luks.nix
-    ../../common/pc/de.nix
-    ../../common/pc/touchpad.nix
   ];
 
   # smcxui7kwoyxpswwage4fkcppxnqzpw33xcmxmlhxvk5gcp5s6lrtfad.onion
 
-  networking.hostName = "reg";
-  boot.initrd.luks.devices.enc-pv = {
-    device = "/dev/disk/by-uuid/975d8427-2c6a-440d-a1d2-18dd15ba5bc2";
-    allowDiscards = true;
-  };
-
   nix.flakes.enable = true;
 
-  networking.useDHCP = false;
+  efi.enable = true;
+
+  luks = {
+    enable = true;
+    device = {
+      path = "/dev/disk/by-uuid/975d8427-2c6a-440d-a1d2-18dd15ba5bc2";
+      allowDiscards = true;
+    };
+  };
+
+  networking.hostName = "reg";
+
+  de.enable = true;
+  de.touchpad.enable = true;
+
   networking.interfaces.enp57s0f1.useDHCP = true;
-  networking.interfaces.wlp0s20f3.useDHCP = true;
-  networking.interfaces.wwp0s20f0u2i12.useDHCP = true;
 }
 

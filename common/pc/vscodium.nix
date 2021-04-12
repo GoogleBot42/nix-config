@@ -1,6 +1,8 @@
-{ config, pkgs, ... }:
+{ lib, config, pkgs, ... }:
 
 let
+  cfg = config.de;
+
   extensions = with pkgs.vscode-extensions; [
     bbenoist.Nix # nix syntax support
 #    arrterian.nix-env-selector  # nix dev envs
@@ -12,7 +14,9 @@ let
   };
 in
 {
-  users.users.googlebot.packages = [
-    vscodium-with-extensions
-  ];
+  config = lib.mkIf cfg.enable {
+    users.users.googlebot.packages = [
+      vscodium-with-extensions
+    ];
+  };
 }

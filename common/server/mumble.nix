@@ -1,31 +1,34 @@
-{ config, ... }:
+{ lib, config, ... }:
 
-let 
-  murmurPort = 23563;
-  domain = "voice.neet.space";
+let
+  cfg = config.services.murmur;
   certs = config.security.acme.certs;
 in {
-  config.networking.firewall.allowedTCPPorts = [ murmurPort ];
-  config.networking.firewall.allowedUDPPorts = [ murmurPort ];
-
-  config.services.murmur = {
-    enable = true;
-    port = murmurPort;
-    sslCa = "${certs.${domain}.directory}/chain.pem";
-    sslKey = "${certs.${domain}.directory}/key.pem";
-    sslCert = "${certs.${domain}.directory}/fullchain.pem";
-    welcometext = "Welcome to ${domain}";
+  options.services.murmur.domain = lib.mkOption {
+    type = lib.types.str;
   };
 
-  config.services.nginx.virtualHosts."${domain}" = {
-    enableACME = true;
-    forceSSL = true;
-  };
+  config = lib.mkIf cfg.enable {
+    networking.firewall.allowedTCPPorts = [ cfg.port ];
+    networking.firewall.allowedUDPPorts = [ cfg.port ];
 
-  # give mumble access to acme certs
-  config.security.acme.certs.${domain} = {
-    group = "murmur";
-    postRun = "systemctl reload-or-restart murmur";
+    services.murmur = {
+      sslCa = "${certs.${cfg.domain}.directory}/chain.pem";
+      sslKey = "${certs.${cfg.domain}.directory}/key.pem";
+      sslCert = "${certs.${cfg.domain}.directory}/fullchain.pem";
+      welcometext = "Welcome to ${cfg.domain}";
+    };
+
+    services.nginx.virtualHosts."${cfg.domain}" = {
+      enableACME = true;
+      forceSSL = true;
+    };
+
+    # give mumble access to acme certs
+    security.acme.certs.${cfg.domain} = {
+      group = "murmur";
+      postRun = "systemctl reload-or-restart murmur";
+    };
+    users.users.nginx.extraGroups = [ "murmur" ];
   };
-  config.users.users.nginx.extraGroups = [ "murmur" ];
 }

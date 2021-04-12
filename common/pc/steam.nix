@@ -1,10 +1,14 @@
-{ config, pkgs, ... }:
+{ lib, config, pkgs, ... }:
 
-{
-  programs.steam.enable = true;
-  hardware.steam-hardware.enable = true; # steam controller
+let
+  cfg = config.de;
+in {
+  config = lib.mkIf cfg.enable {
+    programs.steam.enable = true;
+    hardware.steam-hardware.enable = true; # steam controller
 
-  users.users.googlebot.packages = [
-    pkgs.steam
-  ];
+    users.users.googlebot.packages = [
+      pkgs.steam
+    ];
+  };
 }

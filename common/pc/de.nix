@@ -1,7 +1,8 @@
 { config, pkgs, lib, ... }:
 
-{
-  # General
+let
+  cfg = config.de;
+in {
   imports = [
     ./kde.nix
     ./xfce.nix
@@ -14,32 +15,39 @@
     ./vscodium.nix
     ./discord.nix
     ./steam.nix
+    ./touchpad.nix
   ];
 
-  # allow specific unfree packages
-  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
-    "tigervnc" "font-bh-lucidatypewriter" # tigervnc
-    "steam" "steam-original" "steam-runtime" # TODO move to steam.nix
-    "discord" # TODO move to discord.nix
-  ];
+  options.de = {
+    enable = lib.mkEnableOption "enable desktop environment";
+  };
 
-  # vulkan
-  hardware.opengl.driSupport = true;
-  hardware.opengl.driSupport32Bit = true;
+  config = lib.mkIf cfg.enable {
+    # allow specific unfree packages
+    nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+      "tigervnc" "font-bh-lucidatypewriter" # tigervnc
+      "steam" "steam-original" "steam-runtime" # TODO move to steam.nix
+      "discord" # TODO move to discord.nix
+    ];
 
-  # Applications
-  users.users.googlebot.packages = with pkgs; [
-    chromium keepassxc mumble tigervnc bluez-tools vscodium element-desktop mpv
-  ];
+    # vulkan
+    hardware.opengl.driSupport = true;
+    hardware.opengl.driSupport32Bit = true;
 
-  # Networking
-  networking.networkmanager.enable = true;
-  users.users.googlebot.extraGroups = [ "networkmanager" ];
+    # Applications
+    users.users.googlebot.packages = with pkgs; [
+      chromium keepassxc mumble tigervnc bluez-tools vscodium element-desktop mpv
+    ];
 
-  # Printing
-  services.printing.enable = true;
+    # Networking
+    networking.networkmanager.enable = true;
+    users.users.googlebot.extraGroups = [ "networkmanager" ];
 
-  # Security
-  services.gnome3.gnome-keyring.enable = true;
-  security.pam.services.googlebot.enableGnomeKeyring = true;
+    # Printing
+    services.printing.enable = true;
+
+    # Security
+    services.gnome3.gnome-keyring.enable = true;
+    security.pam.services.googlebot.enableGnomeKeyring = true;
+  };
 }
