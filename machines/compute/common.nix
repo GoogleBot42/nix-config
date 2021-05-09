@@ -10,6 +10,13 @@
   # Enables the generation of /boot/extlinux/extlinux.conf
   boot.loader.generic-extlinux-compatible.enable = true;
 
+  fileSystems = {
+    "/" = {
+      device = "/dev/disk/by-label/NIXOS_SD";
+      fsType = "ext4";
+    };
+  };
+
   nix.flakes.enable = true;
 
   networking.interfaces.eth0.useDHCP = true;
