@@ -604,15 +604,6 @@ in buildLinux {
     "FRONTSWAP" = yes;
     "CMA" = yes;
     "CMA_AREAS" = freeform "7";
-    "ZSWAP" = yes;
-    "ZSWAP_COMPRESSOR_DEFAULT_LZO" = yes;
-    "ZSWAP_COMPRESSOR_DEFAULT" = freeform "lzo";
-    "ZSWAP_ZPOOL_DEFAULT_ZBUD" = yes;
-    "ZSWAP_ZPOOL_DEFAULT" = freeform "zbud";
-    "ZPOOL" = yes;
-    "ZBUD" = yes;
-    "Z3FOLD" = yes;
-    "ZSMALLOC" = yes;
     "GENERIC_EARLY_IOREMAP" = yes;
     "ARCH_HAS_PTE_DEVMAP" = yes;
     "FRAME_VECTOR" = yes;
