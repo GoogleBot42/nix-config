@@ -327,7 +327,6 @@ in buildLinux {
     "SECCOMP" = yes;
     "PARAVIRT" = yes;
     "KEXEC" = yes;
-    "CRASH_DUMP" = yes;
     "XEN_DOM0" = yes;
     "XEN" = yes;
     "FORCE_MAX_ZONEORDER" = freeform "11";
