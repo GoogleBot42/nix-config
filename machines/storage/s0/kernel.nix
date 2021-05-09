@@ -531,13 +531,8 @@ in buildLinux {
     "HAVE_GCC_PLUGINS" = yes;
     "RT_MUTEXES" = yes;
     "BASE_SMALL" = freeform "0";
-    "MODULE_SIG_FORMAT" = yes;
     "MODULES" = yes;
     "MODULE_UNLOAD" = yes;
-    "MODULE_SIG" = yes;
-    "MODULE_SIG_ALL" = yes;
-    "MODULE_SIG_SHA1" = yes;
-    "MODULE_SIG_HASH" = freeform "sha1";
     "MODULES_TREE_LOOKUP" = yes;
     "BLOCK" = yes;
     "BLK_SCSI_REQUEST" = yes;
