@@ -4543,7 +4543,6 @@ in buildLinux {
     "CRYPTO_PCRYPT" = module;
     "CRYPTO_CRYPTD" = yes;
     "CRYPTO_AUTHENC" = yes;
-    "CRYPTO_TEST" = module;
     "CRYPTO_SIMD" = yes;
     "CRYPTO_ENGINE" = yes;
     "CRYPTO_RSA" = yes;
