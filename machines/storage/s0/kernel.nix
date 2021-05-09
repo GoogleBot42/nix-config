@@ -4788,7 +4788,6 @@ in buildLinux {
     "KUNIT" = module;
     "ARCH_HAS_KCOV" = yes;
     "CC_HAS_SANCOV_TRACE_PC" = yes;
-    "RUNTIME_TESTING_MENU" = yes;
     "BACKTRACE_SELF_TEST" = module;
     "RBTREE_TEST" = module;
     "REED_SOLOMON_TEST" = module;
