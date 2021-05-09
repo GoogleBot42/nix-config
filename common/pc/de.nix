@@ -10,7 +10,7 @@ in {
     ./chromium.nix
     ./firefox.nix
     ./audio.nix
-    ./torbrowser.nix
+#    ./torbrowser.nix
     ./pithos.nix
     ./vscodium.nix
     ./discord.nix
