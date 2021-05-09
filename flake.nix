@@ -20,6 +20,10 @@
         system = "x86_64-linux";
         modules = [ ./machines/neet.dev/configuration.nix ];
       };
+      "s0" = nixpkgs.lib.nixosSystem {
+        system = "aarch64-linux";
+        modules = [ ./machines/storage/s0/configuration.nix ];
+      };
     };
   };
 }
