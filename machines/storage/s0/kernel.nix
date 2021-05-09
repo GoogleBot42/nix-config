@@ -4768,7 +4768,6 @@ in buildLinux {
     "CPU_RMAP" = yes;
     "DQL" = yes;
     "GLOB" = yes;
-    "GLOB_SELFTEST" = module;
     "NLATTR" = yes;
     "LRU_CACHE" = module;
     "CLZ_TAB" = yes;
@@ -4833,9 +4832,6 @@ in buildLinux {
     "LOCK_DEBUGGING_SUPPORT" = yes;
     "STACKTRACE" = yes;
     "HAVE_DEBUG_BUGVERBOSE" = yes;
-    "TORTURE_TEST" = module;
-    "RCU_PERF_TEST" = module;
-    "RCU_TORTURE_TEST" = module;
     "RCU_CPU_STALL_TIMEOUT" = freeform "60";
     "RCU_TRACE" = yes;
     "NOP_TRACER" = yes;
@@ -4870,13 +4866,6 @@ in buildLinux {
     "INTERVAL_TREE_TEST" = module;
     "PERCPU_TEST" = module;
     "ASYNC_RAID6_TEST" = module;
-    "TEST_STRSCPY" = module;
-    "TEST_XARRAY" = module;
-    "TEST_VMALLOC" = module;
-    "TEST_BPF" = module;
-    "TEST_BLACKHOLE_DEV" = module;
-    "TEST_MEMCAT_P" = module;
-    "TEST_STACKINIT" = module;
     "MEMTEST" = yes;
  };
 }
