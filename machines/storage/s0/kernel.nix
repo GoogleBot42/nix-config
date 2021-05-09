@@ -110,9 +110,6 @@ in buildLinux {
     "NO_HZ_IDLE" = yes;
     "NO_HZ" = yes;
     "HIGH_RES_TIMERS" = yes;
-    "PREEMPT" = yes;
-    "PREEMPT_COUNT" = yes;
-    "PREEMPTION" = yes;
     "TICK_CPU_ACCOUNTING" = yes;
     "SCHED_THERMAL_PRESSURE" = yes;
     "BSD_PROCESS_ACCT" = yes;
@@ -122,7 +119,6 @@ in buildLinux {
     "TASK_XACCT" = yes;
     "TASK_IO_ACCOUNTING" = yes;
     "TREE_RCU" = yes;
-    "PREEMPT_RCU" = yes;
     "SRCU" = yes;
     "TREE_SRCU" = yes;
     "TASKS_RCU_GENERIC" = yes;
