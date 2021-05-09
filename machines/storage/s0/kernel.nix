@@ -662,10 +662,6 @@ in buildLinux {
     "IP_ROUTE_MULTIPATH" = yes;
     "IP_ROUTE_VERBOSE" = yes;
     "IP_ROUTE_CLASSID" = yes;
-    "IP_PNP" = yes;
-    "IP_PNP_DHCP" = yes;
-    "IP_PNP_BOOTP" = yes;
-    "IP_PNP_RARP" = yes;
     "NET_IPIP" = module;
     "NET_IPGRE_DEMUX" = module;
     "NET_IP_TUNNEL" = module;
