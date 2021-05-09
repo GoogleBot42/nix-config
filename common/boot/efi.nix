@@ -9,6 +9,8 @@ in {
   };
 
   config = mkIf cfg.enable {
+    # Enable microcode
+    firmware.x86_64 = true;
     # Use GRUB2 for EFI
     boot.loader = {
       efi.canTouchEfiVariables = true;
