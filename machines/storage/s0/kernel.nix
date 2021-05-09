@@ -1386,7 +1386,7 @@ in buildLinux {
     "SUNXI_RSB" = module;
     "VEXPRESS_CONFIG" = yes;
     "MHI_BUS" = module;
-    "CONNECTOR" = module;
+    "CONNECTOR" = yes;
     "GNSS" = module;
     "GNSS_SERIAL" = module;
     "GNSS_MTK_SERIAL" = module;
