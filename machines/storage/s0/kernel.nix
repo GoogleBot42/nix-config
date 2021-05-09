@@ -4196,11 +4196,6 @@ in buildLinux {
     "XFS_RT" = yes;
     "GFS2_FS" = module;
     "GFS2_FS_LOCKING_DLM" = yes;
-    "OCFS2_FS" = module;
-    "OCFS2_FS_O2CB" = module;
-    "OCFS2_FS_USERSPACE_CLUSTER" = module;
-    "OCFS2_FS_STATS" = yes;
-    "OCFS2_DEBUG_MASKLOG" = yes;
     "BTRFS_FS" = yes;
     "BTRFS_FS_POSIX_ACL" = yes;
     "NILFS2_FS" = module;
