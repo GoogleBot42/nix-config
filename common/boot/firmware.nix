@@ -8,7 +8,7 @@ in {
     enable = mkEnableOption "enable x86_64 firmware";
   };
 
-  config = mkIf cfg.firmware.x86_64 {
+  config = mkIf cfg.firmware.x86_64.enable {
     hardware.cpu.intel.updateMicrocode = true;
     hardware.cpu.amd.updateMicrocode = true;
   };
