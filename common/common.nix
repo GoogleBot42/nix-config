@@ -22,11 +22,8 @@
 
   services.openssh.enable = true;
 
-  networking.firewall.allowedTCPPorts = [ 22 ];
-  networking.firewall.allowedUDPPorts = [ ];
-
   environment.systemPackages = with pkgs; [
-    wget kakoune htop git dnsutils
+    wget kakoune htop git dnsutils tmux
   ];
 
   users.mutableUsers = false;
