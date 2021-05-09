@@ -1341,7 +1341,6 @@ in buildLinux {
     "PCIE_ROCKCHIP_EP" = yes;
     "PCI_ENDPOINT" = yes;
     "PCI_ENDPOINT_CONFIGFS" = yes;
-    "UEVENT_HELPER" = yes;
     "DEVTMPFS" = yes;
     "DEVTMPFS_MOUNT" = yes;
     "PREVENT_FIRMWARE_BUILD" = yes;
