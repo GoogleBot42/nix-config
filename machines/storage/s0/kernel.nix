@@ -4638,15 +4638,6 @@ in buildLinux {
     "LZ4_DECOMPRESS" = yes;
     "ZSTD_COMPRESS" = yes;
     "ZSTD_DECOMPRESS" = yes;
-    "XZ_DEC" = yes;
-    "XZ_DEC_X86" = yes;
-    "XZ_DEC_POWERPC" = yes;
-    "XZ_DEC_IA64" = yes;
-    "XZ_DEC_ARM" = yes;
-    "XZ_DEC_ARMTHUMB" = yes;
-    "XZ_DEC_SPARC" = yes;
-    "XZ_DEC_BCJ" = yes;
-    "XZ_DEC_TEST" = module;
     "DECOMPRESS_GZIP" = yes;
     "DECOMPRESS_BZIP2" = yes;
     "DECOMPRESS_LZMA" = yes;
