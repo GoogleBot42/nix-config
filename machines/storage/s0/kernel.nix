@@ -1344,7 +1344,6 @@ in buildLinux {
     "UEVENT_HELPER" = yes;
     "DEVTMPFS" = yes;
     "DEVTMPFS_MOUNT" = yes;
-    "STANDALONE" = yes;
     "PREVENT_FIRMWARE_BUILD" = yes;
     "FW_LOADER" = yes;
     "FW_CACHE" = yes;
