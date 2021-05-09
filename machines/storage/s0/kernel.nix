@@ -560,7 +560,6 @@ in buildLinux {
     "BLK_PM" = yes;
     "MQ_IOSCHED_DEADLINE" = yes;
     "MQ_IOSCHED_KYBER" = yes;
-    "IOSCHED_BFQ" = yes;
     "BFQ_GROUP_IOSCHED" = yes;
     "PREEMPT_NOTIFIERS" = yes;
     "PADATA" = yes;
