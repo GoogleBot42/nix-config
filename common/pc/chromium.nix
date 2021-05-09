@@ -29,7 +29,6 @@ in {
     nixpkgs.config.packageOverrides = pkgs: {
       vaapiIntel = pkgs.vaapiIntel.override { enableHybridCodec = true; };
       chromium = pkgs.chromium.override {
-        ungoogled = true;
         gnomeKeyringSupport = true;
         enableWideVine = true;
       };

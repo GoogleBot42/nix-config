@@ -28,6 +28,7 @@ in {
       "tigervnc" "font-bh-lucidatypewriter" # tigervnc
       "steam" "steam-original" "steam-runtime" # TODO move to steam.nix
       "discord" # TODO move to discord.nix
+      "chromium" "chrome-widevine-cdm" "chromium-unwrapped" # widevine support
     ];
 
     # vulkan
