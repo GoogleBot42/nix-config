@@ -150,7 +150,6 @@ in buildLinux {
     "CGROUP_SCHED" = yes;
     "FAIR_GROUP_SCHED" = yes;
     "CFS_BANDWIDTH" = yes;
-    "RT_GROUP_SCHED" = yes;
     "CGROUP_PIDS" = yes;
     "CGROUP_RDMA" = yes;
     "CGROUP_FREEZER" = yes;
