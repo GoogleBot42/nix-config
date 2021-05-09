@@ -4214,12 +4214,6 @@ in buildLinux {
     "BTRFS_FS" = yes;
     "BTRFS_FS_POSIX_ACL" = yes;
     "NILFS2_FS" = module;
-    "F2FS_FS" = yes;
-    "F2FS_STAT_FS" = yes;
-    "F2FS_FS_XATTR" = yes;
-    "F2FS_FS_POSIX_ACL" = yes;
-    "F2FS_FS_SECURITY" = yes;
-    "F2FS_CHECK_FS" = yes;
     "ZONEFS_FS" = module;
     "FS_DAX" = yes;
     "FS_POSIX_ACL" = yes;
