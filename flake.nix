@@ -24,6 +24,10 @@
         system = "aarch64-linux";
         modules = [ ./machines/storage/s0/configuration.nix ];
       };
+      "n1" = nixpkgs.lib.nixosSystem {
+        system = "aarch64-linux";
+        modules = [ ./machines/compute/n1/configuration.nix ];
+      };
     };
   };
 }
