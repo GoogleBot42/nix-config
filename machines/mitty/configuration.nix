@@ -36,7 +36,7 @@
     enableACME = true;
     forceSSL = true;
     locations."/" = {
-      proxyPass = "http://localhost:${toString services.icecast.port}";
+      proxyPass = "http://localhost:${toString config.services.icecast.port}";
     };
   };
 
