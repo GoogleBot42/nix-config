@@ -30,13 +30,13 @@
   services.icecast = {
     enable = true;
     hostname = "mitty.neet.dev";
-    port = 8000;
+    listen.port = 8000;
   };
   services.nginx.virtualHosts."mitty.neet.dev" = {
     enableACME = true;
     forceSSL = true;
     locations."/" = {
-      proxyPass = "http://localhost:8000";
+      proxyPass = "http://localhost:${toString config.services.icecast.listen.port}";
     };
   };
 
