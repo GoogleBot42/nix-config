@@ -31,6 +31,7 @@
     enable = true;
     hostname = "mitty.neet.dev";
     listen.port = 8000;
+    admin.password = builtins.readFile /secret/icecast.password;
   };
   services.nginx.virtualHosts."mitty.neet.dev" = {
     enableACME = true;
