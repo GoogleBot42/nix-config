@@ -24,7 +24,22 @@
 
   networking.interfaces.ens3.useDHCP = true;
 
+  services.nginx.enable = true;
+
+  # icecast
+  services.icecast = {
+    enable = true;
+    hostname = "mitty.neet.dev";
+    port = 8000;
+  };
+  services.nginx.virtualHosts."mitty.neet.dev" = {
+    enableACME = true;
+    forceSSL = true;
+    locations."/" = {
+      proxyPass = "http://localhost:${toString services.icecast.port}";
+    };
+  };
+
   security.acme.acceptTerms = true;
   security.acme.email = "letsencrypt+5@tar.ninja";
-
 }
