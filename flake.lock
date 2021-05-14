@@ -1,5 +1,37 @@
 {
   "nodes": {
+    "flake-utils": {
+      "locked": {
+        "lastModified": 1610051610,
+        "narHash": "sha256-U9rPz/usA1/Aohhk7Cmc2gBrEEKRzcW4nwPWMPwja4Y=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "3982c9903e93927c2164caa727cd3f6a0e6d14cc",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "myuids": {
+      "locked": {
+        "dir": "flakes/myuids",
+        "lastModified": 1611091761,
+        "narHash": "sha256-fE3FBeUxVaMezKjEpepdQW9apOza+0AfBALFhaaD0VA=",
+        "ref": "master",
+        "rev": "23f9fdf03a6673dbe334ae33be4f498cc4753191",
+        "revCount": 802,
+        "type": "git",
+        "url": "https://git.immae.eu/perso/Immae/Config/Nix.git"
+      },
+      "original": {
+        "dir": "flakes/myuids",
+        "type": "git",
+        "url": "https://git.immae.eu/perso/Immae/Config/Nix.git"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1620340338,
@@ -16,9 +48,66 @@
         "type": "github"
       }
     },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1611097871,
+        "narHash": "sha256-Q6bUkno5JNt0OoyXThFDrKArFBp/GryvJhwEgVzGSuk=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "31f5dd3f3655fbedac19f64f77844aa5ed79501c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "peertube": {
+      "inputs": {
+        "flake-utils": "flake-utils",
+        "myuids": "myuids",
+        "nixpkgs": "nixpkgs_2",
+        "peertube": "peertube_2"
+      },
+      "locked": {
+        "dir": "flakes/peertube",
+        "lastModified": 1611273483,
+        "narHash": "sha256-VKDczZDM9A2dGoSAEN6rUDxvLKYUuoDMefQc7fabvXo=",
+        "ref": "master",
+        "rev": "ded643e14096a7cb166c78dd961cf68fb4ddb0cf",
+        "revCount": 805,
+        "type": "git",
+        "url": "https://git.immae.eu/perso/Immae/Config/Nix.git?dir=flakes%2fpeertube"
+      },
+      "original": {
+        "dir": "flakes/peertube",
+        "rev": "ded643e14096a7cb166c78dd961cf68fb4ddb0cf",
+        "type": "git",
+        "url": "https://git.immae.eu/perso/Immae/Config/Nix.git?dir=flakes%2fpeertube"
+      }
+    },
+    "peertube_2": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1610436329,
+        "narHash": "sha256-bIXt5bQiBBlNDFXYzcdQA8qp4nse5epUx/XQOguDOX8=",
+        "owner": "Chocobozzz",
+        "repo": "PeerTube",
+        "rev": "69e0e678beb7f1a3b6753eeff585a14f9a61ea86",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Chocobozzz",
+        "ref": "v3.0.1",
+        "repo": "PeerTube",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "peertube": "peertube"
       }
     }
   },
