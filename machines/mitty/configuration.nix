@@ -26,26 +26,11 @@
 
   services.nginx.enable = true;
 
-  # # icecast
-  # services.icecast = {
-  #   enable = true;
-  #   hostname = "mitty.neet.dev";
-  #   listen.port = 8000;
-  #   admin.password = builtins.readFile /secret/icecast.password;
-  # };
-  networking.firewall.allowedTCPPorts = [ 1935 ];
-  services.peertube = {
+  # icecast
+  services.icecast = {
     enable = true;
-    configFile = ./peertube.yaml;
-  };
-  services.postfix.enable = true;
-  services.redis.enable = true;
-  services.nginx.virtualHosts."mitty.neet.dev" = {
-    enableACME = true;
-    forceSSL = true;
-    locations."/" = {
-      proxyPass = "http://localhost:9000";
-    };
+    hostname = "mitty.neet.dev";
+    mount = "stream.mp3";
   };
 
   security.acme.acceptTerms = true;
