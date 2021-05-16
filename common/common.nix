@@ -10,6 +10,7 @@
     ./server/nginx.nix
     ./server/thelounge.nix
     ./server/mumble.nix
+    ./server/icecast.nix
     ./pc/de.nix
   ];
 
