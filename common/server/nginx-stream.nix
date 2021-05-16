@@ -30,7 +30,7 @@ in {
   };
   config = lib.mkIf cfg.enable {
     services.nginx = {
-      services.nginx.enable = true;
+      enable = true;
 
       package = nginxWithRTMP;
 
