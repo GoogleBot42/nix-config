@@ -14,16 +14,16 @@ in {
       description = "rtmp injest/serve port";
     };
     rtmpName = lib.mkOption {
-      type = lib.types.string;
+      type = lib.types.str;
       default = "live";
       description = "the name of the rtmp application";
     };
     hostname = lib.mkOption {
-      type = lib.types.string;
+      type = lib.types.str;
       description = "the http host to serve hls";
     };
     httpLocation = lib.mkOption {
-      type = lib.types.string;
+      type = lib.types.str;
       default = "/tmp/stream";
       description = "the path of the tmp http files";
     };
@@ -67,7 +67,7 @@ in {
     };
 
     networking.firewall.allowedTCPPorts = [
-      cfg.stream.port
+      cfg.port
     ];
   };
 }
