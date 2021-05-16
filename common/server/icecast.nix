@@ -1,5 +1,10 @@
 { lib, config, ... }:
 
+# configures icecast to only accept source from localhost
+# to a audio optimized stream on services.icecast.mount
+# made available via nginx for http access on
+# https://host/mount
+
 let
   cfg = config.services.icecast;
 in {
