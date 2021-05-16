@@ -33,6 +33,12 @@
     mount = "stream.mp3";
   };
 
+  services.nginx.stream =
+  {
+    enable = true;
+    hostname = "mitty.neet.dev";
+  }
+
   security.acme.acceptTerms = true;
   security.acme.email = "letsencrypt+5@tar.ninja";
 }

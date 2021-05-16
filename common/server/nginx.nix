@@ -1,7 +1,9 @@
 { lib, config, pkgs, ... }:
 
+let
+  cfg = config.services.nginx;
 {
-  config = lib.mkIf config.services.nginx.enable {
+  config = lib.mkIf cfg.enable {
     services.nginx = {
       recommendedGzipSettings = true;
       recommendedOptimisation = true;
@@ -10,6 +12,5 @@
     };
 
     networking.firewall.allowedTCPPorts = [ 80 443 ];
-    networking.firewall.allowedUDPPorts = [ 80 443 ];
   };
 }

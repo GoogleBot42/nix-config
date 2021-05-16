@@ -11,6 +11,7 @@
     ./server/thelounge.nix
     ./server/mumble.nix
     ./server/icecast.nix
+    ./server/nginx-stream.nix
     ./pc/de.nix
   ];
 
