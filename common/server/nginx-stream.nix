@@ -24,7 +24,7 @@ in {
     };
     httpLocation = lib.mkOption {
       type = lib.types.str;
-      default = "/tmp/stream";
+      default = "/tmp";
       description = "the path of the tmp http files";
     };
   };
@@ -37,7 +37,10 @@ in {
       virtualHosts.${cfg.hostname} = {
         enableACME = true;
         forceSSL = true;
-        locations."/stream".root = cfg.httpLocation;
+        locations = {
+          "/stream/hls".root = "${cfg.httpLocation}/hls";
+          "/stream/dash".root = "${cfg.httpLocation}/dash";
+        };
         extraConfig = ''
           location /stat {
             rtmp_stat all;
@@ -51,8 +54,7 @@ in {
             listen 1935;
             chunk_size 4096;
             application ${cfg.rtmpName} {
-              allow publish 127.0.0.1;
-              deny publish all;
+              allow publish all;
               allow publish all;
               live on;
               record off;
