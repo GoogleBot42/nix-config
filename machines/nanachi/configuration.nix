@@ -24,6 +24,12 @@
 
   networking.interfaces.ens3.useDHCP = true;
 
+  services.icecast = {
+    enable = true;
+    hostname = "nanachi.neet.dev";
+    mount = "stream.webm";
+  };
+
   security.acme.acceptTerms = true;
   security.acme.email = "letsencrypt+5@tar.ninja";
 
