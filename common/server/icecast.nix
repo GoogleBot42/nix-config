@@ -23,13 +23,17 @@ in {
         <authentication>
           <source-password>hackme</source-password>
         </authentication>
+        <limits>
+          <queue-size>12800000</queue-size>
+          <burst-size>2560000</burst-size>
+        </limits>
         <http-headers>
           <header type="cors" name="Access-Control-Allow-Origin" />
         </http-headers>
         <mount type="normal">
           <mount-name>/${cfg.mount}</mount-name>
-          <max-listeners>20</max-listeners>
-          <burst-size>65536</burst-size>
+          <max-listeners>10</max-listeners>
+          <bitrate>64000</bitrate>
           <hidden>false</hidden>
           <public>false</public>
         </mount>
