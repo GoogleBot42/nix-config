@@ -12,6 +12,7 @@
     ./server/mumble.nix
     ./server/icecast.nix
     ./server/nginx-stream.nix
+    ./server/vscode/modules/vscode-server
     ./pc/de.nix
   ];
 

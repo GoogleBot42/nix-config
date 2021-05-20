@@ -53,5 +53,7 @@
     port = 23563;
     domain = "voice.neet.space";
   };
+
+  services.vscode-server.enable = true;
 }
 
