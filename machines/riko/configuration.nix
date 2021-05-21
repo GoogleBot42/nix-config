@@ -17,7 +17,7 @@
 
   luks = {
     enable = true;
-    device.path = "/dev/disk/by-uuid/e57ac752-bd99-421f-a3b9-0cfa9608a54e";
+    device.path = "/dev/disk/by-uuid/60051e7a-c2fe-4065-9ef0-110aaac78f0c";
   };
 
   networking.hostName = "riko";
