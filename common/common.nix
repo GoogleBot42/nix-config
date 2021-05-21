@@ -26,7 +26,7 @@
   services.openssh.enable = true;
 
   environment.systemPackages = with pkgs; [
-    wget kakoune htop git dnsutils tmux
+    wget kakoune htop git dnsutils tmux nethogs iotop
   ];
 
   users.mutableUsers = false;
