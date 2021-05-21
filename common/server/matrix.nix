@@ -141,12 +141,6 @@ in {
         forceSSL = true;
       };
 
-      virtualHosts.${cfg.irc-bridge.host} =  {
-        enableACME = true;
-        forceSSL = true;
-        locations."/".proxyPass = "http://localhost:${toString cfg.irc-bridge.port}";
-      };
-
       virtualHosts.${cfg.element-web.host} = lib.mkIf cfg.element-web.enable {
         enableACME = true;
         forceSSL = true;
