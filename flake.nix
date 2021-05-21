@@ -22,6 +22,10 @@
         system = "x86_64-linux";
         modules = [ ./machines/nanachi/configuration.nix ];
       };
+      "riko" = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [ ./machines/riko/configuration.nix ];
+      };
       "neetdev" = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [ ./machines/neet.dev/configuration.nix ];
