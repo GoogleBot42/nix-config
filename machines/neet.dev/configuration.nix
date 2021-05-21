@@ -5,8 +5,6 @@
     ./hardware-configuration.nix
     ../../common/common.nix
     ../../common/server/gitlab.nix
-    ../../common/server/video-stream.nix
-    ../../common/server/hydra.nix
   ];
 
   # wt6nczjfvtba6pvjt2qtevwjpq4gcbz46bwjz4hboehgecyqmzqgwnqd.onion
