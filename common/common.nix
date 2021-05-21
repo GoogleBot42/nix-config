@@ -12,7 +12,7 @@
     ./server/mumble.nix
     ./server/icecast.nix
     ./server/nginx-stream.nix
-    ./server/vscode/modules/vscode-server
+    ./server/matrix.nix
     ./pc/de.nix
   ];
 
