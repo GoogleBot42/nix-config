@@ -34,3 +34,4 @@ nix-shell -p tor --run "tor -f /tmp/tor.rc"
 ssh-keygen -q -N "" -t rsa -b 4096 -f /mnt/secret/ssh_host_rsa_key
 ssh-keygen -q -N "" -t ed25519 -f /mnt/secret/ssh_host_ed25519_key
 nixos-generate-config --root /mnt # copy hardware config
+nixos-install --flake "git+https://git.neet.dev/zuckerberg/nix-config.git#MACHINE_NAME"
