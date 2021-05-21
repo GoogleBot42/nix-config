@@ -60,7 +60,6 @@ in {
     services.matrix-synapse = {
       enable = true;
       server_name = cfg.host;
-      database_type = "sqlite3";
       enable_registration = cfg.enable_registration;
       listeners = [ {
         bind_address = "127.0.0.1";
@@ -160,6 +159,15 @@ in {
         };
       };
     };
+
+    services.postgresql.enable = true;
+    services.postgresql.initialScript = pkgs.writeText "synapse-init.sql" ''
+      CREATE ROLE "matrix-synapse" WITH LOGIN PASSWORD 'synapse';
+      CREATE DATABASE "matrix-synapse" WITH OWNER "matrix-synapse"
+        TEMPLATE template0
+        LC_COLLATE = "C"
+        LC_CTYPE = "C";
+    '';
 
     services.jitsi-meet = lib.mkIf cfg.jitsi-meet.enable {
       enable = true;

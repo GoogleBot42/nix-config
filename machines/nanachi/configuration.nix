@@ -30,6 +30,24 @@
     mount = "stream.webm";
   };
 
+  services.matrix = {
+    enable = true;
+    host = "neet.space";
+    enable_registration = false;
+    element-web = {
+      enable = true;
+      host = "chat.neet.space";
+    };
+    jitsi-meet = {
+      enable = true;
+      host = "meet.neet.space";
+    };
+    turn = {
+      host = "turn.neet.space";
+      secret = "a8369a0e96922abf72494bb888c85831b";
+    };
+  };
+
   security.acme.acceptTerms = true;
   security.acme.email = "letsencrypt+5@tar.ninja";
 
