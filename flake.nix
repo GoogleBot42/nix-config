@@ -4,7 +4,7 @@
     simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver/master";
   };
 
-  outputs = { self, nixpkgs, peertube }: {
+  outputs = { self, nixpkgs, simple-nixos-mailserver }: {
 
     nixosConfigurations = {
       "reg" = nixpkgs.lib.nixosSystem {
