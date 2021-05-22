@@ -67,5 +67,6 @@
         ];
       };
     };
+    certificateScheme = 3; # use let's encrypt for certs
   };
 }
