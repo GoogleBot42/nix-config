@@ -51,4 +51,21 @@
     port = 23563;
     domain = "voice.neet.space";
   };
+
+  mailserver = {
+    enable = true;
+    fqdn = "mail.neet.dev";
+    domains = [ "neet.space" "neet.dev" "neet.cloud" ];
+    loginAccounts = {
+      "jeremy@neet.dev" = {
+        # nix run nixpkgs.apacheHttpd -c htpasswd -nbB "" "super secret password" | cut -d: -f2 > /hashed/password/file/location
+        hashedPasswordFile = "/secret/email.password";
+        aliases = [
+          "zuckerberg@neet.space"
+          "zuckerberg@neet.cloud"
+          "zuckerberg@neet.dev"
+        ];
+      };
+    };
+  };
 }

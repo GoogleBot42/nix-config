@@ -1,7 +1,7 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    peertube.url = "git+https://git.immae.eu/perso/Immae/Config/Nix.git?dir=flakes/peertube&rev=ded643e14096a7cb166c78dd961cf68fb4ddb0cf";
+    simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver/master";
   };
 
   outputs = { self, nixpkgs, peertube }: {
@@ -13,10 +13,7 @@
       };
       "mitty" = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        modules = [
-          ./machines/mitty/configuration.nix
-          peertube.nixosModule
-        ];
+        modules = [ ./machines/mitty/configuration.nix ];
       };
       "nanachi" = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
@@ -28,7 +25,10 @@
       };
       "neetdev" = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        modules = [ ./machines/neet.dev/configuration.nix ];
+        modules = [
+          ./machines/neet.dev/configuration.nix
+          simple-nixos-mailserver.nixosModule
+        ];
       };
       "s0" = nixpkgs.lib.nixosSystem {
         system = "aarch64-linux";
