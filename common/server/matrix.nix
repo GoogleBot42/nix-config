@@ -202,7 +202,7 @@ in {
         localRecording = {
           enabled = false;
         };
-        doNotStoreRoom = false;
+        doNotStoreRoom = true;
       };
     };
   };
