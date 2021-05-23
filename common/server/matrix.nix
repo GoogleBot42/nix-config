@@ -173,6 +173,37 @@ in {
       enable = true;
       hostName = cfg.jitsi-meet.host;
       nginx.enable = true;
+      config = {
+        enableInsecureRoomNameWarning = true;
+        fileRecordingsEnabled = false;
+        liveStreamingEnabled = false;
+        prejoinPageEnabled = true;
+        preferH264 = true;
+        disableH264 = false;
+        desktopSharingFrameRate = {
+          min = 5;
+          max = 30;
+        };
+        startScreenSharing = true;
+        videoQuality = {
+          disabledCodec = "VP8";
+          preferredCodec = "H264";
+          enforcePreferredCodec = true;
+        };
+        p2p = {
+          enabled = true;
+          preferH264 = true;
+          disabledCodec = "VP8";
+          preferredCodec = "H264";
+          disableH264 = false;
+        };
+        requireDisplayName = false;
+        disableThirdPartyRequests = true;
+        localRecording = {
+          enabled = false;
+        };
+        doNotStoreRoom = false;
+      };
     };
   };
 }
