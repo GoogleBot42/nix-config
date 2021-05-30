@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   cfg = config.services.zerobin;
@@ -25,5 +25,9 @@ in {
         proxyWebsockets = true;
       };
     };
+
+    # zerobin service is broken in nixpkgs currently
+    systemd.services.zerobin.serviceConfig.ExecStart = lib.mkForce
+      "${pkgs.zerobin}/bin/zerobin --host=${cfg.listenAddress} --port=${toString cfg.listenPort} --data-dir=${cfg.dataDir} --server=${cfg.host}";
   };
 }
