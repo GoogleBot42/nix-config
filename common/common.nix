@@ -13,6 +13,7 @@
     ./server/icecast.nix
     ./server/nginx-stream.nix
     ./server/matrix.nix
+    ./server/zerobin.nix
     ./pc/de.nix
   ];
 

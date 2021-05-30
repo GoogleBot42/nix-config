@@ -39,6 +39,11 @@
     hostname = "mitty.neet.dev";
   };
 
+  services.zerobin = {
+    enable = true;
+    host = "paste.neet.cloud";
+  };
+
   security.acme.acceptTerms = true;
   security.acme.email = "letsencrypt+5@tar.ninja";
 }
