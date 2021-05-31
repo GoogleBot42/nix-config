@@ -39,11 +39,6 @@
     hostname = "mitty.neet.dev";
   };
 
-  services.zerobin = {
-    enable = true;
-    host = "paste.neet.cloud";
-  };
-
   services.privatebin = {
     enable = true;
     host = "kode.neet.dev";
