@@ -56,6 +56,8 @@
       services.bazarr.openFirewall = true;
       services.sonarr.enable = true;
       services.sonarr.openFirewall = true;
+      services.jackett.enable = true;
+      services.jackett.openFirewall = true;
       services.jellyfin.enable = true;
       services.jellyfin.openFirewall = true;
       services.deluge.enable = true;
@@ -97,6 +99,13 @@
     forceSSL = true;
     locations."/" = {
       proxyPass = "http://172.16.100.2:8112";
+    };
+  };
+  services.nginx.virtualHosts."jackett.neet.cloud" = {
+    enableACME = true;
+    forceSSL = true;
+    locations."/" = {
+      proxyPass = "http://172.16.100.2:9117";
     };
   };
 
