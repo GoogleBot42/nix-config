@@ -4,6 +4,7 @@
   imports = [
     ./flakes.nix
     ./pia.nix
+    ./zerotier.nix
     ./boot/firmware.nix
     ./boot/efi.nix
     ./boot/bios.nix
