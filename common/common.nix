@@ -3,6 +3,7 @@
 {
   imports = [
     ./flakes.nix
+    ./pia.nix
     ./boot/firmware.nix
     ./boot/efi.nix
     ./boot/bios.nix
