@@ -49,7 +49,7 @@ in {
     services.printing.enable = true;
 
     # Security
-    services.gnome3.gnome-keyring.enable = true;
+    services.gnome.gnome-keyring.enable = true;
     security.pam.services.googlebot.enableGnomeKeyring = true;
   };
 }
