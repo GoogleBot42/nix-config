@@ -14,11 +14,8 @@
           modules = [
             path
             simple-nixos-mailserver.nixosModule
-            ( { pkgs, ... }: {
-              # pin nixpkgs for system commands such as "nix shell"
-              nix.registry.nixpkgs.flake = nixpkgs;
-            } )
           ];
+          specialArgs = { inherit inputs; };
         };
     in
     {

@@ -1,4 +1,4 @@
-{ lib, pkgs, config, ... }:
+{ lib, pkgs, config, inputs, ... }:
 with lib;
 let
   cfg = config.nix.flakes;
@@ -13,6 +13,9 @@ in {
       extraOptions = ''
         experimental-features = nix-command flakes
       '';
+
+      # pin nixpkgs for system commands such as "nix shell"
+      registry.nixpkgs.flake = inputs.nixpkgs;
     };
   };
 }
