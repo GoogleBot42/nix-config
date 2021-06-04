@@ -6,38 +6,29 @@
 
   outputs = { self, nixpkgs, simple-nixos-mailserver }: {
 
-    nixosConfigurations = {
-      "reg" = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [ ./machines/reg/configuration.nix ];
-      };
-      "mitty" = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [ ./machines/mitty/configuration.nix ];
-      };
-      "nanachi" = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [ ./machines/nanachi/configuration.nix ];
-      };
-      "riko" = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [ ./machines/riko/configuration.nix ];
-      };
-      "neetdev" = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          ./machines/neet.dev/configuration.nix
-          simple-nixos-mailserver.nixosModule
-        ];
-      };
-      "s0" = nixpkgs.lib.nixosSystem {
-        system = "aarch64-linux";
-        modules = [ ./machines/storage/s0/configuration.nix ];
-      };
-      "n1" = nixpkgs.lib.nixosSystem {
-        system = "aarch64-linux";
-        modules = [ ./machines/compute/n1/configuration.nix ];
-      };
+    nixosConfigurations =
+    let
+      mkSystem = system: path:
+        nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [
+            path
+            simple-nixos-mailserver.nixosModule
+            ( { pkgs, ... }: {
+              # pin nixpkgs for system commands such as "nix shell"
+              nix.registry.nixpkgs.flake = nixpkgs;
+            } )
+          ];
+        };
+    in
+    {
+      "reg" = mkSystem "x86_64-linux" ./machines/reg/configuration.nix;
+      "mitty" = mkSystem "x86_64-linux" ./machines/mitty/configuration.nix;
+      "nanachi" = mkSystem "x86_64-linux" ./machines/nanachi/configuration.nix;
+      "riko" = mkSystem "x86_64-linux" ./machines/riko/configuration.nix;
+      "neetdev" = mkSystem "x86_64-linux" ./machines/neet.dev/configuration.nix;
+      "s0" = mkSystem "aarch64-linux" ./machines/storage/s0/configuration.nix;
+      "n1" = mkSystem "aarch64-linux" ./machines/compute/n1/configuration.nix;
     };
   };
 }
