@@ -23,14 +23,6 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    # allow specific unfree packages
-    nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
-      "tigervnc" "font-bh-lucidatypewriter" # tigervnc
-      "steam" "steam-original" "steam-runtime" # TODO move to steam.nix
-      "discord" # TODO move to discord.nix
-      "chromium" "chrome-widevine-cdm" "chromium-unwrapped" # widevine support
-    ];
-
     # vulkan
     hardware.opengl.driSupport = true;
     hardware.opengl.driSupport32Bit = true;

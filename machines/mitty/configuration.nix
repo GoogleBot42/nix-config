@@ -26,19 +26,43 @@
 
   services.nginx.enable = true;
 
-  zerotier.enable = true;
+  services.zerotier.enable = true;
 
   containers.jellyfin = {
-    pia.enable = true;
-    zerotier.enable = true;
-    nixpkgs.pkgs = pkgs;
+    ephemeral = true;
+    autoStart = true;
+    bindMounts = {
+      "/var/lib" = {
+        hostPath = "/var/lib/";
+        isReadOnly = false;
+      };
+    };
+    bindMounts = {
+      "/secret" = {
+        hostPath = "/secret";
+        isReadOnly = true;
+      };
+    };
+    privateNetwork = true;
+    hostAddress = "172.16.100.1";
+    localAddress = "172.16.100.2";
+    config = { config, pkgs, ... }: {
+      imports = [ ../../common/common.nix ];
+      pia.enable = true;
+      services.zerotier.enable = true;
+      nixpkgs.pkgs = pkgs;
 
-    services.radarr.enable = true;
-    services.bazarr.enable = true;
-    services.sonarr.enable = true;
-    services.deluge.enable = true;
-    services.deluge.web.enable = true;
+      services.radarr.enable = true;
+      services.bazarr.enable = true;
+      services.sonarr.enable = true;
+      services.deluge.enable = true;
+      services.deluge.web.enable = true;
+    };
   };
+
+  networking.nat.enable = true;
+  networking.nat.internalInterfaces = [ "ve-*" ];
+  networking.nat.externalInterface = "ens3";
 
   security.acme.acceptTerms = true;
   security.acme.email = "letsencrypt+5@tar.ninja";

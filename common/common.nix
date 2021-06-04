@@ -33,6 +33,8 @@
     wget kakoune htop git dnsutils tmux nethogs iotop
   ];
 
+  nixpkgs.config.allowUnfree = true;
+
   users.mutableUsers = false;
   users.users.googlebot = {
     isNormalUser = true;
