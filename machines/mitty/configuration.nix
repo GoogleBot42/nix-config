@@ -26,8 +26,6 @@
 
   services.nginx.enable = true;
 
-  services.zerotier.enable = true;
-
   containers.jellyfin = {
     ephemeral = true;
     autoStart = true;
@@ -43,25 +41,67 @@
         isReadOnly = true;
       };
     };
+    enableTun = true;
     privateNetwork = true;
     hostAddress = "172.16.100.1";
     localAddress = "172.16.100.2";
-    config = { config, pkgs, ... }: {
+    config = {
       imports = [ ../../common/common.nix ];
       pia.enable = true;
-      services.zerotier.enable = true;
       nixpkgs.pkgs = pkgs;
 
       services.radarr.enable = true;
+      services.radarr.openFirewall = true;
       services.bazarr.enable = true;
+      services.bazarr.openFirewall = true;
       services.sonarr.enable = true;
+      services.sonarr.openFirewall = true;
+      services.jellyfin.enable = true;
+      services.jellyfin.openFirewall = true;
       services.deluge.enable = true;
       services.deluge.web.enable = true;
+      services.deluge.web.openFirewall = true;
+    };
+  };
+
+  services.nginx.virtualHosts."radarr.neet.cloud" = {
+    enableACME = true;
+    forceSSL = true;
+    locations."/" = {
+      proxyPass = "http://172.16.100.2:7878";
+    };
+  };
+  services.nginx.virtualHosts."sonarr.neet.cloud" = {
+    enableACME = true;
+    forceSSL = true;
+    locations."/" = {
+      proxyPass = "http://172.16.100.2:8989";
+    };
+  };
+  services.nginx.virtualHosts."bazarr.neet.cloud" = {
+    enableACME = true;
+    forceSSL = true;
+    locations."/" = {
+      proxyPass = "http://172.16.100.2:6767";
+    };
+  };
+  services.nginx.virtualHosts."jellyfin.neet.cloud" = {
+    enableACME = true;
+    forceSSL = true;
+    locations."/" = {
+      proxyPass = "http://172.16.100.2:8096";
+    };
+  };
+  services.nginx.virtualHosts."deluge.neet.cloud" = {
+    enableACME = true;
+    forceSSL = true;
+    locations."/" = {
+      proxyPass = "http://172.16.100.2:8112";
     };
   };
 
   networking.nat.enable = true;
-  networking.nat.internalInterfaces = [ "ve-*" ];
+  networking.nat.internalInterfaces = [ "ve-jellyfin" ];
   networking.nat.externalInterface = "ens3";
 
   security.acme.acceptTerms = true;
