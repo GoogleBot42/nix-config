@@ -26,22 +26,18 @@
 
   services.nginx.enable = true;
 
-  # icecast
-  services.icecast = {
-    enable = true;
-    hostname = "mitty.neet.dev";
-    mount = "stream.mp3";
-  };
+  zerotier.enable = true;
 
-  services.nginx.stream =
-  {
-    enable = true;
-    hostname = "mitty.neet.dev";
-  };
+  containers.jellyfin = {
+    pia.enable = true;
+    zerotier.enable = true;
+    nixpkgs.pkgs = pkgs;
 
-  services.privatebin = {
-    enable = true;
-    host = "kode.neet.dev";
+    services.radarr.enable = true;
+    services.bazarr.enable = true;
+    services.sonarr.enable = true;
+    services.deluge.enable = true;
+    services.deluge.web.enable = true;
   };
 
   security.acme.acceptTerms = true;
