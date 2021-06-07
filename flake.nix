@@ -4,16 +4,16 @@
     simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver/nixos-21.05";
   };
 
-  outputs = { self, nixpkgs, simple-nixos-mailserver }: {
+  outputs = inputs: {
 
     nixosConfigurations =
     let
       mkSystem = system: path:
-        nixpkgs.lib.nixosSystem {
+        inputsw.nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [
             path
-            simple-nixos-mailserver.nixosModule
+            inputs.simple-nixos-mailserver.nixosModule
           ];
           specialArgs = { inherit inputs; };
         };
