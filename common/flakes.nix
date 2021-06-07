@@ -15,7 +15,7 @@ in {
       '';
 
       # pin nixpkgs for system commands such as "nix shell"
-      registry.nixpkgs.flake = inputs.nixpkgs;
+      #registry.nixpkgs.flake = inputs.nixpkgs;
     };
   };
 }
