@@ -9,7 +9,7 @@
     nixosConfigurations =
     let
       mkSystem = system: path:
-        inputsw.nixpkgs.lib.nixosSystem {
+        inputs.nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [
             path
