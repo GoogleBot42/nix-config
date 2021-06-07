@@ -13,6 +13,10 @@ in {
       type = lib.types.str;
       example = "stream.mp3";
     };
+    fallback = lib.mkOption {
+      type = lib.types.str;
+      example = "fallback.mp3";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -23,16 +27,21 @@ in {
         <authentication>
           <source-password>hackme</source-password>
         </authentication>
-        <limits>
-          <queue-size>12800000</queue-size>
-          <burst-size>2560000</burst-size>
-        </limits>
         <http-headers>
           <header type="cors" name="Access-Control-Allow-Origin" />
         </http-headers>
         <mount type="normal">
           <mount-name>/${cfg.mount}</mount-name>
-          <max-listeners>10</max-listeners>
+          <max-listeners>30</max-listeners>
+          <bitrate>64000</bitrate>
+          <hidden>false</hidden>
+          <public>false</public>
+          <fallback-mount>/${cfg.fallback}</fallback-mount>
+          <fallback-override>1</fallback-override>
+        </mount>
+        <mount type="normal">
+          <mount-name>/${cfg.fallback}</mount-name>
+          <max-listeners>30</max-listeners>
           <bitrate>64000</bitrate>
           <hidden>false</hidden>
           <public>false</public>

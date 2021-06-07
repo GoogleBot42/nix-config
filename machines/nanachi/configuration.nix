@@ -27,7 +27,8 @@
   services.icecast = {
     enable = true;
     hostname = "nanachi.neet.dev";
-    mount = "stream.webm";
+    mount = "stream.mp3";
+    fallback = "fallback.mp3";
   };
 
   security.acme.acceptTerms = true;
