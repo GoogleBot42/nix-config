@@ -16,6 +16,7 @@
     ./server/nginx-stream.nix
     ./server/matrix.nix
     ./server/zerobin.nix
+    ./server/gitea.nix
     ./server/privatebin/privatebin.nix
     ./pc/de.nix
   ];
