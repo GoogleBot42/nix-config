@@ -12,6 +12,8 @@ in {
   config = lib.mkIf cfg.enable {
     services.gitea = {
       domain = cfg.hostname;
+      rootUrl = "https://${cfg.hostname}/";
+      appName = cfg.hostname;
       ssh.enable = true;
       # lfs.enable = true;
       dump.enable = true;
@@ -23,6 +25,7 @@ in {
         };
       };
     };
+    services.nginx.enable = true;
     services.nginx.virtualHosts.${cfg.hostname} = {
       enableACME = true;
       forceSSL = true;

@@ -23,6 +23,7 @@
   services.gitea = {
     enable = true;
     hostname = "git.neet.dev";
+    disableRegistration = true;
   };
 
   networking.hostName = "liza";
