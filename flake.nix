@@ -24,6 +24,7 @@
       "nanachi" = mkSystem "x86_64-linux" ./machines/nanachi/configuration.nix;
       "riko" = mkSystem "x86_64-linux" ./machines/riko/configuration.nix;
       "neetdev" = mkSystem "x86_64-linux" ./machines/neet.dev/configuration.nix;
+      "liza" = mkSystem "x86_64-linux" ./machines/liza/configuration.nix;
       "s0" = mkSystem "aarch64-linux" ./machines/storage/s0/configuration.nix;
       "n1" = mkSystem "aarch64-linux" ./machines/compute/n1/configuration.nix;
     };
