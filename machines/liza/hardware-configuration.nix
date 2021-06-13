@@ -9,29 +9,28 @@
     ];
 
   boot.initrd.availableKernelModules = [ "ata_piix" "virtio_pci" "floppy" "sr_mod" "virtio_blk" ];
-  boot.initrd.kernelModules = [ "dm-snapshot" "dm-raid" ];
-  boot.kernelModules = [ "dm-raid" ];
+  boot.initrd.kernelModules = [ "dm-snapshot" ];
+  boot.kernelModules = [ ];
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
-    { device = "/dev/disk/by-uuid/d929b5fc-b9f3-435b-b21f-d3fbbcb1577b";
+    { device = "/dev/disk/by-uuid/b90eaf3c-2f91-499a-a066-861e0f4478df";
       fsType = "btrfs";
-      options = [ "subvol=root" ];
     };
 
   fileSystems."/home" =
-    { device = "/dev/disk/by-uuid/d929b5fc-b9f3-435b-b21f-d3fbbcb1577b";
+    { device = "/dev/disk/by-uuid/b90eaf3c-2f91-499a-a066-861e0f4478df";
       fsType = "btrfs";
       options = [ "subvol=home" ];
     };
 
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/dd516b94-d090-4991-a476-3a9b6127dd6f";
+    { device = "/dev/disk/by-uuid/2b8f6f6d-9358-4d30-8341-7426574e0819";
       fsType = "ext3";
     };
 
   swapDevices =
-    [ { device = "/dev/disk/by-uuid/23294145-e00d-487f-9746-3c2972d8d899"; }
+    [ { device = "/dev/disk/by-uuid/ef7a83db-4b33-41d1-85fc-cff69e480352"; }
     ];
 
 }

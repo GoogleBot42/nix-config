@@ -6,7 +6,7 @@
     ../../common/common.nix
   ];
 
-  # fjhduiepwmuenuev2d2i22py6idc5h2k72ylh3fbrrxr7an6dw6ogfid.onion
+  # 5synsrjgvfzywruomjsfvfwhhlgxqhyofkzeqt2eisyijvjvebnu2xyd.onion
 
   nix.flakes.enable = true;
 
@@ -17,7 +17,7 @@
 
   luks = {
     enable = true;
-    device.path = "/dev/raid0/raid0lv";
+    device.path = "/dev/disk/by-uuid/2f736fba-8a0c-4fb5-8041-c849fb5e1297";
   };
 
   networking.hostName = "liza";
