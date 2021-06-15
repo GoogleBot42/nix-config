@@ -2,6 +2,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-21.05";
     simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver/nixos-21.05";
+    agenix.url = "github:ryantm/agenix";
   };
 
   outputs = inputs: {
@@ -14,6 +15,10 @@
           modules = [
             path
             inputs.simple-nixos-mailserver.nixosModule
+            inputs.agenix.nixosModules.age
+            {
+              environment.systemPackages = [ inputs.agenix.defaultPackage.${system} ];
+            }
           ];
           specialArgs = { inherit inputs; };
         };

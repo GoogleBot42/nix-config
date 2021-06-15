@@ -31,7 +31,9 @@
   };
 
   services.searx.enable = true;
+  services.searx.environmentFile = "/run/secrets/searx";
   services.searx.settings.server.port = 8080;
+  services.searx.settings.server.secret_key = "@SEARX_SECRET_KEY@";
   services.nginx.virtualHosts."search.neet.space" = {
     enableACME = true;
     forceSSL = true;
@@ -39,6 +41,7 @@
       proxyPass = "http://localhost:${toString config.services.searx.settings.server.port}";
     };
   };
+  age.secrets.searx.file = ../../secrets/searx.age;
 
   security.acme.acceptTerms = true;
   security.acme.email = "zuckerberg@neet.dev";
