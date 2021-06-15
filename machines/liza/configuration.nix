@@ -30,10 +30,20 @@
     disableRegistration = true;
   };
 
-  services.searx.enable = true;
-  services.searx.environmentFile = "/run/secrets/searx";
-  services.searx.settings.server.port = 8080;
-  services.searx.settings.server.secret_key = "@SEARX_SECRET_KEY@";
+  services.searx = {
+    enable = true;
+    environmentFile = "/run/secrets/searx";
+    settings = {
+      server.port = 8080;
+      server.secret_key = "@SEARX_SECRET_KEY@";
+    };
+    engines = [ {
+      name = "wolframalpha";
+      shortcut = "wa";
+      api_key = "@WOLFRAM_API_KEY@";
+      engine = "wolframalpha_api";
+    } ];
+  };
   services.nginx.virtualHosts."search.neet.space" = {
     enableACME = true;
     forceSSL = true;
