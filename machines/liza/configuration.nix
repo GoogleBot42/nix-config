@@ -36,13 +36,13 @@
     settings = {
       server.port = 8080;
       server.secret_key = "@SEARX_SECRET_KEY@";
+      engines = [ {
+        name = "wolframalpha";
+        shortcut = "wa";
+        api_key = "@WOLFRAM_API_KEY@";
+        engine = "wolframalpha_api";
+      } ];
     };
-    engines = [ {
-      name = "wolframalpha";
-      shortcut = "wa";
-      api_key = "@WOLFRAM_API_KEY@";
-      engine = "wolframalpha_api";
-    } ];
   };
   services.nginx.virtualHosts."search.neet.space" = {
     enableACME = true;
