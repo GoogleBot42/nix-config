@@ -20,15 +20,25 @@
     device.path = "/dev/disk/by-uuid/2f736fba-8a0c-4fb5-8041-c849fb5e1297";
   };
 
+  networking.hostName = "liza";
+
+  networking.interfaces.enp1s0.useDHCP = true;
+
   services.gitea = {
     enable = true;
     hostname = "git.neet.dev";
     disableRegistration = true;
   };
 
-  networking.hostName = "liza";
-
-  networking.interfaces.enp1s0.useDHCP = true;
+  services.searx.enable = true;
+  services.searx.settings.server.port = 8080;
+  services.nginx.virtualHosts."search.neet.space" = {
+    enableACME = true;
+    forceSSL = true;
+    locations."/" = {
+      proxyPass = "http://localhost:${toString config.services.searx.settings.server.port}";
+    };
+  };
 
   security.acme.acceptTerms = true;
   security.acme.email = "zuckerberg@neet.dev";
