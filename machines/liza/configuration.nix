@@ -55,7 +55,7 @@
 
   services.minecraft-server = {
     enable = true;
-    jvmOpts = "-Xmx2048M -Xms4092M -XX:+UseG1GC -XX:+CMSIncrementalPacing -XX:+CMSClassUnloadingEnabled -XX:ParallelGCThreads=2 -XX:MinHeapFreeRatio=5 -XX:MaxHeapFreeRatio=10";
+    jvmOpts = "-Xms2048M -Xmx4092M -XX:+UseG1GC -XX:ParallelGCThreads=2 -XX:MinHeapFreeRatio=5 -XX:MaxHeapFreeRatio=10";
     eula = true;
     declarative = true;
     whitelist = {
