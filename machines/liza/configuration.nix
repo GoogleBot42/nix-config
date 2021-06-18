@@ -53,6 +53,17 @@
   };
   age.secrets.searx.file = ../../secrets/searx.age;
 
+  services.minecraft-server = {
+    enable = true;
+    jvmOpts = "-Xmx2048M -Xms4092M -XX:+UseG1GC -XX:+CMSIncrementalPacing -XX:+CMSClassUnloadingEnabled -XX:ParallelGCThreads=2 -XX:MinHeapFreeRatio=5 -XX:MaxHeapFreeRatio=10";
+    eula = true;
+    declarative = true;
+    whitelist = {
+      GoogleBot42 = "cae9249c-9e07-450f-8468-60db9950c01d";
+    };
+    openFirewall = true;
+  };
+
   security.acme.acceptTerms = true;
   security.acme.email = "zuckerberg@neet.dev";
 }
