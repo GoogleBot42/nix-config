@@ -60,8 +60,16 @@
     declarative = true;
     whitelist = {
       GoogleBot42 = "cae9249c-9e07-450f-8468-60db9950c01d";
+      ArcaneMagus = "f367dce9-c255-4fd8-840c-fd772e3f381e";
     };
     openFirewall = true;
+    package = pkgs.minecraft-server.overrideAttrs (old: {
+      version = "1.17";
+      src = pkgs.fetchurl {
+        url = "https://launcher.mojang.com/v1/objects/0a269b5f2c5b93b1712d0f5dc43b6182b9ab254e/server.jar";
+        sha1 = "0a269b5f2c5b93b1712d0f5dc43b6182b9ab254e";
+      };
+    });
   };
 
   security.acme.acceptTerms = true;
