@@ -53,6 +53,9 @@ in {
       forceSSL = true;
       locations."/${cfg.mount}" = {
         proxyPass = "http://localhost:${toString cfg.listen.port}/${cfg.mount}";
+        extraConfig = ''
+          add_header Access-Control-Allow-Origin *;
+        '';
       };
     };
   };
