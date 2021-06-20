@@ -61,7 +61,7 @@
     serverProperties = {
       motd = "Welcome :)";
       server-port = 38358;
-      serverProperties.white-list = false;
+      white-list = false;
     };
     openFirewall = true;
     package = pkgs.minecraft-server.overrideAttrs (old: {
