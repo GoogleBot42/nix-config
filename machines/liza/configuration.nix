@@ -58,9 +58,10 @@
     jvmOpts = "-Xms2048M -Xmx4092M -XX:+UseG1GC -XX:ParallelGCThreads=2 -XX:MinHeapFreeRatio=5 -XX:MaxHeapFreeRatio=10";
     eula = true;
     declarative = true;
-    whitelist = {
-      GoogleBot42 = "cae9249c-9e07-450f-8468-60db9950c01d";
-      ArcaneMagus = "f367dce9-c255-4fd8-840c-fd772e3f381e";
+    serverProperties = {
+      motd = "Welcome :)";
+      server-port = 38358;
+      serverProperties.white-list = false;
     };
     openFirewall = true;
     package = pkgs.minecraft-server.overrideAttrs (old: {
