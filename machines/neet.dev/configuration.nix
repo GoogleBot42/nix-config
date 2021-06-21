@@ -28,12 +28,6 @@
   security.acme.acceptTerms = true;
   security.acme.email = "letsencrypt+5@tar.ninja";
 
-  # placeholder
-  services.nginx.virtualHosts."radio.neet.space" = {
-    enableACME = true;
-    forceSSL = true;
-  };
-
   services.thelounge = {
     enable = true;
     port = 9000;

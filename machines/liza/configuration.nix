@@ -73,6 +73,15 @@
     });
   };
 
+  services.nginx.virtualHosts."radio.neet.space" = {
+    enableACME = true;
+    forceSSL = true;
+    locations."/".root = builtins.fetchTarball {
+      url = "https://git.neet.dev/zuckerberg/radio-web/archive/a69e0e27b70694a8fffe8834d7e5f0e67db83dfa.tar.gz";
+      #sha256 = "";
+    }
+  };
+
   security.acme.acceptTerms = true;
   security.acme.email = "zuckerberg@neet.dev";
 }
