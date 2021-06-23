@@ -3,7 +3,6 @@
 {
   imports =[
     ./hardware-configuration.nix
-    ../../common/common.nix
   ];
 
   # wt6nczjfvtba6pvjt2qtevwjpq4gcbz46bwjz4hboehgecyqmzqgwnqd.onion

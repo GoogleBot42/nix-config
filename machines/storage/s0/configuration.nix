@@ -3,7 +3,6 @@
 {
   imports =[
     ./helios64.nix
-    ../../../common/common.nix
   ];
 
   nix.flakes.enable = true;
