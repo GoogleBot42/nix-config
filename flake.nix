@@ -33,6 +33,12 @@
       "liza" = mkSystem "x86_64-linux" ./machines/liza/configuration.nix;
       "s0" = mkSystem "aarch64-linux" ./machines/storage/s0/configuration.nix;
       "n1" = mkSystem "aarch64-linux" ./machines/compute/n1/configuration.nix;
+      "n2" = mkSystem "aarch64-linux" ./machines/compute/n2/configuration.nix;
+      "n3" = mkSystem "aarch64-linux" ./machines/compute/n3/configuration.nix;
+      "n4" = mkSystem "aarch64-linux" ./machines/compute/n4/configuration.nix;
+      "n5" = mkSystem "aarch64-linux" ./machines/compute/n5/configuration.nix;
+      "n6" = mkSystem "aarch64-linux" ./machines/compute/n6/configuration.nix;
+      "n7" = mkSystem "aarch64-linux" ./machines/compute/n7/configuration.nix;
     };
   };
 }
