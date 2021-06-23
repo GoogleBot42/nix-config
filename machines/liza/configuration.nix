@@ -78,8 +78,17 @@
     forceSSL = true;
     locations."/".root = builtins.fetchTarball {
       url = "https://git.neet.dev/zuckerberg/radio-web/archive/a69e0e27b70694a8fffe8834d7e5f0e67db83dfa.tar.gz";
-      #sha256 = "";
-    }
+      sha256 = "076q540my5ssbhwlc8v8vafcddcq7ydxnzagw4qqr1ii6ikfn80w";
+    };
+  };
+
+  services.nginx.virtualHosts."paradigminteractive.agency" = {
+    enableACME = true;
+    forceSSL = true;
+    locations."/".root = builtins.fetchTarball {
+      url = "https://git.neet.dev/zuckerberg/paradigminteractive.agency/archive/b91f3ea2884ddd902461a8acb47f20ae04bc28ee.tar.gz";
+      sha256 = "1x1fpsd1qr0004hfcxk6j4c4n3wwxykzhnv47gmrdnx5hq1nbzq4";
+    };
   };
 
   security.acme.acceptTerms = true;
