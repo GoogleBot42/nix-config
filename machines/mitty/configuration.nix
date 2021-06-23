@@ -36,8 +36,8 @@
       };
     };
     bindMounts = {
-      "/secret" = {
-        hostPath = "/secret";
+      "/run/secrets" = {
+        hostPath = "/run/secrets";
         isReadOnly = true;
       };
     };

@@ -85,7 +85,7 @@ YDQ8z9v+DMO6iwyIDRiU
 </ca>
 
 disable-occ
-auth-user-pass /secret/pia-login.conf
+auth-user-pass /run/secrets/pia-login.conf
           '';
           autoStart = true;
           up = "echo nameserver $nameserver | ${pkgs.openresolv}/sbin/resolvconf -m 0 -a $dev";
@@ -93,5 +93,6 @@ auth-user-pass /secret/pia-login.conf
         };
       };
     };
+    age.secrets."pia-login.conf".file = ../secrets/pia-login.conf;
   };
 }

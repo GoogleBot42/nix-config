@@ -6,4 +6,5 @@ let
 in
 {
   "searx.age".publicKeys = all;
+  "pia-login.conf".publicKeys = all;
 }
