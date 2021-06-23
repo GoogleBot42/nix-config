@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 {
   imports =[
@@ -40,7 +40,10 @@
     hostAddress = "172.16.100.1";
     localAddress = "172.16.100.2";
     config = {
-      imports = [ ../../common/common.nix ];
+      imports = [
+        ../../common/common.nix
+        inputs.agenix.nixosModules.age
+      ];
       pia.enable = true;
       nixpkgs.pkgs = pkgs;
 
