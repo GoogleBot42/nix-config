@@ -35,12 +35,6 @@
         isReadOnly = false;
       };
     };
-    bindMounts = {
-      "/run/secrets" = {
-        hostPath = "/run/secrets";
-        isReadOnly = true;
-      };
-    };
     enableTun = true;
     privateNetwork = true;
     hostAddress = "172.16.100.1";
