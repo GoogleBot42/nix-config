@@ -35,6 +35,12 @@
         isReadOnly = false;
       };
     };
+    bindMounts = {
+      "/run/secrets" = {
+        hostPath = "/run/secrets";
+        isReadOnly = true;
+      };
+    };
     enableTun = true;
     privateNetwork = true;
     hostAddress = "172.16.100.1";
@@ -105,6 +111,8 @@
       proxyPass = "http://172.16.100.2:9117";
     };
   };
+  # load the secret on behalf of the container
+  age.secrets."pia-login.conf".file = ../../secrets/pia-login.conf;
 
   networking.nat.enable = true;
   networking.nat.internalInterfaces = [ "ve-jellyfin" ];
