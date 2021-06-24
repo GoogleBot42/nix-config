@@ -7,6 +7,8 @@
 
   # smcxui7kwoyxpswwage4fkcppxnqzpw33xcmxmlhxvk5gcp5s6lrtfad.onion
 
+  boot.kernelPackages = pkgs.linuxPackages_5_12;
+
   nix.flakes.enable = true;
 
   efi.enable = true;
