@@ -26,6 +26,7 @@
     in
     {
       "reg" = mkSystem "x86_64-linux" ./machines/reg/configuration.nix;
+      "ray" = mkSystem "x86_64-linux" ./machines/ray/configuration.nix;
       "mitty" = mkSystem "x86_64-linux" ./machines/mitty/configuration.nix;
       "nanachi" = mkSystem "x86_64-linux" ./machines/nanachi/configuration.nix;
       "riko" = mkSystem "x86_64-linux" ./machines/riko/configuration.nix;
