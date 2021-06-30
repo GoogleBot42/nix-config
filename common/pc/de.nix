@@ -8,7 +8,7 @@ in {
     ./xfce.nix
     ./yubikey.nix
     ./chromium.nix
-    ./firefox.nix
+#    ./firefox.nix
     ./audio.nix
 #    ./torbrowser.nix
     ./pithos.nix
