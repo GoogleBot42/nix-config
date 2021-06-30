@@ -30,7 +30,6 @@ in {
     # Applications
     users.users.googlebot.packages = with pkgs; [
       chromium keepassxc mumble tigervnc bluez-tools vscodium element-desktop mpv
-      libva-utils ffmpeg-full
     ];
 
     # Networking

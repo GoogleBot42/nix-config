@@ -1,28 +1,16 @@
-{ config, pkgs, fetchurl, ... }:
+{ config, pkgs, fetchurl, lib, ... }:
 
 {
   imports = [
     ./hardware-configuration.nix
   ];
 
-  # 2plyinzleibb3r2jfdrzsfflwxsimdfipw2ynbfuueuvydeigwxu2kid.onion
-
-  boot.kernelPackages = pkgs.linuxPackages_latest;
-
   nix.flakes.enable = true;
 
   efi.enable = true;
 
-  # luks = {
-  #   enable = true;
-  #   device = {
-  #     path = "/dev/disk/by-uuid/fbe946d3-414f-4c2e-bb24-b845870fde6c";
-  #     allowDiscards = true;
-  #   };
-  # };
-
   boot.initrd.luks.devices."enc-pv" = {
-    device = "/dev/disk/by-uuid/fbe946d3-414f-4c2e-bb24-b845870fde6c";
+    device = "/dev/disk/by-uuid/d71ebe1f-7c49-454d-b28b-1dc54cf280e5";
     allowDiscards = true;
   };
 
@@ -31,4 +19,3 @@
   de.enable = true;
   de.touchpad.enable = true;
 }
-
