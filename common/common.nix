@@ -31,7 +31,7 @@
   services.openssh.enable = true;
 
   environment.systemPackages = with pkgs; [
-    wget kakoune htop git dnsutils tmux nethogs iotop
+    wget kakoune htop git dnsutils tmux nethogs iotop pciutils
   ];
 
   nixpkgs.config.allowUnfree = true;
