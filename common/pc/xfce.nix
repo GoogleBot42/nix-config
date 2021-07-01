@@ -14,7 +14,9 @@ in {
     };
 
     # xfce apps
-    users.users.googlebot.packages = with pkgs; [
+    # TODO for some reason whiskermenu needs to be global for it to work
+    environment.systemPackages = with pkgs; [
+      xfce.xfce4-whiskermenu-plugin
     ];
   };
 }

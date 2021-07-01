@@ -6,7 +6,7 @@ let
     rev = "ebb5f4ae7d6ce881fa18bd3fa598ca4605961dce";
     sha256 = "1w1s1i07qpf4wd8df1wkpyvrcw48dvvardifb72l60zkhysabnin";
   };
-  patchSkipPattern = "general-(add|rockchip)-overlay|wifi-400[34]|board-renegade-dts-cleanup|PBP|nanopi|rockpi|rk3328|board-roc-rk3399-pc-fix-regulators|general-bluetooth-add-new-quirk|general-disable-mtu-validatio|rk3399-pci-rockchip-support-ep-gpio-undefined-case|rkvdec_nv15";
+  patchSkipPattern = "general-(add|rockchip)-overlay|wifi-400[34]|board-renegade-dts-cleanup|PBP|nanopi|rockpi|rk3328|board-roc-rk3399-pc-fix-regulators|general-bluetooth-add-new-quirk|general-disable-mtu-validatio|rk3399-pci-rockchip-support-ep-gpio-undefined-case|rkvdec_nv15|spi";
   patch = runCommandLocal "rockchip64-current.patch" { src = armbian; } ''
     runHook unpackPhase
     cd $sourceRoot
