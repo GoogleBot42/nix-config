@@ -26,6 +26,8 @@
   de.enable = true;
   de.touchpad.enable = true;
 
+  services.zerotierone.enable = true;
+
   # VNC
   networking.firewall.allowedTCPPorts = [ 5900 ];
 
