@@ -16,6 +16,8 @@
 
   networking.hostName = "ray";
 
+  services.zerotierone.enable = true;
+
   de.enable = true;
   de.touchpad.enable = true;
 }
