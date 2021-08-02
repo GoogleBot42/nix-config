@@ -33,8 +33,8 @@
     enable = true;
     localDomain = "tube.neet.space";
     listenHttp = 9000;
-    listenWeb = 9000;
-    enableWebHttps = false;
+    listenWeb = 443;
+    enableWebHttps = true;
     # dataDirs
     serviceEnvironmentFile = "/run/secrets/peertube-init";
     # settings
@@ -56,12 +56,14 @@
     forceSSL = true;
     locations."/" = {
       proxyPass = "http://localhost:${toString config.services.peertube.listenHttp}";
+      proxyWebsockets = true;
     };
   };
   age.secrets.peertube-init.file = ../../secrets/peertube-init.age;
   age.secrets.peertube-db-pw.file = ../../secrets/peertube-db-pw.age;
   age.secrets.peertube-redis-pw.file = ../../secrets/peertube-redis-pw.age;
   age.secrets.peertube-smtp.file = ../../secrets/peertube-smtp.age;
+  networking.firewall.allowedTCPPorts = [ 1935 ];
 
   services.searx = {
     enable = true;
