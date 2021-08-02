@@ -29,6 +29,40 @@
     disableRegistration = true;
   };
 
+  services.peertube = {
+    enable = true;
+    localDomain = "tube.neet.space";
+    listenHttp = 9000;
+    listenWeb = 9000;
+    enableWebHttps = false;
+    # dataDirs
+    serviceEnvironmentFile = "/run/secrets/peertube-init";
+    # settings
+    database = {
+      createLocally = true;
+      passwordFile = "/run/secrets/peertube-db-pw";
+    };
+    redis = {
+      createLocally = true;
+      passwordFile = "/run/secrets/peertube-redis-pw";
+    };
+    smtp = {
+      createLocally = true;
+      passwordFile = "/run/secrets/peertube-smtp";
+    };
+  };
+  services.nginx.virtualHosts."tube.neet.space" = {
+    enableACME = true;
+    forceSSL = true;
+    locations."/" = {
+      proxyPass = "http://localhost:${toString config.services.peertube.listenHttp}";
+    };
+  };
+  age.secrets.peertube-init.file = ../../secrets/peertube-init.age;
+  age.secrets.peertube-db-pw.file = ../../secrets/peertube-db-pw.age;
+  age.secrets.peertube-redis-pw.file = ../../secrets/peertube-redis-pw.age;
+  age.secrets.peertube-smtp.file = ../../secrets/peertube-smtp.age;
+
   services.searx = {
     enable = true;
     environmentFile = "/run/secrets/searx";
