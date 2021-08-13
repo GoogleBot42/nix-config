@@ -23,6 +23,9 @@ in {
         other = {
           SHOW_FOOTER_VERSION = false;
         };
+        ui = {
+          DEFAULT_THEME = "arc-green";
+        };
       };
     };
     services.nginx.enable = true;
