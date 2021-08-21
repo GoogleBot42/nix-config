@@ -44,22 +44,22 @@ let
 in {
   options.services.drastikbot = {
     enable = lib.mkEnableOption "enable drastikbot";
-    user = mkOption {
-      type = types.str;
+    user = lib.mkOption {
+      type = lib.types.str;
       default = "drastikbot";
       description = ''
         The user drastikbot should run as
       '';
     };
-    group = mkOption {
-      type = types.str;
+    group = lib.mkOption {
+      type = lib.types.str;
       default = "drastikbot";
       description = ''
         The group drastikbot should run as
       '';
     };
-    dataDir = mkOption {
-      type = types.str;
+    dataDir = lib.mkOption {
+      type = lib.types.str;
       default = "/var/lib/drastikbot";
       description = ''
         Path to the drastikbot data directory
