@@ -74,6 +74,7 @@ in {
         home = cfg.dataDir;
         createHome = true;
     };
+    users.groups.${cfg.group} = {};
     systemd.services.drastikbot = {
       enable = true;
       after = ["network.target"];
