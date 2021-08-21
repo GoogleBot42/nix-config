@@ -23,6 +23,12 @@ let
         rev = version;
         sha256 = "w1164FkRkeyWnx6a95WDbwEUvNkNwFWa/6mhKtgVw0c=";
       })
+      (fetchgit {
+        name = "dailybuild_modules";
+        url = "https://git.neet.dev/zuckerberg/dailybuild_modules.git";
+        rev = "65c89946007e6e461d4fe084d90390a2e7988d35";
+        sha256 = "faob3qDn+L4V0O4MPsitlhd1rlXlCGynJM4Zhwp7PEs=";
+      })
     ];
 
     sourceRoot = pname;
@@ -33,8 +39,8 @@ let
       cp -r src $out/
 
       arr=($srcs)
-      echo ''${arr[1]}
       cp -r ''${arr[1]}/* $out/irc/modules
+      cp -r ''${arr[2]}/* $out/irc/modules
 
       makeWrapper ${pkgs.python3}/bin/python3 $out/drastikbot \
         --prefix PYTHONPATH : ${with pkgs.python3Packages; makePythonPath [requests beautifulsoup4]} \
