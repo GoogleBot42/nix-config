@@ -18,6 +18,7 @@
     ./server/zerobin.nix
     ./server/gitea.nix
     ./server/privatebin/privatebin.nix
+    ./server/drastikbot.nix
     ./pc/de.nix
   ];
 

@@ -65,6 +65,8 @@
   age.secrets.peertube-smtp.file = ../../secrets/peertube-smtp.age;
   networking.firewall.allowedTCPPorts = [ 1935 ];
 
+  services.drastikbot.enable = true;
+
   services.searx = {
     enable = true;
     environmentFile = "/run/secrets/searx";
