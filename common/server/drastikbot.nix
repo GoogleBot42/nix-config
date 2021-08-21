@@ -23,7 +23,7 @@ let
         rev = version;
         sha256 = "w1164FkRkeyWnx6a95WDbwEUvNkNwFWa/6mhKtgVw0c=";
       })
-      (fetchgit {
+      (pkgs.fetchgit {
         name = "dailybuild_modules";
         url = "https://git.neet.dev/zuckerberg/dailybuild_modules.git";
         rev = "65c89946007e6e461d4fe084d90390a2e7988d35";
