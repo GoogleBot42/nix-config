@@ -2,21 +2,21 @@
 
 let
   cfg = config.services.drastikbot;
-  drastikbot = python3Packages.buildPythonApplication rec {
+  drastikbot = pkgs.python3Packages.buildPythonApplication rec {
     pname = "drastikbot";
     version = "v2.1";
 
     format = "other";
 
     srcs = [
-      (fetchFromGitHub {
+      (pkgs.fetchFromGitHub {
         name = pname;
         owner = "olagood";
         repo = pname;
         rev = version;
         sha256 = "1L8vTE1YEhFWzY5RYb+s5Hb4LrVJNN2leKlZEugEyRU=";
       })
-      (fetchFromGitHub {
+      (pkgs.fetchFromGitHub {
         name = "drastikbot_modules";
         owner = "olagood";
         repo = "drastikbot_modules";
@@ -27,7 +27,7 @@ let
 
     sourceRoot = pname;
 
-    nativeBuildInputs = [ makeWrapper ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
 
     installPhase = ''
       cp -r src $out/
@@ -36,8 +36,8 @@ let
       echo ''${arr[1]}
       cp -r ''${arr[1]}/* $out/irc/modules
 
-      makeWrapper ${python3}/bin/python3 $out/drastikbot \
-        --prefix PYTHONPATH : ${with python3Packages; makePythonPath [requests beautifulsoup4]} \
+      makeWrapper ${pkgs.python3}/bin/python3 $out/drastikbot \
+        --prefix PYTHONPATH : ${with pkgs.python3Packages; makePythonPath [requests beautifulsoup4]} \
         --add-flags "$out/drastikbot.py"
     '';
   };
