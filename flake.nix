@@ -4,6 +4,9 @@
     nixpkgs-peertube.url = "github:GoogleBot42/nixpkgs/add-peertube-service";
     simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver/nixos-21.05";
     agenix.url = "github:ryantm/agenix";
+    radio.url = "git+https://git.neet.dev/zuckerberg/radio.git?ref=main";
+    radio-web.url = "git+https://git.neet.dev/zuckerberg/radio-web.git";
+    radio-web.flake = false;
   };
 
   outputs = inputs: {
@@ -24,7 +27,7 @@
               environment.systemPackages = [ inputs.agenix.defaultPackage.${system} ];
             }
           ];
-          specialArgs = { inherit inputs; };
+          specialArgs = { inherit inputs; inherit system; };
         };
     in
     {

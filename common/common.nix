@@ -19,6 +19,7 @@
     ./server/gitea.nix
     ./server/privatebin/privatebin.nix
     ./server/drastikbot.nix
+    ./server/radio.nix
     ./pc/de.nix
   ];
 

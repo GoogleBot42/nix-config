@@ -18,6 +18,21 @@
         "type": "github"
       }
     },
+    "flake-utils": {
+      "locked": {
+        "lastModified": 1620759905,
+        "narHash": "sha256-WiyWawrgmyN0EdmiHyG2V+fqReiVi8bM9cRdMaKQOFg=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "b543720b25df6ffdfcf9227afafc5b8c1fabfae8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1618628710,
@@ -65,6 +80,20 @@
     },
     "nixpkgs_3": {
       "locked": {
+        "lastModified": 1621784194,
+        "narHash": "sha256-CQWN/QvVHG8qCn7UhGGwoT3jAPvnJHQUvzBlIt48FGs=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "c5265c01a944b1cecfcfab392d5204d73d65d4ec",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "type": "indirect"
+      }
+    },
+    "nixpkgs_4": {
+      "locked": {
         "lastModified": 1607522989,
         "narHash": "sha256-o/jWhOSAlaK7y2M57OIriRt6whuVVocS/T0mG7fd1TI=",
         "owner": "NixOS",
@@ -78,17 +107,55 @@
         "type": "indirect"
       }
     },
+    "radio": {
+      "inputs": {
+        "flake-utils": "flake-utils",
+        "nixpkgs": "nixpkgs_3"
+      },
+      "locked": {
+        "lastModified": 1623978466,
+        "narHash": "sha256-uwVzyiHrlVxtQ2HsnWEfkdRY7i5GEEj3/M27Ht/3gjg=",
+        "ref": "main",
+        "rev": "71a1443301540a70930d8edc4528a93ec9745e21",
+        "revCount": 21,
+        "type": "git",
+        "url": "https://git.neet.dev/zuckerberg/radio.git"
+      },
+      "original": {
+        "ref": "main",
+        "type": "git",
+        "url": "https://git.neet.dev/zuckerberg/radio.git"
+      }
+    },
+    "radio-web": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1629688573,
+        "narHash": "sha256-ORZ8bc3aWUnvkDDkhyVfGBLWr3fO5LmmiJLdLWGoV80=",
+        "ref": "master",
+        "rev": "57322a3c213713371604ecc82a448451d636b0b4",
+        "revCount": 3,
+        "type": "git",
+        "url": "https://git.neet.dev/zuckerberg/radio-web.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://git.neet.dev/zuckerberg/radio-web.git"
+      }
+    },
     "root": {
       "inputs": {
         "agenix": "agenix",
         "nixpkgs": "nixpkgs_2",
         "nixpkgs-peertube": "nixpkgs-peertube",
+        "radio": "radio",
+        "radio-web": "radio-web",
         "simple-nixos-mailserver": "simple-nixos-mailserver"
       }
     },
     "simple-nixos-mailserver": {
       "inputs": {
-        "nixpkgs": "nixpkgs_3",
+        "nixpkgs": "nixpkgs_4",
         "utils": "utils"
       },
       "locked": {

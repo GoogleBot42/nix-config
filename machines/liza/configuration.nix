@@ -110,13 +110,9 @@
     });
   };
 
-  services.nginx.virtualHosts."radio.neet.space" = {
-    enableACME = true;
-    forceSSL = true;
-    locations."/".root = builtins.fetchTarball {
-      url = "https://git.neet.dev/zuckerberg/radio-web/archive/a69e0e27b70694a8fffe8834d7e5f0e67db83dfa.tar.gz";
-      sha256 = "076q540my5ssbhwlc8v8vafcddcq7ydxnzagw4qqr1ii6ikfn80w";
-    };
+  services.radio = {
+    enable = true;
+    host = "radio.neet.space";
   };
 
   services.nginx.virtualHosts."paradigminteractive.agency" = {
