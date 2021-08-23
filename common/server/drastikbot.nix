@@ -26,8 +26,8 @@ let
       (pkgs.fetchgit {
         name = "dailybuild_modules";
         url = "https://git.neet.dev/zuckerberg/dailybuild_modules.git";
-        rev = "65c89946007e6e461d4fe084d90390a2e7988d35";
-        sha256 = "faob3qDn+L4V0O4MPsitlhd1rlXlCGynJM4Zhwp7PEs=";
+        rev = "b2c8335badd1efd9be856263b739f3429cff54de";
+        sha256 = "xNnlEQyYVgUxwo80CSbs3YxVhRsn3gRRfMLceRxrk2s=";
       })
     ];
 
