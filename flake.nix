@@ -4,9 +4,19 @@
     nixpkgs-peertube.url = "github:GoogleBot42/nixpkgs/add-peertube-service";
     simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver/nixos-21.05";
     agenix.url = "github:ryantm/agenix";
+
+    # radio
     radio.url = "git+https://git.neet.dev/zuckerberg/radio.git?ref=main";
     radio-web.url = "git+https://git.neet.dev/zuckerberg/radio-web.git";
     radio-web.flake = false;
+
+    # drastikbot
+    drastikbot.url = "github:olagood/drastikbot/v2.1";
+    drastikbot.flake = false;
+    drastikbot_modules.url = "github:olagood/drastikbot_modules/v2.1";
+    drastikbot_modules.flake = false;
+    dailybuild_modules.url = "git+https://git.neet.dev/zuckerberg/dailybuild_modules.git";
+    dailybuild_modules.flake = false;
   };
 
   outputs = inputs: {

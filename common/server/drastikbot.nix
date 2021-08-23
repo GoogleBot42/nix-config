@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 let
   cfg = config.services.drastikbot;
@@ -9,26 +9,9 @@ let
     format = "other";
 
     srcs = [
-      (pkgs.fetchFromGitHub {
-        name = pname;
-        owner = "olagood";
-        repo = pname;
-        rev = version;
-        sha256 = "1L8vTE1YEhFWzY5RYb+s5Hb4LrVJNN2leKlZEugEyRU=";
-      })
-      (pkgs.fetchFromGitHub {
-        name = "drastikbot_modules";
-        owner = "olagood";
-        repo = "drastikbot_modules";
-        rev = version;
-        sha256 = "w1164FkRkeyWnx6a95WDbwEUvNkNwFWa/6mhKtgVw0c=";
-      })
-      (pkgs.fetchgit {
-        name = "dailybuild_modules";
-        url = "https://git.neet.dev/zuckerberg/dailybuild_modules.git";
-        rev = "b2c8335badd1efd9be856263b739f3429cff54de";
-        sha256 = "xNnlEQyYVgUxwo80CSbs3YxVhRsn3gRRfMLceRxrk2s=";
-      })
+      inputs.drastikbot
+      inputs.drastikbot_modules
+      inputs.dailybuild_modules
     ];
 
     sourceRoot = pname;
