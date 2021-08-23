@@ -14,14 +14,14 @@ let
       inputs.dailybuild_modules
     ];
 
-    sourceRoot = pname;
-
     nativeBuildInputs = [ pkgs.makeWrapper ];
 
-    installPhase = ''
-      cp -r src $out/
+    phases = [ "installPhase" ]; # Removes all phases except installPhase
 
+    installPhase = ''
       arr=($srcs)
+      mkdir -p $out/irc/modules
+      cp -r ''${arr[0]}/src/* $out/
       cp -r ''${arr[1]}/* $out/irc/modules
       cp -r ''${arr[2]}/* $out/irc/modules
 
