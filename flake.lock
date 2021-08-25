@@ -180,11 +180,11 @@
     "radio-web": {
       "flake": false,
       "locked": {
-        "lastModified": 1629688573,
-        "narHash": "sha256-ORZ8bc3aWUnvkDDkhyVfGBLWr3fO5LmmiJLdLWGoV80=",
+        "lastModified": 1629918655,
+        "narHash": "sha256-sDVM1K1r2y4T37tvdu3mtjiswJ7/PrVGsDQrHzrNfac=",
         "ref": "master",
-        "rev": "57322a3c213713371604ecc82a448451d636b0b4",
-        "revCount": 3,
+        "rev": "585ce4e3d09d1618d61358902a4231e91e15e1de",
+        "revCount": 4,
         "type": "git",
         "url": "https://git.neet.dev/zuckerberg/radio-web.git"
       },
