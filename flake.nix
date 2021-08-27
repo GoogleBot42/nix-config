@@ -44,7 +44,6 @@
       "reg" = mkSystem "x86_64-linux" nixpkgs ./machines/reg/configuration.nix;
       "ray" = mkSystem "x86_64-linux" nixpkgs ./machines/ray/configuration.nix;
       "mitty" = mkSystem "x86_64-linux" nixpkgs ./machines/mitty/configuration.nix;
-      "nanachi" = mkSystem "x86_64-linux" nixpkgs ./machines/nanachi/configuration.nix;
       "riko" = mkSystem "x86_64-linux" nixpkgs ./machines/riko/configuration.nix;
       "neetdev" = mkSystem "x86_64-linux" nixpkgs ./machines/neet.dev/configuration.nix;
       "liza" = mkSystem "x86_64-linux" nixpkgs-peertube ./machines/liza/configuration.nix;
