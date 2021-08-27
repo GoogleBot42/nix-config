@@ -19,6 +19,8 @@
     device.path = "/dev/disk/by-uuid/2f736fba-8a0c-4fb5-8041-c849fb5e1297";
   };
 
+  system.autoUpgrade.enable = true;
+
   networking.hostName = "liza";
 
   networking.interfaces.enp1s0.useDHCP = true;

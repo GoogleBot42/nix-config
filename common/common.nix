@@ -5,6 +5,7 @@
     ./flakes.nix
     ./pia.nix
     ./zerotier.nix
+    ./auto-update.nix
     ./boot/firmware.nix
     ./boot/efi.nix
     ./boot/bios.nix
