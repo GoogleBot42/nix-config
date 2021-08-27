@@ -1,1 +1,4 @@
-nix flake update --recreate-lock-file --commit-lock-file
+#! /usr/bin/env nix-shell
+#! nix-shell -i bash -p bash
+
+nix flake update --commit-lock-file
