@@ -22,6 +22,7 @@ in {
   config = lib.mkIf cfg.enable {
     services.icecast = {
       listen.address = "127.0.0.1";
+      listen.port = 8001;
       admin.password = "hackme";
       extraConf = ''
         <authentication>
