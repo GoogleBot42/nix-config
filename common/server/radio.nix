@@ -61,7 +61,7 @@ in {
       after = ["network.target"];
       wantedBy = ["multi-user.target"];
       serviceConfig.ExecStart = "${radioPackage}/bin/radio 
-        ${config.services.icecast.listen.address}:${config.services.icecast.listen.port} ${config.services.icecast.mount} 5500";
+        ${config.services.icecast.listen.address}:${toString config.services.icecast.listen.port} ${config.services.icecast.mount} 5500";
       serviceConfig.User = cfg.user;
       serviceConfig.Group = cfg.group;
       serviceConfig.WorkingDirectory = cfg.dataDir;
