@@ -193,6 +193,10 @@
     file = ../../secrets/nextcloud-pw.age;
     owner = "nextcloud";
   };
+  services.nginx.virtualHosts.${services.nextcloud.hostName} = {
+    enableACME = true;
+    forceSSL = true;
+  };
 
   security.acme.acceptTerms = true;
   security.acme.email = "zuckerberg@neet.dev";
