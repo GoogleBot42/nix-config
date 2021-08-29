@@ -12,4 +12,5 @@ in
   "peertube-redis-pw.age".publicKeys = all;
   "peertube-smtp.age".publicKeys = all;
   "email-pw.age".publicKeys = all;
+  "nextcloud-pw.age".publicKeys = all;
 }

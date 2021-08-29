@@ -179,6 +179,18 @@
   };
   age.secrets.email-pw.file = ../../secrets/email-pw.age;
 
+  services.nextcloud = {
+    enable = true;
+    https = true;
+    nginx.enable = true;
+    hostName = "neet.cloud";
+    config.dbtype = "sqlite";
+    adminuser = "jeremy";
+    adminpassFile = "/run/secrets/nextcloud-pw";
+    autoUpdateApps.enable = true;
+  };
+  age.secrets.nextcloud-pw.file = ../../secrets/nextcloud-pw.age;
+
   security.acme.acceptTerms = true;
   security.acme.email = "zuckerberg@neet.dev";
 }
