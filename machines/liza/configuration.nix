@@ -161,7 +161,7 @@
     ];
     loginAccounts = {
       "jeremy@runyan.org" = {
-        hashedPassword = "/run/secrets/email-pw";
+        hashedPasswordFile = "/run/secrets/email-pw";
         aliases = [
           "@neet.space" "@neet.cloud" "@neet.dev"
           "@runyan.org" "@runyan.rocks"
