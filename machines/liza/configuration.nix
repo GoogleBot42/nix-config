@@ -49,7 +49,7 @@
       passwordFile = "/run/secrets/peertube-redis-pw";
     };
     smtp = {
-      createLocally = true;
+      createLocally = false;
       passwordFile = "/run/secrets/peertube-smtp";
     };
   };
@@ -161,7 +161,7 @@
     ];
     loginAccounts = {
       "jeremy@runyan.org" = {
-        hashedPasswordFile = "/run/secrets/email-pw";
+        hashedPassword = "/run/secrets/email-pw";
         aliases = [
           "@neet.space" "@neet.cloud" "@neet.dev"
           "@runyan.org" "@runyan.rocks"
