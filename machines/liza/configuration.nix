@@ -193,7 +193,7 @@
     file = ../../secrets/nextcloud-pw.age;
     owner = "nextcloud";
   };
-  services.nginx.virtualHosts.${services.nextcloud.hostName} = {
+  services.nginx.virtualHosts.${config.services.nextcloud.hostName} = {
     enableACME = true;
     forceSSL = true;
   };
