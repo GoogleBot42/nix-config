@@ -189,7 +189,10 @@
     config.adminpassFile = "/run/secrets/nextcloud-pw";
     autoUpdateApps.enable = true;
   };
-  age.secrets.nextcloud-pw.file = ../../secrets/nextcloud-pw.age;
+  age.secrets.nextcloud-pw = {
+    file = ../../secrets/nextcloud-pw.age;
+    owner = "nextcloud";
+  };
 
   security.acme.acceptTerms = true;
   security.acme.email = "zuckerberg@neet.dev";
