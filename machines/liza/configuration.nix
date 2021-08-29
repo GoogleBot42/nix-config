@@ -168,6 +168,7 @@
           "@runyan.org" "@runyan.rocks"
           "@thunderhex.com" "@tar.ninja"
           "@bsd.ninja" "@bsd.rocks"
+          "@paradigminteractive.agency"
         ];
       };
     };
