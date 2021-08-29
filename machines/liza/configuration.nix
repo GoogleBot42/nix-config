@@ -144,6 +144,39 @@
     };
   };
 
+  mailserver = {
+    enable = true;
+    fqdn = "mail.neet.dev";
+    dkimKeyBits = 2048;
+    indexDir = "/var/lib/mailindex";
+    enableManageSieve = true;
+    fullTextSearch.enable = true;
+    fullTextSearch.indexAttachments = true;
+    fullTextSearch.memoryLimit = 500;
+    domains = [
+      "neet.space" "neet.dev" "neet.cloud"
+      "runyan.org" "runyan.rocks"
+      "thunderhex.com" "tar.ninja"
+      "bsd.ninja" "bsd.rocks"
+    ];
+    loginAccounts = {
+      "jeremy@runyan.org" = {
+        hashedPasswordFile = "/run/secrets/email-pw";
+        aliases = [
+          "@neet.space" "@neet.cloud" "@neet.dev"
+          "@runyan.org" "@runyan.rocks"
+          "@thunderhex.com" "@tar.ninja"
+          "@bsd.ninja" "@bsd.rocks"
+        ];
+      };
+    };
+    rejectRecipients = [
+      "george@runyan.org"
+    ];
+    certificateScheme = 3; # use let's encrypt for certs
+  };
+  age.secrets.email-pw.file = ../../secrets/email-pw.age;
+
   security.acme.acceptTerms = true;
   security.acme.email = "zuckerberg@neet.dev";
 }

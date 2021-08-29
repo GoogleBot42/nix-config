@@ -11,4 +11,5 @@ in
   "peertube-db-pw.age".publicKeys = all;
   "peertube-redis-pw.age".publicKeys = all;
   "peertube-smtp.age".publicKeys = all;
+  "email-pw.age".publicKeys = all;
 }
