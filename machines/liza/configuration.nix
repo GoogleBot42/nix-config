@@ -185,8 +185,8 @@
     nginx.enable = true;
     hostName = "neet.cloud";
     config.dbtype = "sqlite";
-    adminuser = "jeremy";
-    adminpassFile = "/run/secrets/nextcloud-pw";
+    config.adminuser = "jeremy";
+    config.adminpassFile = "/run/secrets/nextcloud-pw";
     autoUpdateApps.enable = true;
   };
   age.secrets.nextcloud-pw.file = ../../secrets/nextcloud-pw.age;
