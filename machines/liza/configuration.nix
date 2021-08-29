@@ -183,6 +183,7 @@
     enable = true;
     https = true;
     nginx.enable = true;
+    package = pkgs.nextcloud22;
     hostName = "neet.cloud";
     config.dbtype = "sqlite";
     config.adminuser = "jeremy";
