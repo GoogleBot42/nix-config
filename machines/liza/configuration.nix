@@ -189,12 +189,12 @@ in {
     certificateScheme = 3; # use let's encrypt for certs
   };
   age.secrets.email-pw.file = ../../secrets/email-pw.age;
-  services.nginx.virtualHosts."runyan.org" = mta-sts-web;
-  services.nginx.virtualHosts."runyan.rocks" = mta-sts-web;
-  services.nginx.virtualHosts."thunderhex.com" = mta-sts-web;
-  services.nginx.virtualHosts."tar.ninja" = mta-sts-web;
-  services.nginx.virtualHosts."bsd.ninja" = mta-sts-web;
-  services.nginx.virtualHosts."bsd.rocks" = mta-sts-web;
+  services.nginx.virtualHosts."mta-sts.runyan.org" = mta-sts-web;
+  services.nginx.virtualHosts."mta-sts.runyan.rocks" = mta-sts-web;
+  services.nginx.virtualHosts."mta-sts.thunderhex.com" = mta-sts-web;
+  services.nginx.virtualHosts."mta-sts.tar.ninja" = mta-sts-web;
+  services.nginx.virtualHosts."mta-sts.bsd.ninja" = mta-sts-web;
+  services.nginx.virtualHosts."mta-sts.bsd.rocks" = mta-sts-web;
 
   services.nextcloud = {
     enable = true;
