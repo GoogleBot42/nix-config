@@ -21,11 +21,11 @@
     "dailybuild_modules": {
       "flake": false,
       "locked": {
-        "lastModified": 1630159827,
-        "narHash": "sha256-29mxkYrso/vvpo72drRQ8BmqUqHpOn1lDe9a4cz3g7M=",
+        "lastModified": 1630708165,
+        "narHash": "sha256-Oe1LszfWK4drG5seZbKcYDcb6XlGwTRH251xXd/GwRY=",
         "ref": "master",
-        "rev": "3250e75bac816b9c63afd3aed781d441ff93f009",
-        "revCount": 7,
+        "rev": "7915955afad2e9aee599946d324ce588a504f455",
+        "revCount": 8,
         "type": "git",
         "url": "https://git.neet.dev/zuckerberg/dailybuild_modules.git"
       },
