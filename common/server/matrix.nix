@@ -204,6 +204,14 @@ in {
         };
         doNotStoreRoom = true;
       };
+      interfaceConfig = {
+        SHOW_JITSI_WATERMARK = false;
+        SHOW_WATERMARK_FOR_GUESTS = false;
+      };
+    };
+    services.jitsi-videobridge = lib.mkIf cfg.jitsi-meet.enable {
+      enable = true;
+      openFirewall = true;
     };
   };
 }
