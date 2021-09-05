@@ -184,24 +184,22 @@ in {
           min = 5;
           max = 30;
         };
-        startScreenSharing = true;
+        # startScreenSharing = true;
         videoQuality = {
           disabledCodec = "VP8";
           preferredCodec = "H264";
           enforcePreferredCodec = true;
         };
-        p2p = {
-          enabled = true;
-          preferH264 = true;
-          disabledCodec = "VP8";
-          preferredCodec = "H264";
-          disableH264 = false;
-        };
+        # p2p = {
+        #   enabled = true;
+        #   preferH264 = true;
+        #   disabledCodec = "VP8";
+        #   preferredCodec = "H264";
+        #   disableH264 = false;
+        # };
         requireDisplayName = false;
         disableThirdPartyRequests = true;
-        localRecording = {
-          enabled = false;
-        };
+        localRecording.enabled = false;
         doNotStoreRoom = true;
       };
       interfaceConfig = {
