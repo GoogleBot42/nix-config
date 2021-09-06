@@ -98,11 +98,11 @@
     },
     "nixpkgs-peertube": {
       "locked": {
-        "lastModified": 1630022756,
-        "narHash": "sha256-9YC9gDaNFl7hJjDdhdLnwxvzJ4GlAXBavDp8klxBDZ8=",
+        "lastModified": 1630887850,
+        "narHash": "sha256-VcVFlhVuceolv1FZdle0q47tSHLRXFHCus7A9PJGUjc=",
         "owner": "GoogleBot42",
         "repo": "nixpkgs",
-        "rev": "c16044433de515a2c19a64da1e6ddcc6befd4125",
+        "rev": "a912b73be1f4e4c2380295cb37f1103169550c4c",
         "type": "github"
       },
       "original": {
@@ -114,11 +114,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1630481079,
-        "narHash": "sha256-leWXLchbAbqOlLT6tju631G40SzQWPqaAXQG3zH1Imw=",
+        "lastModified": 1630845541,
+        "narHash": "sha256-DKj/0V+NNJe3sgRAZFb4yYFZFH0gXD1qNU8xiI87+GA=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "110a2c9ebbf5d4a94486854f18a37a938cfacbbb",
+        "rev": "1e5c35dfbc8e0ad8c35aa1a6446f442ca1ec5234",
         "type": "github"
       },
       "original": {
@@ -163,11 +163,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1630707875,
-        "narHash": "sha256-T6i1H0BcJhTLU9zjR46Wyg19CPJb8QKh3c8Fuj41rIM=",
+        "lastModified": 1630951296,
+        "narHash": "sha256-fHaiyb7o5WbwmV+IipGJ2mZc9jKlFXIAlm2+tpI2Ct0=",
         "ref": "main",
-        "rev": "ec016a218627dc7ad4751aef2eecf749119cf35f",
-        "revCount": 25,
+        "rev": "d83b55799e52dc76da0f7c52e22273f339d5dfe2",
+        "revCount": 26,
         "type": "git",
         "url": "https://git.neet.dev/zuckerberg/radio.git"
       },
