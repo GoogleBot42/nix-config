@@ -215,6 +215,15 @@ in {
     forceSSL = true;
   };
 
+  services.iodine.server = {
+    enable = true;
+    ip = "94.23.33.23";
+    domain = "tun.neet.dev";
+    passwordFile = "/run/secrets/iodine";
+  };
+  age.secrets.iodine.file = ../../secrets/iodine.age;
+  boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
+
   security.acme.acceptTerms = true;
   security.acme.email = "zuckerberg@neet.dev";
 }
