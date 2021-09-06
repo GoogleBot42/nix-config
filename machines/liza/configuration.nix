@@ -217,12 +217,16 @@ in {
 
   services.iodine.server = {
     enable = true;
-    ip = "94.23.33.23";
+    ip = "192.168.99.1";
     domain = "tun.neet.dev";
     passwordFile = "/run/secrets/iodine";
   };
   age.secrets.iodine.file = ../../secrets/iodine.age;
+  networking.firewall.allowedUDPPorts = [ 53 ];
   boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
+  networking.nat.enable = true;
+  networking.nat.internalInterfaces = [ "dns0" ];
+  networking.nat.externalInterface = "enp1s0";
 
   security.acme.acceptTerms = true;
   security.acme.email = "zuckerberg@neet.dev";
