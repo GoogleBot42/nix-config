@@ -163,11 +163,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1630963242,
-        "narHash": "sha256-Rpz8lxU3iqKwiHY1n2BSLur9g/6ttCmUEtA20AtMa+k=",
+        "lastModified": 1630963839,
+        "narHash": "sha256-L+M2bb/qm2JoExniUlHdBfhRrUNHs9oZNzrTo3igTiQ=",
         "ref": "main",
-        "rev": "1fcffb7b001ac5909bc0c0e3e5db95742f0b0fa3",
-        "revCount": 32,
+        "rev": "5de2148123178a77de82b757a36ee60feb4af622",
+        "revCount": 33,
         "type": "git",
         "url": "https://git.neet.dev/zuckerberg/radio.git"
       },
