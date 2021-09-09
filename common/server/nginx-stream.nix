@@ -53,7 +53,7 @@ in {
           server {
             listen ${cfg.port};
             chunk_size 4096;
-            application ${cfg.rtmpName} {
+            application ${toString cfg.rtmpName} {
               allow publish all;
               allow publish all;
               live on;
