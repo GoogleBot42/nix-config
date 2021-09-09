@@ -73,9 +73,9 @@ in {
   };
 
   # hardware accelerated video encoding/decoding (on intel)
-  nixpkgs.config.packageOverrides = lib.mkIf cfg.enableVideoAcceleration pkgs: {
+  nixpkgs.config.packageOverrides = lib.mkIf cfg.enableVideoAcceleration (pkgs: {
     vaapiIntel = pkgs.vaapiIntel.override { enableHybridCodec = true; };
-  };
+  });
   hardware.opengl = lib.mkIf cfg.enableVideoAcceleration {
     enable = true;
     extraPackages = with pkgs; [
