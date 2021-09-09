@@ -126,6 +126,7 @@ in {
   services.radio = {
     enable = true;
     host = "radio.neet.space";
+    enableVideoAcceleration = true;
   };
 
   services.nginx.virtualHosts."paradigminteractive.agency" = {
