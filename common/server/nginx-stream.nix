@@ -51,7 +51,7 @@ in {
       appendConfig = ''
         rtmp {
           server {
-            listen 1935;
+            listen ${cfg.port};
             chunk_size 4096;
             application ${cfg.rtmpName} {
               allow publish all;
