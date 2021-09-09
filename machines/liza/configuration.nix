@@ -84,7 +84,7 @@ in {
     enable = true;
     environmentFile = "/run/secrets/searx";
     settings = {
-      server.port = 8080;
+      server.port = 43254;
       server.secret_key = "@SEARX_SECRET_KEY@";
       engines = [ {
         name = "wolframalpha";
