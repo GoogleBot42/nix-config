@@ -126,7 +126,18 @@ in {
   services.radio = {
     enable = true;
     host = "radio.neet.space";
-    enableVideoAcceleration = true;
+  };
+  # hardware accelerated video encoding/decoding (on intel)
+  nixpkgs.config.packageOverrides = pkgs: {
+    vaapiIntel = pkgs.vaapiIntel.override { enableHybridCodec = true; };
+  };
+  hardware.opengl = {
+    enable = true;
+    extraPackages = with pkgs; [
+      intel-media-driver # LIBVA_DRIVER_NAME=iHD
+      vaapiIntel         # LIBVA_DRIVER_NAME=i965
+    ];
+    extraPackages32 = with pkgs.pkgsi686Linux; [ vaapiIntel ];
   };
 
   services.nginx.virtualHosts."paradigminteractive.agency" = {
