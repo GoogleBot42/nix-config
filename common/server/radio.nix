@@ -70,18 +70,18 @@ in {
         chown ${cfg.user} ${cfg.dataDir}
       '';
     };
-  };
 
-  # hardware accelerated video encoding/decoding (on intel)
-  nixpkgs.config.packageOverrides = lib.mkIf cfg.enableVideoAcceleration (pkgs: {
-    vaapiIntel = pkgs.vaapiIntel.override { enableHybridCodec = true; };
-  });
-  hardware.opengl = lib.mkIf cfg.enableVideoAcceleration {
-    enable = true;
-    extraPackages = with pkgs; [
-      intel-media-driver # LIBVA_DRIVER_NAME=iHD
-      vaapiIntel         # LIBVA_DRIVER_NAME=i965
-    ];
-    extraPackages32 = with pkgs.pkgsi686Linux; [ vaapiIntel ];
+    # hardware accelerated video encoding/decoding (on intel)
+    nixpkgs.config.packageOverrides = lib.mkIf cfg.enableVideoAcceleration (pkgs: {
+      vaapiIntel = pkgs.vaapiIntel.override { enableHybridCodec = true; };
+    });
+    hardware.opengl = lib.mkIf cfg.enableVideoAcceleration {
+      enable = true;
+      extraPackages = with pkgs; [
+        intel-media-driver # LIBVA_DRIVER_NAME=iHD
+        vaapiIntel         # LIBVA_DRIVER_NAME=i965
+      ];
+      extraPackages32 = with pkgs.pkgsi686Linux; [ vaapiIntel ];
+    };
   };
 }
