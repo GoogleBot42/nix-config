@@ -35,7 +35,7 @@
   programs.mosh.enable = true;
 
   environment.systemPackages = with pkgs; [
-    wget kakoune htop git dnsutils tmux nethogs iotop pciutils
+    wget kakoune htop git dnsutils tmux nethogs iotop pciutils usbutils
   ];
 
   nixpkgs.config.allowUnfree = true;
