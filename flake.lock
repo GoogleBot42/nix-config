@@ -98,8 +98,8 @@
     },
     "nixpkgs-peertube": {
       "locked": {
-        "lastModified": 1631196474,
-        "narHash": "sha256-/9EnOH/pNgFR2sWdTQ954abxWVQHE5vlYY5js71vFi8=",
+        "lastModified": 1630887850,
+        "narHash": "sha256-VcVFlhVuceolv1FZdle0q47tSHLRXFHCus7A9PJGUjc=",
         "owner": "GoogleBot42",
         "repo": "nixpkgs",
         "rev": "7fc03b76db3e5bf655bb3a9f5ee2f115e528944b",
