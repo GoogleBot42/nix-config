@@ -32,7 +32,7 @@
   i18n.defaultLocale = "en_US.UTF-8";
 
   services.openssh.enable = true;
-  services.mosh.enable = true;
+  programs.mosh.enable = true;
 
   environment.systemPackages = with pkgs; [
     wget kakoune htop git dnsutils tmux nethogs iotop pciutils
