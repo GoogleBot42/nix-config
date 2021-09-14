@@ -5,11 +5,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1627822587,
-        "narHash": "sha256-AAFgsVe/ahLh1Ij2o98x6IMxz3Z+Tr97bFwa4nthB1w=",
+        "lastModified": 1631325864,
+        "narHash": "sha256-bBvrjUS0qfgC4LPFthGJ5E8Fl0f5UvlrCB3o5Bnn9ys=",
         "owner": "ryantm",
         "repo": "agenix",
-        "rev": "e6752e7b8592502df42066f156165471e62d902d",
+        "rev": "5c5bc282565f03f9c5b3d6e72b7cb985706148a6",
         "type": "github"
       },
       "original": {
@@ -98,8 +98,8 @@
     },
     "nixpkgs-peertube": {
       "locked": {
-        "lastModified": 1630887850,
-        "narHash": "sha256-VcVFlhVuceolv1FZdle0q47tSHLRXFHCus7A9PJGUjc=",
+        "lastModified": 1631196474,
+        "narHash": "sha256-/9EnOH/pNgFR2sWdTQ954abxWVQHE5vlYY5js71vFi8=",
         "owner": "GoogleBot42",
         "repo": "nixpkgs",
         "rev": "7fc03b76db3e5bf655bb3a9f5ee2f115e528944b",
@@ -114,11 +114,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1631098960,
-        "narHash": "sha256-6j6G/omHEFAnI2x7UvdrviGDNqiq1Fjd1A58Q6uc4sQ=",
+        "lastModified": 1631452463,
+        "narHash": "sha256-/BMbXjACbkemEB0cULa4/DFNAHusavOzRJL/VX2FIuM=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "12eb1d16ae3b6cbf0ea83e9228bca8ffd7cfe347",
+        "rev": "e85f0175e3effe9ba191d66c09e8f1b7d6362d5e",
         "type": "github"
       },
       "original": {
@@ -163,11 +163,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1631150506,
-        "narHash": "sha256-QQDrd4Q9c7Mv5NUJ8gUB6FE62rOEw2TFM//gcDtM0gQ=",
+        "lastModified": 1631585589,
+        "narHash": "sha256-q4o/4/2pEuJyaKZwNQC5KHnzG1obClzFB7zWk9XSDfY=",
         "ref": "main",
-        "rev": "462d06e84ab12b5690dbfd37e27bc5fc71bbaeee",
-        "revCount": 37,
+        "rev": "5bf607fed977d41a269942a7d1e92f3e6d4f2473",
+        "revCount": 38,
         "type": "git",
         "url": "https://git.neet.dev/zuckerberg/radio.git"
       },
