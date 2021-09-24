@@ -52,7 +52,7 @@
 
       # because nixos specialArgs doesn't work for containers... need to pass in inputs a different way
       options.inputs = lib.mkOption { default = config.inputs; };
-      options.currentSystem = lib.mkOption { default = currentSystem; };
+      options.currentSystem = lib.mkOption { default = config.currentSystem; };
 
       config = {
         pia.enable = true;
