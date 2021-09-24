@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 let
   mta-sts-web = {
@@ -78,8 +78,6 @@ in {
   age.secrets.peertube-smtp.file = ../../secrets/peertube-smtp.age;
   networking.firewall.allowedTCPPorts = [ 1935 ];
 
-  services.drastikbot.enable = true;
-
   services.searx = {
     enable = true;
     environmentFile = "/run/secrets/searx";
@@ -123,21 +121,61 @@ in {
     });
   };
 
-  services.radio = {
-    enable = true;
-    host = "radio.neet.space";
+  # wrap radio and drastikbot in a VPN
+  containers.vpn-continer = {
+    ephemeral = true;
+    autoStart = true;
+    bindMounts = {
+      "/var/lib" = {
+        hostPath = "/var/lib/";
+        isReadOnly = false;
+      };
+    };
+    bindMounts = {
+      "/run/secrets" = {
+        hostPath = "/run/secrets";
+        isReadOnly = true;
+      };
+    };
+    enableTun = true;
+    privateNetwork = true;
+    hostAddress = "172.16.100.1";
+    localAddress = "172.16.100.2";
+
+    config = {
+      imports = [
+        ../../common/common.nix
+      ];
+      pia.enable = true;
+      nixpkgs.pkgs = pkgs;
+
+      services.drastikbot.enable = true;
+      services.radio = {
+        enable = true;
+        host = "radio.neet.space";
+      };
+    };
   };
-  # hardware accelerated video encoding/decoding (on intel)
-  nixpkgs.config.packageOverrides = pkgs: {
-    vaapiIntel = pkgs.vaapiIntel.override { enableHybridCodec = true; };
+  # load the secret on behalf of the container
+  age.secrets."pia-login.conf".file = ../../secrets/pia-login.conf;
+
+  # icecast endpoint
+  services.nginx.virtualHosts."radio.neet.space" = {
+    enableACME = true;
+    forceSSL = true;
+    locations."/stream.mp3" = {
+      proxyPass = "http://172.16.100.2:8001/stream.mp3";
+      extraConfig = ''
+        add_header Access-Control-Allow-Origin *;
+      '';
+    };
   };
-  hardware.opengl = {
-    enable = true;
-    extraPackages = with pkgs; [
-      intel-media-driver # LIBVA_DRIVER_NAME=iHD
-      vaapiIntel         # LIBVA_DRIVER_NAME=i965
-    ];
-    extraPackages32 = with pkgs.pkgsi686Linux; [ vaapiIntel ];
+
+  # radio website
+  services.nginx.virtualHosts."radio.neet.space" = {
+    enableACME = true;
+    forceSSL = true;
+    locations."/".root = inputs.radio-web;
   };
 
   services.nginx.virtualHosts."paradigminteractive.agency" = {
@@ -227,6 +265,7 @@ in {
     forceSSL = true;
   };
 
+  # iodine DNS-based vpn
   services.iodine.server = {
     enable = true;
     ip = "192.168.99.1";
@@ -235,9 +274,13 @@ in {
   };
   age.secrets.iodine.file = ../../secrets/iodine.age;
   networking.firewall.allowedUDPPorts = [ 53 ];
+
   boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
   networking.nat.enable = true;
-  networking.nat.internalInterfaces = [ "dns0" ];
+  networking.nat.internalInterfaces = [
+    "dns0" # iodine
+    "ve-vpn-continer" # vpn container
+  ];
   networking.nat.externalInterface = "enp1s0";
 
   security.acme.acceptTerms = true;

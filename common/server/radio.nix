@@ -33,6 +33,7 @@ in {
         Domain radio is hosted on
       '';
     };
+    nginx = lib.mkEnableOption "enable nginx";
   };
 
   config = lib.mkIf cfg.enable {
@@ -43,17 +44,17 @@ in {
       fallback = "fallback.mp3";
     };
 
-    services.nginx.virtualHosts.${cfg.host} = {
+    services.nginx.virtualHosts.${cfg.host} = lib.mkIf cfg.nginx {
       enableACME = true;
       forceSSL = true;
       locations."/".root = inputs.radio-web;
     };
 
     users.users.${cfg.user} = {
-        isSystemUser = true;
-        group = cfg.group;
-        home = cfg.dataDir;
-        createHome = true;
+      isSystemUser = true;
+      group = cfg.group;
+      home = cfg.dataDir;
+      createHome = true;
     };
     users.groups.${cfg.group} = {};
     systemd.services.radio = {

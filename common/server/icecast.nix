@@ -17,11 +17,12 @@ in {
       type = lib.types.str;
       example = "fallback.mp3";
     };
+    nginx = lib.mkEnableOption "enable nginx";
   };
 
   config = lib.mkIf cfg.enable {
     services.icecast = {
-      listen.address = "127.0.0.1";
+      listen.address = "0.0.0.0";
       listen.port = 8001;
       admin.password = "hackme";
       extraConf = ''
@@ -49,7 +50,7 @@ in {
         </mount>
       '';
     };
-    services.nginx.virtualHosts.${cfg.hostname} = {
+    services.nginx.virtualHosts.${cfg.hostname} = lib.mkIf cfg.nginx {
       enableACME = true;
       forceSSL = true;
       locations."/${cfg.mount}" = {
