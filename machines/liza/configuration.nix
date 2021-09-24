@@ -156,6 +156,8 @@ in {
         pia.enable = true;
         nixpkgs.pkgs = pkgs;
 
+        networking.firewall.enable = false;
+
         # run it's own DNS resolver
         networking.useHostResolvConf = false;
         services.resolved.enable = true;
