@@ -1,8 +1,8 @@
-{ config, pkgs, lib, inputs, system, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   cfg = config.services.radio;
-  radioPackage = inputs.radio.packages.${system}.radio;
+  radioPackage = config.inputs.radio.packages.${builtins.currentSystem}.radio;
 in {
   options.services.radio = {
     enable = lib.mkEnableOption "enable radio";
@@ -47,7 +47,7 @@ in {
     services.nginx.virtualHosts.${cfg.host} = lib.mkIf cfg.nginx {
       enableACME = true;
       forceSSL = true;
-      locations."/".root = inputs.radio-web;
+      locations."/".root = config.inputs.radio-web;
     };
 
     users.users.${cfg.user} = {

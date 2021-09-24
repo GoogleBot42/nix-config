@@ -1,4 +1,4 @@
-{ config, pkgs, lib, inputs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   imports =[
@@ -47,10 +47,13 @@
     config = {
       imports = [
         ../../common/common.nix
-        inputs.agenix.nixosModules.age
+        config.inputs.agenix.nixosModules.age
       ];
       pia.enable = true;
       nixpkgs.pkgs = pkgs;
+
+      # because nixos specialArgs doesn't work for containers... need to pass in inputs a different way
+      options.inputs = lib.mkOption { default = config.inputs; };
 
       services.radarr.enable = true;
       services.radarr.openFirewall = true;

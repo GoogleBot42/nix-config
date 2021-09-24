@@ -1,4 +1,4 @@
-{ config, pkgs, lib, inputs, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   cfg = config.services.drastikbot;
@@ -9,9 +9,9 @@ let
     format = "other";
 
     srcs = [
-      inputs.drastikbot
-      inputs.drastikbot_modules
-      inputs.dailybuild_modules
+      config.inputs.drastikbot
+      config.inputs.drastikbot_modules
+      config.inputs.dailybuild_modules
     ];
 
     nativeBuildInputs = [ pkgs.makeWrapper ];

@@ -1,4 +1,4 @@
-{ config, pkgs, lib, inputs, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   mta-sts-web = {
@@ -145,9 +145,13 @@ in {
     config = {
       imports = [
         ../../common/common.nix
+        config.inputs.agenix.nixosModules.age
       ];
       pia.enable = true;
       nixpkgs.pkgs = pkgs;
+
+      # because nixos specialArgs doesn't work for containers... need to pass in inputs a different way
+      options.inputs = lib.mkOption { default = config.inputs; };
 
       services.drastikbot.enable = true;
       services.radio = {
@@ -159,23 +163,19 @@ in {
   # load the secret on behalf of the container
   age.secrets."pia-login.conf".file = ../../secrets/pia-login.conf;
 
-  # icecast endpoint
+  # icecast endpoint + website
   services.nginx.virtualHosts."radio.neet.space" = {
     enableACME = true;
     forceSSL = true;
-    locations."/stream.mp3" = {
-      proxyPass = "http://172.16.100.2:8001/stream.mp3";
-      extraConfig = ''
-        add_header Access-Control-Allow-Origin *;
-      '';
+    locations = {
+      "/stream.mp3" = {
+        proxyPass = "http://172.16.100.2:8001/stream.mp3";
+        extraConfig = ''
+          add_header Access-Control-Allow-Origin *;
+        '';
+      };
+      "/".root = config.inputs.radio-web;
     };
-  };
-
-  # radio website
-  services.nginx.virtualHosts."radio.neet.space" = {
-    enableACME = true;
-    forceSSL = true;
-    locations."/".root = inputs.radio-web;
   };
 
   services.nginx.virtualHosts."paradigminteractive.agency" = {
