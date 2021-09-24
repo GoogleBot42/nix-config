@@ -156,6 +156,10 @@ in {
         pia.enable = true;
         nixpkgs.pkgs = pkgs;
 
+        # run it's own DNS resolver
+        networking.useHostResolvConf = false;
+        services.resolved.enable = true;
+
         services.drastikbot.enable = true;
         services.radio = {
           enable = true;

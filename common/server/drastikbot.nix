@@ -68,7 +68,7 @@ in {
       enable = true;
       after = ["network.target"];
       wantedBy = ["multi-user.target"];
-      serviceConfig.ExecStart = "${drastikbot}/drastikbot -c ${cfg.dataDir}";
+      serviceConfig.ExecStart = "sleep 5 && ${drastikbot}/drastikbot -c ${cfg.dataDir}";
       serviceConfig.User = cfg.user;
       serviceConfig.Group = cfg.group;
       preStart = ''
