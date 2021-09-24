@@ -270,19 +270,19 @@ in {
   };
 
   # iodine DNS-based vpn
-  services.iodine.server = {
-    enable = true;
-    ip = "192.168.99.1";
-    domain = "tun.neet.dev";
-    passwordFile = "/run/secrets/iodine";
-  };
-  age.secrets.iodine.file = ../../secrets/iodine.age;
-  networking.firewall.allowedUDPPorts = [ 53 ];
+  #services.iodine.server = {
+  #  enable = true;
+  #  ip = "192.168.99.1";
+  #  domain = "tun.neet.dev";
+  #  passwordFile = "/run/secrets/iodine";
+  #};
+  #age.secrets.iodine.file = ../../secrets/iodine.age;
+  #networking.firewall.allowedUDPPorts = [ 53 ];
 
-  boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
+  #boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
   networking.nat.enable = true;
   networking.nat.internalInterfaces = [
-    "dns0" # iodine
+  #  "dns0" # iodine
     "ve-vpn-continer" # vpn container
   ];
   networking.nat.externalInterface = "enp1s0";
