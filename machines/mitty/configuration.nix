@@ -49,25 +49,29 @@
         ../../common/common.nix
         config.inputs.agenix.nixosModules.age
       ];
-      pia.enable = true;
-      nixpkgs.pkgs = pkgs;
 
       # because nixos specialArgs doesn't work for containers... need to pass in inputs a different way
       options.inputs = lib.mkOption { default = config.inputs; };
+      options.currentSystem = lib.mkOption { default = currentSystem; };
 
-      services.radarr.enable = true;
-      services.radarr.openFirewall = true;
-      services.bazarr.enable = true;
-      services.bazarr.openFirewall = true;
-      services.sonarr.enable = true;
-      services.sonarr.openFirewall = true;
-      services.jackett.enable = true;
-      services.jackett.openFirewall = true;
-      services.jellyfin.enable = true;
-      services.jellyfin.openFirewall = true;
-      services.deluge.enable = true;
-      services.deluge.web.enable = true;
-      services.deluge.web.openFirewall = true;
+      config = {
+        pia.enable = true;
+        nixpkgs.pkgs = pkgs;
+
+        services.radarr.enable = true;
+        services.radarr.openFirewall = true;
+        services.bazarr.enable = true;
+        services.bazarr.openFirewall = true;
+        services.sonarr.enable = true;
+        services.sonarr.openFirewall = true;
+        services.jackett.enable = true;
+        services.jackett.openFirewall = true;
+        services.jellyfin.enable = true;
+        services.jellyfin.openFirewall = true;
+        services.deluge.enable = true;
+        services.deluge.web.enable = true;
+        services.deluge.web.openFirewall = true;
+      };
     };
   };
 

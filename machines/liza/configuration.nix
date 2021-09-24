@@ -147,16 +147,20 @@ in {
         ../../common/common.nix
         config.inputs.agenix.nixosModules.age
       ];
-      pia.enable = true;
-      nixpkgs.pkgs = pkgs;
 
       # because nixos specialArgs doesn't work for containers... need to pass in inputs a different way
       options.inputs = lib.mkOption { default = config.inputs; };
+      options.currentSystem = lib.mkOption { default = currentSystem; };
 
-      services.drastikbot.enable = true;
-      services.radio = {
-        enable = true;
-        host = "radio.neet.space";
+      config = {
+        pia.enable = true;
+        nixpkgs.pkgs = pkgs;
+
+        services.drastikbot.enable = true;
+        services.radio = {
+          enable = true;
+          host = "radio.neet.space";
+        };
       };
     };
   };

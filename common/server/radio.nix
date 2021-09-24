@@ -2,7 +2,7 @@
 
 let
   cfg = config.services.radio;
-  radioPackage = config.inputs.radio.packages.${builtins.currentSystem}.radio;
+  radioPackage = config.inputs.radio.packages.${config.currentSystem}.radio;
 in {
   options.services.radio = {
     enable = lib.mkEnableOption "enable radio";
