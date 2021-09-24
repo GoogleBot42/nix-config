@@ -130,11 +130,13 @@ in {
         hostPath = "/var/lib/";
         isReadOnly = false;
       };
-    };
-    bindMounts = {
       "/run/secrets" = {
         hostPath = "/run/secrets";
         isReadOnly = true;
+      };
+      "/dev/fuse" = {
+        hostPath = "/dev/fuse";
+        isReadOnly = false;
       };
     };
     enableTun = true;
