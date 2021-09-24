@@ -167,6 +167,7 @@ in {
           enable = true;
           host = "radio.neet.space";
         };
+        systemd.services.drastikbot.after = ["openvpn-us-east.service"];
       };
     };
   };
