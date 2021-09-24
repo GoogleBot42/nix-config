@@ -34,7 +34,7 @@
             inputs.simple-nixos-mailserver.nixosModule
             inputs.agenix.nixosModules.age
             ({ lib, ... }: {
-              environment.systemPackages = [ inputs.agenix.defaultPackage.${system} ];
+              config.environment.systemPackages = [ inputs.agenix.defaultPackage.${system} ];
               
               # because nixos specialArgs doesn't work for containers... need to pass in inputs a different way
               options.inputs = lib.mkOption { default = inputs; };
