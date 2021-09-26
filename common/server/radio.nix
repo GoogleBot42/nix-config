@@ -55,7 +55,9 @@ in {
       group = cfg.group;
       home = cfg.dataDir;
       createHome = true;
+      extraGroups = ["fuse"];
     };
+    users.groups."fuse" = {};
     users.groups.${cfg.group} = {};
     systemd.services.radio = {
       enable = true;
@@ -68,6 +70,7 @@ in {
       preStart = ''
         mkdir -p ${cfg.dataDir}
         chown ${cfg.user} ${cfg.dataDir}
+        chown root:fuse /dev/fuse
       '';
     };
   };

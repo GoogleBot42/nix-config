@@ -154,6 +154,8 @@ in {
       options.inputs = lib.mkOption { default = config.inputs; };
       options.currentSystem = lib.mkOption { default = config.currentSystem; };
 
+      programs.fuse.userAllowOther = true;
+
       config = {
         pia.enable = true;
         nixpkgs.pkgs = pkgs;
