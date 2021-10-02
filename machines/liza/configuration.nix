@@ -250,6 +250,8 @@ in {
     };
     rejectRecipients = [
       "george@runyan.org"
+      "joslyn@runyan.org"
+      "damon@runyan.org"
     ];
     certificateScheme = 3; # use let's encrypt for certs
   };
