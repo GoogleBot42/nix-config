@@ -21,11 +21,11 @@
     "dailybuild_modules": {
       "flake": false,
       "locked": {
-        "lastModified": 1630708165,
-        "narHash": "sha256-Oe1LszfWK4drG5seZbKcYDcb6XlGwTRH251xXd/GwRY=",
+        "lastModified": 1633210754,
+        "narHash": "sha256-jBIE07mLsF+qHoa/CQLSRipvfNSivgbuWUatI6Wwy0s=",
         "ref": "master",
-        "rev": "7915955afad2e9aee599946d324ce588a504f455",
-        "revCount": 8,
+        "rev": "e6a1c8686dad46b7847a5c690107a48fc20a6a29",
+        "revCount": 9,
         "type": "git",
         "url": "https://git.neet.dev/zuckerberg/dailybuild_modules.git"
       },
@@ -163,11 +163,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1633209822,
-        "narHash": "sha256-wQyQl7RkwAdyshaUdktoUPy0QLRdALcEIpI0vJHshhc=",
+        "lastModified": 1633210684,
+        "narHash": "sha256-/S8QePRyxmQlATVFpT0HtPGcJcpQHt8omtO1NW+EDME=",
         "ref": "main",
-        "rev": "b9b050fec1a4d74cae3e5e4ba7b88dd80627b521",
-        "revCount": 46,
+        "rev": "4255c43cf6efd8f145b8e87b3d5d584be32191b6",
+        "revCount": 47,
         "type": "git",
         "url": "https://git.neet.dev/zuckerberg/radio.git"
       },

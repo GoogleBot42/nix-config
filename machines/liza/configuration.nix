@@ -164,17 +164,17 @@ in {
         networking.useHostResolvConf = false;
         services.resolved.enable = true;
 
-        services.drastikbot.enable = true;
         services.radio = {
           enable = true;
           host = "radio.neet.space";
         };
-        systemd.services.drastikbot.after = ["openvpn-us-east.service"];
       };
     };
   };
   # load the secret on behalf of the container
   age.secrets."pia-login.conf".file = ../../secrets/pia-login.conf;
+
+  services.drastikbot.enable = true;
 
   # icecast endpoint + website
   services.nginx.virtualHosts."radio.neet.space" = {

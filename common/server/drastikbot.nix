@@ -68,7 +68,6 @@ in {
       enable = true;
       after = ["network.target"];
       wantedBy = ["multi-user.target"];
-      serviceConfig.ExecStartPre = ["${pkgs.coreutils}/bin/sleep 20"];
       serviceConfig.ExecStart = "${drastikbot}/drastikbot -c ${cfg.dataDir}";
       serviceConfig.User = cfg.user;
       serviceConfig.Group = cfg.group;
