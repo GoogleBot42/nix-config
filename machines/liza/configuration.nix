@@ -164,8 +164,6 @@ in {
         networking.useHostResolvConf = false;
         services.resolved.enable = true;
 
-        programs.fuse.userAllowOther = true;
-
         services.drastikbot.enable = true;
         services.radio = {
           enable = true;
