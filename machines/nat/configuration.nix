@@ -7,15 +7,10 @@
 
   nix.flakes.enable = true;
 
-  firmware.x86_64.enable = true;
   efi.enable = true;
 
-  boot.initrd.luks.devices."enc-pv" = {
-    device = "/dev/disk/by-uuid/d71ebe1f-7c49-454d-b28b-1dc54cf280e5";
-    allowDiscards = true;
-  };
-
-  networking.hostName = "ray";
+  networking.hostName = "nat";
+  networking.interfaces.ens160.useDHCP = true;
 
   services.zerotierone.enable = true;
 

@@ -12,8 +12,6 @@ in {
   };
 
   config = mkIf cfg.enable {
-    # Enable microcode
-    firmware.x86_64.enable = true;
     # Use GRUB 2 for BIOS
     boot.loader = {
       timeout = 2;

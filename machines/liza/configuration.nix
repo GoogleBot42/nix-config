@@ -20,6 +20,7 @@ in {
 
   nix.flakes.enable = true;
 
+  firmware.x86_64.enable = true;
   bios = {
     enable = true;
     device = "/dev/sda";
