@@ -17,6 +17,13 @@
 
   networking.hostName = "ray";
 
+  hardware.enableAllFirmware = true;
+
+  boot.blacklistedKernelModules = [ "btusb" ];
+
+  # fix backlight
+  boot.kernelParams = [ "amdgpu.backlight=0" ];
+
   services.zerotierone.enable = true;
 
   de.enable = true;
