@@ -24,6 +24,15 @@
   # fix backlight
   boot.kernelParams = [ "amdgpu.backlight=0" ];
 
+  # gpu
+  services.xserver.videoDrivers = [ "nvidia" ];
+  hardware.nvidia.modesetting.enable = true;
+  hardware.nvidia.prime = {
+    sync.enable = true;
+    nvidiaBusId = "PCI:1:0:0";
+    amdgpuBusId = "PCI:4:0:0";
+  };
+
   services.zerotierone.enable = true;
 
   de.enable = true;
