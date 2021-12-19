@@ -4,7 +4,7 @@ let
   cfg = config.de;
 
   extensions = with pkgs.vscode-extensions; [
-    bbenoist.Nix # nix syntax support
+#    bbenoist.Nix # nix syntax support
 #    arrterian.nix-env-selector  # nix dev envs
   ];
 
