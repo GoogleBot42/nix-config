@@ -1,8 +1,12 @@
 { config, pkgs, fetchurl, lib, ... }:
 
 {
+  disabledModules = [
+    "hardware/video/nvidia.nix"
+  ];
   imports = [
     ./hardware-configuration.nix
+    ./nvidia.nix
   ];
 
   nix.flakes.enable = true;
@@ -24,9 +28,12 @@
   # fix backlight
   boot.kernelParams = [ "amdgpu.backlight=0" ];
 
+  # newer kernel for wifi
+  boot.kernelPackages = pkgs.linuxKernel.packages.linux_5_15;
+
   # gpu
   services.xserver.videoDrivers = [ "nvidia" ];
-  hardware.nvidia.modesetting.enable = true;
+  services.xserver.logFile = "/var/log/Xorg.0.log";
   hardware.nvidia.prime = {
     sync.enable = true;
     nvidiaBusId = "PCI:1:0:0";
