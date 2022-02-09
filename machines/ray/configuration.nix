@@ -1,5 +1,14 @@
 { config, pkgs, fetchurl, lib, ... }:
 
+let
+  nvidia-offload = pkgs.writeShellScriptBin "nvidia-offload" ''
+    export __NV_PRIME_RENDER_OFFLOAD=1
+    export __NV_PRIME_RENDER_OFFLOAD_PROVIDER=NVIDIA-G0
+    export __GLX_VENDOR_LIBRARY_NAME=nvidia
+    export __VK_LAYER_NV_optimus=NVIDIA_only
+    exec -a "$0" "$@"
+  '';
+in
 {
   disabledModules = [
     "hardware/video/nvidia.nix"
@@ -35,6 +44,8 @@
   services.xserver.videoDrivers = [ "nvidia" ];
   services.xserver.logFile = "/var/log/Xorg.0.log";
   hardware.nvidia.prime = {
+    # reverse_sync.enable = true;
+    # offload.enable = true;
     sync.enable = true;
     nvidiaBusId = "PCI:1:0:0";
     amdgpuBusId = "PCI:4:0:0";
