@@ -3,6 +3,7 @@
 {
   imports =[
     ./helios64
+    ./hardware-configuration.nix
   ];
 
   # nsw2zwifzyl42mbhabayjo42b2kkq3wd3dqyl6efxsz6pvmgm5cup5ad.onion
