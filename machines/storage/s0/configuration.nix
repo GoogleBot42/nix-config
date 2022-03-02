@@ -14,7 +14,7 @@
   luks = {
     enable = true;
     device = {
-      path = "/dev/disk/by-uuid/975d8427-2c6a-440d-a1d2-18dd15ba5bc2";
+      path = "/dev/disk/by-uuid/96b216e1-071b-4c02-899e-29e2eeced7a8";
       allowDiscards = true;
     };
   };
