@@ -22,6 +22,8 @@
 
   networking.interfaces.eth0.useDHCP = true;
 
+  system.autoUpgrade.enable = true;
+
   # for education purposes only
   services.pykms.enable = true;
   services.pykms.openFirewallPort = true;
