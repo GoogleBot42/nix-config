@@ -147,7 +147,7 @@ in {
 
     config = {
       imports = [
-        ../../common/common.nix
+        ../../common
         config.inputs.agenix.nixosModules.age
       ];
 
