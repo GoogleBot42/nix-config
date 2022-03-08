@@ -15,6 +15,8 @@
 
   nix.flakes.enable = true;
 
+  system.autoUpgrade.enable = true;
+
   networking.interfaces.eth0.useDHCP = true;
 
   hardware.deviceTree.enable = true;

@@ -22,6 +22,8 @@
 
   networking.hostName = "neetdev";
 
+  system.autoUpgrade.enable = true;
+
   networking.interfaces.eno1.useDHCP = true;
 
   services.nginx.enable = true;
