@@ -24,18 +24,13 @@ in
   efi.enable = true;
 
   boot.initrd.luks.devices."enc-pv" = {
-    device = "/dev/disk/by-uuid/d71ebe1f-7c49-454d-b28b-1dc54cf280e5";
+    device = "/dev/disk/by-uuid/c1822e5f-4137-44e1-885f-954e926583ce";
     allowDiscards = true;
   };
 
   networking.hostName = "ray";
 
   hardware.enableAllFirmware = true;
-
-  boot.blacklistedKernelModules = [ "btusb" ];
-
-  # fix backlight
-  boot.kernelParams = [ "amdgpu.backlight=0" ];
 
   # newer kernel for wifi
   boot.kernelPackages = pkgs.linuxKernel.packages.linux_5_15;

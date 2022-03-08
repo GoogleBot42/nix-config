@@ -14,25 +14,27 @@
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
-    { device = "/dev/disk/by-uuid/4ba62b93-d30e-4638-b68f-c830e6edde48";
+    { device = "/dev/vg/root";
       fsType = "btrfs";
       options = [ "subvol=root" ];
     };
 
   fileSystems."/home" =
-    { device = "/dev/disk/by-uuid/4ba62b93-d30e-4638-b68f-c830e6edde48";
+    { device = "/dev/vg/root";
       fsType = "btrfs";
       options = [ "subvol=home" ];
     };
 
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/4CD3-6ED6";
+    { device = "/dev/disk/by-uuid/2C85-2B59";
       fsType = "vfat";
     };
 
   swapDevices =
-    [ { device = "/dev/disk/by-uuid/2aee96fd-5132-480f-a798-c6b87be2ffd9"; }
+    [ { device = "/dev/vg/swap"; }
     ];
+
+  hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 
   # high-resolution display
   hardware.video.hidpi.enable = lib.mkDefault true;
