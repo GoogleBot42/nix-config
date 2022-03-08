@@ -8,7 +8,6 @@ rec {
   ];
   system = {
     liza = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDY/pNyWedEfU7Tq9ikGbriRuF1ZWkHhegGS17L0Vcdl";
-    mitty = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJE2oSon3hKFqdDbfWXjc72trCWsdi16eEppeXkKRTEn";
     ray = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKboRF1Nz/bTPs4VB2QcTAIvWER0nlp6E/iG6/B1IzwF";
   };
   systems = [ system.liza system.mitty system.ray ];
