@@ -22,5 +22,9 @@
 
   networking.interfaces.eth0.useDHCP = true;
 
+  # for education purposes only
+  services.pykms.enable = true;
+  services.pykms.openFirewallPort = true;
+
   zramSwap.enable = true;
 }
