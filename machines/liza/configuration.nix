@@ -219,6 +219,12 @@ in {
     };
   };
 
+  services.nginx.virtualHosts."tmp.neet.dev" = {
+    enableACME = true;
+    forceSSL = true;
+    root = "/var/www/tmp";
+  };
+
   mailserver = {
     enable = true;
     fqdn = "mail.neet.dev";
