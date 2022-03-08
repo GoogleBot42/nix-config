@@ -1,6 +1,6 @@
 { config, lib, ... }:
 
-# Modify auto-update so that it pulls a flake and much 
+# Modify auto-update so that it pulls a flake
 
 let
   cfg = config.system.autoUpgrade;

@@ -30,7 +30,7 @@
           inherit system;
           modules = [
             path
-            ./common/common.nix
+            ./common
             inputs.simple-nixos-mailserver.nixosModule
             inputs.agenix.nixosModules.age
             ({ lib, ... }: {

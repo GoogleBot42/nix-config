@@ -6,22 +6,9 @@
     ./pia.nix
     ./zerotier.nix
     ./auto-update.nix
-    ./boot/firmware.nix
-    ./boot/efi.nix
-    ./boot/bios.nix
-    ./boot/luks.nix
-    ./server/nginx.nix
-    ./server/thelounge.nix
-    ./server/mumble.nix
-    ./server/icecast.nix
-    ./server/nginx-stream.nix
-    ./server/matrix.nix
-    ./server/zerobin.nix
-    ./server/gitea.nix
-    ./server/privatebin/privatebin.nix
-    ./server/drastikbot.nix
-    ./server/radio.nix
-    ./pc/de.nix
+    ./boot
+    ./server
+    ./pc
   ];
 
   system.stateVersion = "20.09";
@@ -48,4 +35,6 @@
     hashedPassword = "$6$TuDO46rILr$gkPUuLKZe3psexhs8WFZMpzgEBGksE.c3Tjh1f8sD0KMC4oV89K2pqAABfl.Lpxu2jVdr5bgvR5cWnZRnji/r/";
   };
   nix.trustedUsers = [ "root" "googlebot" ];
+
+  nix.gc.automatic = true;
 }
