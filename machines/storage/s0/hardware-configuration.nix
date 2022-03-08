@@ -31,7 +31,7 @@
     };
 
   swapDevices =
-    [ { device = "/dev/disk/by-uuid/c7156f71-68f3-4f7a-bec0-06bdfa63f6c0"; }
+    [ { device = "/dev/mapper/vg-swap"; }
     ];
 
   powerManagement.cpuFreqGovernor = lib.mkDefault "ondemand";

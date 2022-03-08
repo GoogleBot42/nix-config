@@ -12,12 +12,9 @@
 
   networking.hostName = "s0";
 
-  luks = {
-    enable = true;
-    device = {
-      path = "/dev/disk/by-uuid/96b216e1-071b-4c02-899e-29e2eeced7a8";
-      allowDiscards = true;
-    };
+  boot.initrd.luks.devices."enc-pv" = {
+    device = "/dev/disk/by-uuid/96b216e1-071b-4c02-899e-29e2eeced7a8";
+    allowDiscards = true;
   };
 
   boot.loader.grub.enable = false;
