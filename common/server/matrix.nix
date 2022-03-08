@@ -67,7 +67,7 @@ in {
         tls = false;
         resources = [ {
           compress = true;
-          names = [ "client" "webclient" "federation" ];
+          names = [ "client" "federation" ];
         } ];
       } ];
       turn_uris = [
