@@ -1,8 +1,7 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-21.11";
-    nixpkgs-peertube.url = "github:GoogleBot42/nixpkgs/add-peertube-service";
-    simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver/nixos-21.05";
+    simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver/nixos-21.11";
     agenix.url = "github:ryantm/agenix";
 
     # radio
@@ -24,7 +23,6 @@
     nixosConfigurations =
     let
       nixpkgs = inputs.nixpkgs;
-      nixpkgs-peertube = inputs.nixpkgs-peertube;
       mkSystem = system: nixpkgs: path:
         nixpkgs.lib.nixosSystem {
           inherit system;
@@ -49,7 +47,7 @@
       "ray" = mkSystem "x86_64-linux" nixpkgs ./machines/ray/configuration.nix;
       "nat" = mkSystem "aarch64-linux" nixpkgs ./machines/nat/configuration.nix;
       "neetdev" = mkSystem "x86_64-linux" nixpkgs ./machines/neet.dev/configuration.nix;
-      "liza" = mkSystem "x86_64-linux" nixpkgs-peertube ./machines/liza/configuration.nix;
+      "liza" = mkSystem "x86_64-linux" nixpkgs ./machines/liza/configuration.nix;
       "s0" = mkSystem "aarch64-linux" nixpkgs ./machines/storage/s0/configuration.nix;
       "n1" = mkSystem "aarch64-linux" nixpkgs ./machines/compute/n1/configuration.nix;
       "n2" = mkSystem "aarch64-linux" nixpkgs ./machines/compute/n2/configuration.nix;
