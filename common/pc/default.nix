@@ -31,6 +31,7 @@ in {
     users.users.googlebot.packages = with pkgs; [
       chromium keepassxc mumble tigervnc bluez-tools vscodium element-desktop mpv
       nextcloud-client signal-desktop minecraft sauerbraten gnome.file-roller spotify
+      gparted
     ];
 
     # Networking
