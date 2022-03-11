@@ -31,6 +31,7 @@ in {
       chromium = pkgs.chromium.override {
         gnomeKeyringSupport = true;
         enableWideVine = true;
+        commandLineArgs = "--use-vulkan --use-gl=desktop --enable-zero-copy --enable-hardware-overlays --enable-features=VaapiVideoDecoder,CanvasOopRasterization --ignore-gpu-blocklist --enable-accelerated-mjpeg-decode --enable-accelerated-video --enable-native-gpu-memory-buffers --enable-gpu-rasterization";
       };
     };
     hardware.opengl = {
