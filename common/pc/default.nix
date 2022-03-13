@@ -12,6 +12,7 @@ in {
     ./audio.nix
 #    ./torbrowser.nix
     ./pithos.nix
+    ./spotify.nix
     ./vscodium.nix
     ./discord.nix
     ./steam.nix
@@ -29,8 +30,19 @@ in {
 
     # Applications
     users.users.googlebot.packages = with pkgs; [
-      chromium keepassxc mumble tigervnc bluez-tools vscodium element-desktop mpv
-      nextcloud-client signal-desktop minecraft sauerbraten gnome.file-roller spotify
+      chromium
+      keepassxc
+      mumble
+      tigervnc
+      bluez-tools
+      vscodium
+      element-desktop
+      mpv
+      nextcloud-client
+      signal-desktop
+      minecraft
+      sauerbraten
+      gnome.file-roller
       gparted
     ];
 

@@ -14,4 +14,5 @@ in
   "email-pw.age".publicKeys = all;
   "nextcloud-pw.age".publicKeys = all;
   "iodine.age".publicKeys = all;
+  "spotifyd.age".publicKeys = all;
 }
