@@ -47,6 +47,13 @@ in
     amdgpuBusId = "PCI:4:0:0";
   };
 
+
+  services.archivebox = {
+    enable = true;
+    hostname = "localhost";
+    publicCreateSnapshots = true;
+  };
+
   services.zerotierone.enable = true;
 
   de.enable = true;

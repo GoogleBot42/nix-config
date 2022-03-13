@@ -1,0 +1,5 @@
+[
+  "@postlight/mercury-parser"
+, { "readability-extractor": "git+https://github.com/ArchiveBox/readability-extractor.git" }
+, { "single-file": "git+https://github.com/gildas-lormeau/SingleFile.git" }
+]
