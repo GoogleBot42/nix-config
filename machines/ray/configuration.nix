@@ -38,6 +38,7 @@ in
   # gpu
   services.xserver.videoDrivers = [ "nvidia" ];
   services.xserver.logFile = "/var/log/Xorg.0.log";
+  hardware.nvidia.modesetting.enable = true; # for nvidia-vaapi-driver
   hardware.nvidia.prime = {
     # reverse_sync.enable = true;
     # offload.enable = true;

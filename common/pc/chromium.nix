@@ -2,6 +2,53 @@
 
 let
   cfg = config.de;
+
+  nv-codec-headers-11-1-5-1 = pkgs.stdenv.mkDerivation rec {
+    pname = "nv-codec-headers";
+    version = "11.1.5.1";
+
+    src = pkgs.fetchgit {
+      url = "https://git.videolan.org/git/ffmpeg/nv-codec-headers.git";
+      rev = "n${version}";
+      sha256 = "yTOKLjyYLxT/nI1FBOMwHpkDhfuua3+6Z5Mpb7ZrRhU=";
+    };
+
+    makeFlags = [
+      "PREFIX=$(out)"
+    ];
+  };
+
+  nvidia-vaapi-driver = pkgs.stdenv.mkDerivation rec {
+    pname = "nvidia-vaapi-driver";
+    version = "0.0.5";
+
+    src = pkgs.fetchFromGitHub {
+      owner = "elFarto";
+      repo = pname;
+      rev = "v${version}";
+      sha256 = "2bycqKolVoaHK64XYcReteuaON9TjzrFhaG5kty28YY=";
+    };
+
+    patches = [
+      ./use-meson-v57.patch
+    ];
+
+    nativeBuildInputs = with pkgs; [
+      meson
+      cmake
+      ninja
+      pkg-config
+    ];
+
+    buildInputs = with pkgs; [
+      nv-codec-headers-11-1-5-1
+      libva
+      gst_all_1.gstreamer
+      gst_all_1.gst-plugins-bad
+      libglvnd
+    ];
+  };
+
 in {
   config = lib.mkIf cfg.enable {
     # chromium with specific extensions + settings
@@ -31,16 +78,20 @@ in {
       chromium = pkgs.chromium.override {
         gnomeKeyringSupport = true;
         enableWideVine = true;
+        # ungoogled = true;
         commandLineArgs = "--use-vulkan --use-gl=desktop --enable-zero-copy --enable-hardware-overlays --enable-features=VaapiVideoDecoder,CanvasOopRasterization --ignore-gpu-blocklist --enable-accelerated-mjpeg-decode --enable-accelerated-video --enable-native-gpu-memory-buffers --enable-gpu-rasterization";
       };
     };
+    # todo vulkan in chrome
+    # todo video encoding in chrome
     hardware.opengl = {
       enable = true;
       extraPackages = with pkgs; [
         intel-media-driver # LIBVA_DRIVER_NAME=iHD
         vaapiIntel         # LIBVA_DRIVER_NAME=i965 (older but works better for Firefox/Chromium)
-        vaapiVdpau
+        # vaapiVdpau
         libvdpau-va-gl
+        nvidia-vaapi-driver
       ];
       extraPackages32 = with pkgs.pkgsi686Linux; [ vaapiIntel ];
     };
