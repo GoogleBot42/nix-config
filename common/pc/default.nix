@@ -44,6 +44,8 @@ in {
       sauerbraten
       gnome.file-roller
       gparted
+      lm_sensors
+      libreoffice-fresh
     ];
 
     # Networking
