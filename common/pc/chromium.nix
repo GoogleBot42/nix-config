@@ -60,6 +60,8 @@ in {
         "oboonakemofpalcgghocfoadofidjkkk" # keepassxc plugin
         "cimiefiiaegbelhefglklhhakcgmhkai" # plasma integration
         "hkgfoiooedgoejojocmhlaklaeopbecg" # picture in picture
+        "fihnjjcciajhdojfnbdddfaoknhalnja" # I don't care about cookies
+        "mnjggcdmjocbbbhaepdhchncahnbgone" # SponsorBlock
       ];
       extraOpts = {
         "BrowserSignin" = 0;
