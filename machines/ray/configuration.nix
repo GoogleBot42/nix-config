@@ -54,6 +54,8 @@ in
     publicCreateSnapshots = true;
   };
 
+  virtualisation.docker.enable = true;
+
   services.spotifyd.enable = true;
 
   services.zerotierone.enable = true;
