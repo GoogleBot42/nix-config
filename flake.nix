@@ -1,11 +1,19 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-21.11";
+
+    # mail server
     simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver/nixos-21.11";
+    simple-nixos-mailserver.inputs.nixpkgs.follows = "nixpkgs";
+    simple-nixos-mailserver.inputs.nixpkgs-21_11.follows = "nixpkgs";
+
+    # agenix
     agenix.url = "github:ryantm/agenix";
+    agenix.inputs.nixpkgs.follows = "nixpkgs";
 
     # radio
     radio.url = "git+https://git.neet.dev/zuckerberg/radio.git?ref=main";
+    radio.inputs.nixpkgs.follows = "nixpkgs";
     radio-web.url = "git+https://git.neet.dev/zuckerberg/radio-web.git";
     radio-web.flake = false;
 
