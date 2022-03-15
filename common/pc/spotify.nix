@@ -53,6 +53,7 @@ in
     age.secrets.spotifyd = {
       file = ../../secrets/spotifyd.age;
       group = "spotifyd";
+      mode = "0440"; # group can read
     };
 
     # spotifyd to read secrets and run as user service
@@ -70,8 +71,9 @@ in
     };
 
     systemd.user.services.spotifyd-daemon = {
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network-online.target" "sound.target" ];
+      enable = true;
+      wantedBy = [ "graphical-session.target" ];
+      partOf = [ "graphical-session.target" ];
       description = "spotifyd, a Spotify playing daemon";
       environment.SHELL = "/bin/sh";
       serviceConfig = {
