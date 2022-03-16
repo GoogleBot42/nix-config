@@ -5,7 +5,6 @@
     ./modules/fancontrol.nix
     ./modules/heartbeat.nix
     ./modules/ups.nix
-    ./modules/usbnet.nix
   ];
 
   boot.kernelParams = lib.mkAfter [
