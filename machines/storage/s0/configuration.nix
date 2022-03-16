@@ -24,6 +24,8 @@
 
   system.autoUpgrade.enable = true;
 
+  boot.supportedFilesystems = [ "bcachefs" ];
+
   # for education purposes only
   services.pykms.enable = true;
   services.pykms.openFirewallPort = true;
