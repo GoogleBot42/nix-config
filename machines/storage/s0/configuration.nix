@@ -28,5 +28,9 @@
   services.pykms.enable = true;
   services.pykms.openFirewallPort = true;
 
+  users.users.googlebot.packages = with pkgs; [
+    bcachefs-tools
+  ];
+
   zramSwap.enable = true;
 }
