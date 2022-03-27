@@ -14,7 +14,10 @@ in {
     # kde apps
     nixpkgs.config.firefox.enablePlasmaBrowserIntegration = true;
     users.users.googlebot.packages = with pkgs; [
-      akonadi kmail plasma5Packages.kmail-account-wizard
+      # akonadi
+      # kmail
+      # plasma5Packages.kmail-account-wizard
+      kate
     ];
   };  
 }

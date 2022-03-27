@@ -46,6 +46,10 @@ in {
       gparted
       lm_sensors
       libreoffice-fresh
+      thunderbird
+      spotify-qt
+      arduino
+      yt-dlp
     ];
 
     # Networking
