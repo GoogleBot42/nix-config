@@ -82,7 +82,8 @@ in {
         gnomeKeyringSupport = true;
         enableWideVine = true;
         # ungoogled = true;
-        commandLineArgs = "--use-vulkan --use-gl=desktop --enable-zero-copy --enable-hardware-overlays --enable-features=VaapiVideoDecoder,CanvasOopRasterization --ignore-gpu-blocklist --enable-accelerated-mjpeg-decode --enable-accelerated-video --enable-native-gpu-memory-buffers --enable-gpu-rasterization";
+        # --enable-native-gpu-memory-buffers # fails on AMD APU
+        commandLineArgs = "--use-vulkan --use-gl=desktop --enable-zero-copy --enable-hardware-overlays --enable-features=VaapiVideoDecoder,CanvasOopRasterization --ignore-gpu-blocklist --enable-accelerated-mjpeg-decode --enable-accelerated-video  --enable-gpu-rasterization";
       };
     };
     # todo vulkan in chrome
