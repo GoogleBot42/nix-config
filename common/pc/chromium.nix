@@ -62,6 +62,7 @@ in {
         "hkgfoiooedgoejojocmhlaklaeopbecg" # picture in picture
         "fihnjjcciajhdojfnbdddfaoknhalnja" # I don't care about cookies
         "mnjggcdmjocbbbhaepdhchncahnbgone" # SponsorBlock
+        "dhdgffkkebhmkfjojejmpbldmpobfkfo" # Tampermonkey
       ];
       extraOpts = {
         "BrowserSignin" = 0;
