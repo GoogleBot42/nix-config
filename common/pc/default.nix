@@ -58,6 +58,12 @@ in {
 
     # Printing
     services.printing.enable = true;
+    services.printing.drivers = with pkgs; [
+      gutenprint
+    ];
+    # Printer discovery
+    services.avahi.enable = true;
+    services.avahi.nssmdns = true;
 
     # Security
     services.gnome.gnome-keyring.enable = true;
