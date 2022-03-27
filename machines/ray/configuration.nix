@@ -1,14 +1,5 @@
-{ config, pkgs, fetchurl, lib, ... }:
+{ config, pkgs, lib, ... }:
 
-let
-  nvidia-offload = pkgs.writeShellScriptBin "nvidia-offload" ''
-    export __NV_PRIME_RENDER_OFFLOAD=1
-    export __NV_PRIME_RENDER_OFFLOAD_PROVIDER=NVIDIA-G0
-    export __GLX_VENDOR_LIBRARY_NAME=nvidia
-    export __VK_LAYER_NV_optimus=NVIDIA_only
-    exec -a "$0" "$@"
-  '';
-in
 {
   disabledModules = [
     "hardware/video/nvidia.nix"
@@ -33,30 +24,36 @@ in
   hardware.enableAllFirmware = true;
 
   # newer kernel for wifi
-  boot.kernelPackages = pkgs.linuxKernel.packages.linux_5_15;
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # gpu
   services.xserver.videoDrivers = [ "nvidia" ];
   services.xserver.logFile = "/var/log/Xorg.0.log";
-  hardware.nvidia.modesetting.enable = true; # for nvidia-vaapi-driver
-  hardware.nvidia.prime = {
-    # reverse_sync.enable = true;
-    # offload.enable = true;
-    sync.enable = true;
-    nvidiaBusId = "PCI:1:0:0";
-    amdgpuBusId = "PCI:4:0:0";
+  hardware.nvidia = {
+    modesetting.enable = true; # for nvidia-vaapi-driver
+    prime = {
+      #reverse_sync.enable = true;
+      offload.enable = true;
+      offload.enableOffloadCmd = true;
+      #sync.enable = true;
+      nvidiaBusId = "PCI:1:0:0";
+      amdgpuBusId = "PCI:4:0:0";
+    };
+    powerManagement = {
+#      enable = true;
+#      finegrained = true;
+      coarsegrained = true;
+    };
   };
 
 
   services.archivebox = {
-    enable = true;
+    enable = false;
     hostname = "localhost";
     publicCreateSnapshots = true;
   };
 
   virtualisation.docker.enable = true;
-
-  services.spotifyd.enable = true;
 
   services.zerotierone.enable = true;
 

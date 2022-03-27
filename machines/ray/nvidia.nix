@@ -56,6 +56,15 @@ in
       '';
     };
 
+    hardware.nvidia.powerManagement.coarsegrained = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Experimental power management of PRIME offload. For more information, see
+        the NVIDIA docs, chapter 22. PCI-Express runtime power management.
+      '';
+    };
+
     hardware.nvidia.modesetting.enable = mkOption {
       type = types.bool;
       default = false;
@@ -131,7 +140,7 @@ in
       type = types.bool;
       default = false;
       description = ''
-        Configure X to allow external NVIDIA GPUs when using optimus.
+        Configure X to allow external NVIDIA GPUs when using Prime [Reverse] Sync.
       '';
     };
 
@@ -148,10 +157,26 @@ in
       '';
     };
 
+    hardware.nvidia.prime.offload.enableOffloadCmd = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Adds a `nvidia-offload` convenience script to <option>environment.systemPackages</option>
+        for offloading programs to an nvidia device. To work, should have also enabled
+        <option>hardware.nvidia.prime.offload.enable</option> or <option>hardware.nvidia.prime.reverse_sync.enable</option>
+
+        Example usage `nvidia-offload sauerbraten_client`
+      '';
+    };
+
     hardware.nvidia.prime.reverse_sync.enable = mkOption {
       type = types.bool;
       default = false;
       description = ''
+        Warning: This feature is relatively new, depending on your system this might
+        work poorly. AMD support, especially so.
+        See: https://forums.developer.nvidia.com/t/the-all-new-outputsink-feature-aka-reverse-prime/129828
+
         Enable NVIDIA Optimus support using the NVIDIA proprietary driver via reverse
         PRIME. If enabled, the Intel/AMD GPU will be used for all rendering, while
         enabling output to displays attached only to the NVIDIA GPU without a
@@ -211,14 +236,16 @@ in
   in mkIf enabled {
     assertions = [
       {
-        assertion = with config.services.xserver.displayManager; (gdm.enable && gdm.nvidiaWayland) -> cfg.modesetting.enable;
-        message = "You cannot use wayland with GDM without modesetting enabled for NVIDIA drivers, set `hardware.nvidia.modesetting.enable = true`";
-      }
-
-      {
         assertion = primeEnabled -> pCfg.intelBusId == "" || pCfg.amdgpuBusId == "";
         message = ''
           You cannot configure both an Intel iGPU and an AMD APU. Pick the one corresponding to your processor.
+        '';
+      }
+
+      {
+        assertion = offloadCfg.enableOffloadCmd -> offloadCfg.enable || reverseSyncCfg.enable;
+        message = ''
+          Offload command requires offloading or reverse prime sync to be enabled.
         '';
       }
 
@@ -235,6 +262,11 @@ in
       }
 
       {
+        assertion = (reverseSyncCfg.enable && pCfg.amdgpuBusId != "") -> versionAtLeast nvidia_x11.version "470.0";
+        message = "NVIDIA PRIME render offload for AMD APUs is currently only supported on versions >= 470 beta.";
+      }
+
+      {
         assertion = !(syncCfg.enable && offloadCfg.enable);
         message = "PRIME Sync and Offload cannot be both enabled";
       }
@@ -245,13 +277,18 @@ in
       }
 
       {
-        assertion = !(syncCfg.enable && cfg.powerManagement.finegrained);
+        assertion = !(syncCfg.enable && cfg.powerManagement.finegrained && cfg.powerManagement.coarsegrained);
         message = "Sync precludes powering down the NVIDIA GPU.";
       }
 
       {
         assertion = cfg.powerManagement.finegrained -> offloadCfg.enable;
         message = "Fine-grained power management requires offload to be enabled.";
+      }
+
+      {
+        assertion = cfg.powerManagement.coarsegrained -> offloadCfg.enable;
+        message = "Coarse-grained power management requires offload to be enabled.";
       }
 
       {
@@ -329,12 +366,27 @@ in
     environment.etc."egl/egl_external_platform.d".source =
       "/run/opengl-driver/share/egl/egl_external_platform.d/";
 
-    hardware.opengl.extraPackages = [ nvidia_x11.out ];
-    hardware.opengl.extraPackages32 = [ nvidia_x11.lib32 ];
+    hardware.opengl.extraPackages = [
+      nvidia_x11.out
+      # pkgs.nvidia-vaapi-driver
+    ];
+    hardware.opengl.extraPackages32 = [
+      nvidia_x11.lib32
+      # pkgs.pkgsi686Linux.nvidia-vaapi-driver
+    ];
 
     environment.systemPackages = [ nvidia_x11.bin ]
       ++ optionals cfg.nvidiaSettings [ nvidia_x11.settings ]
-      ++ optionals nvidiaPersistencedEnabled [ nvidia_x11.persistenced ];
+      ++ optionals nvidiaPersistencedEnabled [ nvidia_x11.persistenced ]
+      ++ optionals offloadCfg.enableOffloadCmd [ 
+        (pkgs.writeShellScriptBin "nvidia-offload" ''
+          export __NV_PRIME_RENDER_OFFLOAD=1
+          export __NV_PRIME_RENDER_OFFLOAD_PROVIDER=NVIDIA-G0
+          export __GLX_VENDOR_LIBRARY_NAME=nvidia
+          export __VK_LAYER_NV_optimus=NVIDIA_only
+          exec -a "$0" "$@"
+        '') 
+      ];
 
     systemd.packages = optional cfg.powerManagement.enable nvidia_x11.out;
 
@@ -399,7 +451,7 @@ in
         KERNEL=="card*", SUBSYSTEM=="drm", DRIVERS=="nvidia", RUN+="${pkgs.runtimeShell} -c 'mknod -m 666 /dev/nvidia%n c $$(grep nvidia-frontend /proc/devices | cut -d \  -f 1) %n'"
         KERNEL=="nvidia_uvm", RUN+="${pkgs.runtimeShell} -c 'mknod -m 666 /dev/nvidia-uvm c $$(grep nvidia-uvm /proc/devices | cut -d \  -f 1) 0'"
         KERNEL=="nvidia_uvm", RUN+="${pkgs.runtimeShell} -c 'mknod -m 666 /dev/nvidia-uvm-tools c $$(grep nvidia-uvm /proc/devices | cut -d \  -f 1) 0'"
-      '' + optionalString cfg.powerManagement.finegrained ''
+      '' + optionalString (cfg.powerManagement.finegrained || cfg.powerManagement.coarsegrained) ''
         # Remove NVIDIA USB xHCI Host Controller devices, if present
         ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x0c0330", ATTR{remove}="1"
 
@@ -418,8 +470,10 @@ in
         ACTION=="unbind", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x030200", TEST=="power/control", ATTR{power/control}="on"
       '';
 
-    boot.extraModprobeConfig = mkIf cfg.powerManagement.finegrained ''
+    boot.extraModprobeConfig = optionalString cfg.powerManagement.finegrained ''
       options nvidia "NVreg_DynamicPowerManagement=0x02"
+    '' + optionalString cfg.powerManagement.coarsegrained ''
+      options nvidia "NVreg_DynamicPowerManagement=0x01"
     '';
 
     boot.blacklistedKernelModules = [ "nouveau" "nvidiafb" ];
