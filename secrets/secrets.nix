@@ -15,4 +15,5 @@ in
   "nextcloud-pw.age".publicKeys = all;
   "iodine.age".publicKeys = all;
   "spotifyd.age".publicKeys = all;
+  "wolframalpha.age".publicKeys = all;
 }

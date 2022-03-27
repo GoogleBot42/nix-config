@@ -25,6 +25,10 @@ let
       cp -r ''${arr[1]}/* $out/irc/modules
       cp -r ''${arr[2]}/* $out/irc/modules
 
+      sed -i 's|\(http://drastik.org/drastikbot"\)|\1 " https://git.neet.dev/zuckerberg/dailybuild_modules"|' $out/irc/modules/information.py
+      sed -i 's|\(https://github.com/olagood/drastikbot_modules\\x0F"\)|\1 " : \\x0311https://git.neet.dev/zuckerberg/dailybuild_modules\\x0F"|' $out/irc/modules/information.py
+      sed -i 's|AppID = "Enter your AppID here"|import pathlib\nAppID = pathlib.Path("${cfg.wolframAppIdFile}").read_text()|' $out/irc/modules/wolframalpha.py
+
       makeWrapper ${pkgs.python3}/bin/python3 $out/drastikbot \
         --prefix PYTHONPATH : ${with pkgs.python3Packages; makePythonPath [requests beautifulsoup4]} \
         --add-flags "$out/drastikbot.py"
@@ -52,6 +56,12 @@ in {
       default = "/var/lib/drastikbot";
       description = ''
         Path to the drastikbot data directory
+      '';
+    };
+    wolframAppIdFile = lib.mkOption {
+      type = lib.types.str;
+      description = ''
+        The file containing the Wolfram Alpha App ID
       '';
     };
   };

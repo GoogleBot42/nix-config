@@ -122,7 +122,7 @@ in {
     });
   };
 
-  # wrap radio and drastikbot in a VPN
+  # wrap radio in a VPN
   containers.vpn-continer = {
     ephemeral = true;
     autoStart = true;
@@ -175,7 +175,14 @@ in {
   # load the secret on behalf of the container
   age.secrets."pia-login.conf".file = ../../secrets/pia-login.conf;
 
-  services.drastikbot.enable = true;
+  services.drastikbot = {
+    enable = true;
+    wolframAppIdFile = "/run/agenix/wolframalpha";
+  };
+  age.secrets.wolframalpha = {
+    file = ../../secrets/wolframalpha.age;
+    owner = config.services.drastikbot.user;
+  };
 
   # icecast endpoint + website
   services.nginx.virtualHosts."radio.neet.space" = {
