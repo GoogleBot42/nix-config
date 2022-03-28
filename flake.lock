@@ -37,13 +37,18 @@
       }
     },
     "dailybuild_modules": {
-      "flake": false,
+      "inputs": {
+        "drastikbot": "drastikbot",
+        "drastikbot_modules": "drastikbot_modules",
+        "flake-utils": "flake-utils",
+        "nixpkgs": "nixpkgs"
+      },
       "locked": {
-        "lastModified": 1633210754,
-        "narHash": "sha256-jBIE07mLsF+qHoa/CQLSRipvfNSivgbuWUatI6Wwy0s=",
+        "lastModified": 1648509055,
+        "narHash": "sha256-y8AXfcbkAqn9UcfnfQz1MisT4YIXxj2I6P7uMnqMn9E=",
         "ref": "master",
-        "rev": "e6a1c8686dad46b7847a5c690107a48fc20a6a29",
-        "revCount": 9,
+        "rev": "82f4cddc27be4370f321a8d758db1b35c2ce28e5",
+        "revCount": 11,
         "type": "git",
         "url": "https://git.neet.dev/zuckerberg/dailybuild_modules.git"
       },
@@ -88,6 +93,21 @@
     },
     "flake-utils": {
       "locked": {
+        "lastModified": 1648297722,
+        "narHash": "sha256-W+qlPsiZd8F3XkzXOzAoR+mpFqzm3ekQkJNa+PIh1BQ=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "0f8662f1319ad6abf89b3380dd2722369fc51ade",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "flake-utils_2": {
+      "locked": {
         "lastModified": 1620759905,
         "narHash": "sha256-WiyWawrgmyN0EdmiHyG2V+fqReiVi8bM9cRdMaKQOFg=",
         "owner": "numtide",
@@ -103,16 +123,16 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1646675913,
-        "narHash": "sha256-ZvGf51XpXM7JojKLZ5yI0XLUq8UOFX6AwZ3bhtdcpIo=",
+        "lastModified": 1638239011,
+        "narHash": "sha256-AjhmbT4UBlJWqxY0ea8a6GU2C2HdKUREkG43oRr3TZg=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "9b1c7ba323732ddc85a51850a7f10ecc5269b8e9",
+        "rev": "a7ecde854aee5c4c7cd6177f54a99d2c1ff28a31",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
-        "ref": "nixos-21.11",
+        "ref": "21.11",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -132,9 +152,25 @@
         "type": "indirect"
       }
     },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1646675913,
+        "narHash": "sha256-ZvGf51XpXM7JojKLZ5yI0XLUq8UOFX6AwZ3bhtdcpIo=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "9b1c7ba323732ddc85a51850a7f10ecc5269b8e9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-21.11",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "radio": {
       "inputs": {
-        "flake-utils": "flake-utils",
+        "flake-utils": "flake-utils_2",
         "nixpkgs": [
           "nixpkgs"
         ]
@@ -174,9 +210,7 @@
       "inputs": {
         "agenix": "agenix",
         "dailybuild_modules": "dailybuild_modules",
-        "drastikbot": "drastikbot",
-        "drastikbot_modules": "drastikbot_modules",
-        "nixpkgs": "nixpkgs",
+        "nixpkgs": "nixpkgs_2",
         "radio": "radio",
         "radio-web": "radio-web",
         "simple-nixos-mailserver": "simple-nixos-mailserver"

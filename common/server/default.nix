@@ -12,7 +12,6 @@
     ./zerobin.nix
     ./gitea.nix
     ./privatebin/privatebin.nix
-    ./drastikbot.nix
     ./radio.nix
   ];
 }
