@@ -20,6 +20,25 @@
         "type": "github"
       }
     },
+    "archivebox": {
+      "inputs": {
+        "flake-utils": "flake-utils",
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "lastModified": 1648612759,
+        "narHash": "sha256-SJwlpD2Wz3zFoX2mIYCQfwIOYHaOdeiWGFeDXsLGM84=",
+        "ref": "master",
+        "rev": "39d338b9b24159d8ef3309eecc0d32a2a9f102b5",
+        "revCount": 2,
+        "type": "git",
+        "url": "https://git.neet.dev/zuckerberg/archivebox.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://git.neet.dev/zuckerberg/archivebox.git"
+      }
+    },
     "blobs": {
       "flake": false,
       "locked": {
@@ -40,8 +59,8 @@
       "inputs": {
         "drastikbot": "drastikbot",
         "drastikbot_modules": "drastikbot_modules",
-        "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs"
+        "flake-utils": "flake-utils_2",
+        "nixpkgs": "nixpkgs_2"
       },
       "locked": {
         "lastModified": 1648509055,
@@ -108,6 +127,21 @@
     },
     "flake-utils_2": {
       "locked": {
+        "lastModified": 1648297722,
+        "narHash": "sha256-W+qlPsiZd8F3XkzXOzAoR+mpFqzm3ekQkJNa+PIh1BQ=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "0f8662f1319ad6abf89b3380dd2722369fc51ade",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "flake-utils_3": {
+      "locked": {
         "lastModified": 1620759905,
         "narHash": "sha256-WiyWawrgmyN0EdmiHyG2V+fqReiVi8bM9cRdMaKQOFg=",
         "owner": "numtide",
@@ -154,6 +188,22 @@
     },
     "nixpkgs_2": {
       "locked": {
+        "lastModified": 1638239011,
+        "narHash": "sha256-AjhmbT4UBlJWqxY0ea8a6GU2C2HdKUREkG43oRr3TZg=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "a7ecde854aee5c4c7cd6177f54a99d2c1ff28a31",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "21.11",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_3": {
+      "locked": {
         "lastModified": 1646675913,
         "narHash": "sha256-ZvGf51XpXM7JojKLZ5yI0XLUq8UOFX6AwZ3bhtdcpIo=",
         "owner": "NixOS",
@@ -170,7 +220,7 @@
     },
     "radio": {
       "inputs": {
-        "flake-utils": "flake-utils_2",
+        "flake-utils": "flake-utils_3",
         "nixpkgs": [
           "nixpkgs"
         ]
@@ -209,8 +259,9 @@
     "root": {
       "inputs": {
         "agenix": "agenix",
+        "archivebox": "archivebox",
         "dailybuild_modules": "dailybuild_modules",
-        "nixpkgs": "nixpkgs_2",
+        "nixpkgs": "nixpkgs_3",
         "radio": "radio",
         "radio-web": "radio-web",
         "simple-nixos-mailserver": "simple-nixos-mailserver"

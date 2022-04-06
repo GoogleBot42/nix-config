@@ -2,7 +2,6 @@
 
 {
   imports = [
-    ./archivebox
     ./nginx.nix
     ./thelounge.nix
     ./mumble.nix

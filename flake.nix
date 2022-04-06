@@ -19,6 +19,8 @@
 
     # drastikbot
     dailybuild_modules.url = "git+https://git.neet.dev/zuckerberg/dailybuild_modules.git";
+
+    archivebox.url = "git+https://git.neet.dev/zuckerberg/archivebox.git";
   };
 
   outputs = inputs: {
@@ -33,8 +35,9 @@
             path
             ./common
             inputs.simple-nixos-mailserver.nixosModule
-            inputs.agenix.nixosModules.age
+            inputs.agenix.nixosModule
             inputs.dailybuild_modules.nixosModule
+            inputs.archivebox.nixosModule
             ({ lib, ... }: {
               config.environment.systemPackages = [ inputs.agenix.defaultPackage.${system} ];
               
