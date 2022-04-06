@@ -12,15 +12,8 @@
 
   networking.hostName = "s0";
 
-  boot.initrd.luks.devices."enc-pv" = {
-    device = "/dev/disk/by-uuid/96b216e1-071b-4c02-899e-29e2eeced7a8";
-    allowDiscards = true;
-  };
-
   boot.loader.grub.enable = false;
   boot.loader.generic-extlinux-compatible.enable = true;
-
-  networking.interfaces.eth0.useDHCP = true;
 
   system.autoUpgrade.enable = true;
 
@@ -33,6 +26,4 @@
   users.users.googlebot.packages = with pkgs; [
     bcachefs-tools
   ];
-
-  zramSwap.enable = true;
 }

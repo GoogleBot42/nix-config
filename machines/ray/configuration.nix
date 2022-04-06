@@ -47,12 +47,6 @@
   };
 
 
-  services.archivebox = {
-    enable = false;
-    hostname = "localhost";
-    publicCreateSnapshots = true;
-  };
-
   virtualisation.docker.enable = true;
 
   services.zerotierone.enable = true;

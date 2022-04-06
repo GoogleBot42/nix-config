@@ -47,6 +47,7 @@ in {
       lm_sensors
       libreoffice-fresh
       thunderbird
+      spotifyd
       spotify-qt
       arduino
       yt-dlp

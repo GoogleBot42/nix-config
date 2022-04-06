@@ -83,6 +83,7 @@ in {
         enableWideVine = true;
         # ungoogled = true;
         # --enable-native-gpu-memory-buffers # fails on AMD APU
+        # --enable-webrtc-vp9-support
         commandLineArgs = "--use-vulkan --use-gl=desktop --enable-zero-copy --enable-hardware-overlays --enable-features=VaapiVideoDecoder,CanvasOopRasterization --ignore-gpu-blocklist --enable-accelerated-mjpeg-decode --enable-accelerated-video  --enable-gpu-rasterization";
       };
     };
