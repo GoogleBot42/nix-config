@@ -2,6 +2,8 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-21.11";
 
+    flake-utils.url = "github:numtide/flake-utils";
+
     # mail server
     simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver/nixos-21.11";
     simple-nixos-mailserver.inputs.nixpkgs.follows = "nixpkgs";
@@ -14,13 +16,19 @@
     # radio
     radio.url = "git+https://git.neet.dev/zuckerberg/radio.git?ref=main";
     radio.inputs.nixpkgs.follows = "nixpkgs";
+    radio.inputs.flake-utils.follows = "flake-utils";
     radio-web.url = "git+https://git.neet.dev/zuckerberg/radio-web.git";
     radio-web.flake = false;
 
     # drastikbot
     dailybuild_modules.url = "git+https://git.neet.dev/zuckerberg/dailybuild_modules.git";
+    dailybuild_modules.inputs.nixpkgs.follows = "nixpkgs";
+    dailybuild_modules.inputs.flake-utils.follows = "flake-utils";
 
+    # archivebox
     archivebox.url = "git+https://git.neet.dev/zuckerberg/archivebox.git";
+    archivebox.inputs.nixpkgs.follows = "nixpkgs";
+    archivebox.inputs.flake-utils.follows = "flake-utils";
   };
 
   outputs = inputs: {
