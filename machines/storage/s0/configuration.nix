@@ -24,4 +24,13 @@
   users.users.googlebot.packages = with pkgs; [
     bcachefs-tools
   ];
+
+  services.samba.enable = true;
+
+  services.plex = {
+    enable = true;
+    openFirewall = true;
+    dataDir = "/data/plex";
+  };
+  users.users.${config.services.plex.user}.extraGroups = [ "public_data" ];
 }
