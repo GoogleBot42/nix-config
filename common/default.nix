@@ -59,4 +59,7 @@
   nix.gc.automatic = true;
 
   programs.fish.enable = true;
+  programs.fish.shellInit = ''
+    set fish_greeting
+  '';
 }
