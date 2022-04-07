@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, mkVpnContainer, ... }:
 
 let
   mta-sts-web = {
@@ -17,8 +17,6 @@ in {
   ];
 
   # 5synsrjgvfzywruomjsfvfwhhlgxqhyofkzeqt2eisyijvjvebnu2xyd.onion
-
-  nix.flakes.enable = true;
 
   firmware.x86_64.enable = true;
   bios = {
@@ -50,19 +48,19 @@ in {
     listenWeb = 443;
     enableWebHttps = true;
     # dataDirs
-    serviceEnvironmentFile = "/run/secrets/peertube-init";
+    serviceEnvironmentFile = "/run/agenix/peertube-init";
     # settings
     database = {
       createLocally = true;
-      passwordFile = "/run/secrets/peertube-db-pw";
+      passwordFile = "/run/agenix/peertube-db-pw";
     };
     redis = {
       createLocally = true;
-      passwordFile = "/run/secrets/peertube-redis-pw";
+      passwordFile = "/run/agenix/peertube-redis-pw";
     };
     smtp = {
       createLocally = false;
-      passwordFile = "/run/secrets/peertube-smtp";
+      passwordFile = "/run/agenix/peertube-smtp";
     };
   };
   services.nginx.virtualHosts."tube.neet.space" = {
@@ -81,7 +79,7 @@ in {
 
   services.searx = {
     enable = true;
-    environmentFile = "/run/secrets/searx";
+    environmentFile = "/run/agenix/searx";
     settings = {
       server.port = 43254;
       server.secret_key = "@SEARX_SECRET_KEY@";
@@ -123,57 +121,12 @@ in {
   };
 
   # wrap radio in a VPN
-  containers.vpn-continer = {
-    ephemeral = true;
-    autoStart = true;
-    bindMounts = {
-      "/var/lib" = {
-        hostPath = "/var/lib/";
-        isReadOnly = false;
-      };
-      "/run/secrets" = {
-        hostPath = "/run/secrets";
-        isReadOnly = true;
-      };
-      "/dev/fuse" = {
-        hostPath = "/dev/fuse";
-        isReadOnly = false;
-      };
-    };
-    enableTun = true;
-    privateNetwork = true;
-    hostAddress = "172.16.100.1";
-    localAddress = "172.16.100.2";
-
-    config = {
-      imports = [
-        ../../common
-        config.inputs.agenix.nixosModules.age
-      ];
-
-      # because nixos specialArgs doesn't work for containers... need to pass in inputs a different way
-      options.inputs = lib.mkOption { default = config.inputs; };
-      options.currentSystem = lib.mkOption { default = config.currentSystem; };
-
-      config = {
-        pia.enable = true;
-        nixpkgs.pkgs = pkgs;
-
-        networking.firewall.enable = false;
-
-        # run it's own DNS resolver
-        networking.useHostResolvConf = false;
-        services.resolved.enable = true;
-
-        services.radio = {
-          enable = true;
-          host = "radio.neet.space";
-        };
-      };
+  containers.vpn-container = mkVpnContainer {
+    services.radio = {
+      enable = true;
+      host = "radio.neet.space";
     };
   };
-  # load the secret on behalf of the container
-  age.secrets."pia-login.conf".file = ../../secrets/pia-login.conf;
 
   services.drastikbot = {
     enable = true;
@@ -250,7 +203,7 @@ in {
     ];
     loginAccounts = {
       "jeremy@runyan.org" = {
-        hashedPasswordFile = "/run/secrets/email-pw";
+        hashedPasswordFile = "/run/agenix/email-pw";
         aliases = [
           "@neet.space" "@neet.cloud" "@neet.dev"
           "@runyan.org" "@runyan.rocks"
@@ -283,7 +236,7 @@ in {
     hostName = "neet.cloud";
     config.dbtype = "sqlite";
     config.adminuser = "jeremy";
-    config.adminpassFile = "/run/secrets/nextcloud-pw";
+    config.adminpassFile = "/run/agenix/nextcloud-pw";
     autoUpdateApps.enable = true;
   };
   age.secrets.nextcloud-pw = {
@@ -300,7 +253,7 @@ in {
     enable = true;
     ip = "192.168.99.1";
     domain = "tun.neet.dev";
-    passwordFile = "/run/secrets/iodine";
+    passwordFile = "/run/agenix/iodine";
   };
   age.secrets.iodine.file = ../../secrets/iodine.age;
   networking.firewall.allowedUDPPorts = [ 53 ];

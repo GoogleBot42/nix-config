@@ -7,8 +7,6 @@
 
   # wt6nczjfvtba6pvjt2qtevwjpq4gcbz46bwjz4hboehgecyqmzqgwnqd.onion
 
-  nix.flakes.enable = true;
-
   firmware.x86_64.enable = true;
   bios = {
     enable = true;

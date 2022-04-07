@@ -5,8 +5,6 @@
     ./hardware-configuration.nix
   ];
 
-  nix.flakes.enable = true;
-
   efi.enable = true;
 
   networking.hostName = "nat";

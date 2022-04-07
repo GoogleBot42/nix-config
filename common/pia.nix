@@ -85,7 +85,7 @@ YDQ8z9v+DMO6iwyIDRiU
 </ca>
 
 disable-occ
-auth-user-pass /run/secrets/pia-login.conf
+auth-user-pass /run/agenix/pia-login.conf
           '';
           autoStart = true;
 #          up = "echo nameserver $nameserver | ${pkgs.openresolv}/sbin/resolvconf -m 0 -a $dev";

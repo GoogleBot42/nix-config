@@ -8,8 +8,6 @@
 
   # nsw2zwifzyl42mbhabayjo42b2kkq3wd3dqyl6efxsz6pvmgm5cup5ad.onion
 
-  nix.flakes.enable = true;
-
   networking.hostName = "s0";
 
   boot.loader.grub.enable = false;

@@ -36,25 +36,64 @@
     nixosConfigurations =
     let
       nixpkgs = inputs.nixpkgs;
+
+      modules = [
+        ./common
+        inputs.simple-nixos-mailserver.nixosModule
+        inputs.agenix.nixosModule
+        inputs.dailybuild_modules.nixosModule
+        inputs.archivebox.nixosModule
+        ({ lib, ... }: {
+          config.environment.systemPackages = [ inputs.agenix.defaultPackage.${system} ];
+
+          # because nixos specialArgs doesn't work for containers... need to pass in inputs a different way
+          options.inputs = lib.mkOption { default = inputs; };
+          options.currentSystem = lib.mkOption { default = system; };
+        })
+      ];
+
+      mkVpnContainer = container_config: {
+        ephemeral = true;
+        autoStart = true;
+        bindMounts = {
+          "/var/lib" = {
+            hostPath = "/var/lib/";
+            isReadOnly = false;
+          };
+          "/run/agenix" = {
+            hostPath = "/run/agenix";
+            isReadOnly = true;
+          };
+          "/dev/fuse" = {
+            hostPath = "/dev/fuse";
+            isReadOnly = false;
+          };
+        };
+        enableTun = true;
+        privateNetwork = true;
+        hostAddress = "172.16.100.1";
+        localAddress = "172.16.100.2";
+
+        config = { config, pkgs, lib, ... }: {
+          imports = modules ++ [container_config];
+
+          networking.firewall.enable = lib.mkForce false;
+          pia.enable = true;
+
+          # run it's own DNS resolver
+          networking.useHostResolvConf = false;
+          services.resolved.enable = true;
+        };
+      };
+
       mkSystem = system: nixpkgs: path:
         nixpkgs.lib.nixosSystem {
           inherit system;
-          modules = [
-            path
-            ./common
-            inputs.simple-nixos-mailserver.nixosModule
-            inputs.agenix.nixosModule
-            inputs.dailybuild_modules.nixosModule
-            inputs.archivebox.nixosModule
-            ({ lib, ... }: {
-              config.environment.systemPackages = [ inputs.agenix.defaultPackage.${system} ];
-              
-              # because nixos specialArgs doesn't work for containers... need to pass in inputs a different way
-              options.inputs = lib.mkOption { default = inputs; };
-              options.currentSystem = lib.mkOption { default = system; };
-            })
-          ];
-          # specialArgs = {};
+          modules = [path] ++ modules;
+
+          specialArgs = {
+            inherit mkVpnContainer;
+          };
         };
     in
     {

@@ -9,8 +9,6 @@
 
   boot.kernelPackages = pkgs.linuxPackages_5_12;
 
-  nix.flakes.enable = true;
-
   firmware.x86_64.enable = true;
   efi.enable = true;
 
