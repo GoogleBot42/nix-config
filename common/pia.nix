@@ -88,8 +88,8 @@ disable-occ
 auth-user-pass /run/agenix/pia-login.conf
           '';
           autoStart = true;
-          up = "${./vpnfailsafe.sh}";
-          down = "${./vpnfailsafe.sh}";
+          # up = "${./vpnfailsafe.sh}";
+          # down = "${./vpnfailsafe.sh}";
         };
       };
     };
