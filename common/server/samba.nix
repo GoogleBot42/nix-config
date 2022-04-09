@@ -83,6 +83,6 @@
       "d /var/spool/samba 1777 root root -"
     ];
 
-    users.groups.public_data = {};
+    users.groups.public_data.gid = 994;
   };
 }
