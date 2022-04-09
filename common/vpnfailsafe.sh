@@ -81,26 +81,6 @@ update_routes() {
     fi
 }
 
-# $@ := "up" | "down"
-update_resolv() {
-    case "$@" in
-        up) local domains="" ns=""
-            for opt in ${!foreign_option_*}; do
-                case "${!opt}" in
-                    dhcp-option\ DOMAIN*) domains+=" ${!opt##* }";;
-                    dhcp-option\ DNS\ *) ns+=" ${!opt##* }";;
-                    *) ;;
-                esac
-            done
-            if [[ -n "$ns" ]]; then
-                echo -e "${domains/ /search }\\n${ns// /$'\n'nameserver }"|resolvconf -xa "$dev"
-            else
-                echo "$0: WARNING: no DNS was pushed by the VPN server, this could cause a DNS leak" >&2
-            fi;;
-        down) resolvconf -fd "$dev" 2>/dev/null || true;;
-    esac
-}
-
 # $@ := ""
 update_firewall() {
     # $@ := "INPUT" | "OUTPUT" | "FORWARD"
@@ -198,7 +178,7 @@ trap 'err_msg "$LINENO" "$?"' ERR
 # $@ := ""
 main() {
     case "${script_type:-down}" in
-        up) for f in hosts routes resolv firewall; do "update_$f" up; done;;
+        up) for f in hosts routes firewall; do "update_$f" up; done;;
         down) update_routes down
               update_resolv down;;
     esac

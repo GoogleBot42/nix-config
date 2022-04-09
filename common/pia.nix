@@ -2,6 +2,16 @@
 
 let
   cfg = config.pia;
+  vpnfailsafe = pkgs.stdenv.mkDerivation {
+    pname = "vpnfailsafe";
+    version = "0.0.1";
+    src = ./.;
+    installPhase = ''
+      mkdir -p $out
+      cp vpnfailsafe.sh $out/vpnfailsafe.sh
+      sed -i 's|getent|${pkgs.getent}/bin/getent|' $out/vpnfailsafe.sh
+    '';
+  };
 in
 {
   options.pia = {
@@ -11,7 +21,7 @@ in
   config = lib.mkIf cfg.enable {
     services.openvpn = {
       servers = {
-        us-east = {
+        pia = {
           config = ''
 client
 dev tun
@@ -88,8 +98,8 @@ disable-occ
 auth-user-pass /run/agenix/pia-login.conf
           '';
           autoStart = true;
-          # up = "${./vpnfailsafe.sh}";
-          # down = "${./vpnfailsafe.sh}";
+          up = "${vpnfailsafe}/vpnfailsafe.sh";
+          down = "${vpnfailsafe}/vpnfailsafe.sh";
         };
       };
     };
