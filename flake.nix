@@ -37,7 +37,7 @@
     let
       nixpkgs = inputs.nixpkgs;
 
-      modules = [
+      modules = system: [
         ./common
         inputs.simple-nixos-mailserver.nixosModule
         inputs.agenix.nixosModule
@@ -52,7 +52,7 @@
         })
       ];
 
-      mkVpnContainer = container_config: {
+      mkVpnContainer = system: pkgs: mount: config: {
         ephemeral = true;
         autoStart = true;
         bindMounts = {
@@ -68,14 +68,20 @@
             hostPath = "/dev/fuse";
             isReadOnly = false;
           };
+          "${mount}" = {
+            hostPath = mount;
+            isReadOnly = false;
+          };
         };
         enableTun = true;
         privateNetwork = true;
         hostAddress = "172.16.100.1";
         localAddress = "172.16.100.2";
 
-        config = { config, pkgs, lib, ... }: {
-          imports = modules ++ [container_config];
+        config = { lib, ... }: {
+          imports = (modules system) ++ [config];
+
+          nixpkgs.pkgs = pkgs;
 
           networking.firewall.enable = lib.mkForce false;
           pia.enable = true;
@@ -89,10 +95,10 @@
       mkSystem = system: nixpkgs: path:
         nixpkgs.lib.nixosSystem {
           inherit system;
-          modules = [path] ++ modules;
+          modules = (modules system) ++ [path];
 
           specialArgs = {
-            inherit mkVpnContainer;
+            mkVpnContainer = (mkVpnContainer system);
           };
         };
     in

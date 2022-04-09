@@ -121,12 +121,14 @@ in {
   };
 
   # wrap radio in a VPN
-  containers.vpn-container = mkVpnContainer {
+  containers.vpn = mkVpnContainer pkgs "/dev/null" {
     services.radio = {
       enable = true;
       host = "radio.neet.space";
     };
   };
+  # containers cannot unlock their own secrets right now. unlock it here
+  age.secrets."pia-login.conf".file = ../../secrets/pia-login.conf;
 
   services.drastikbot = {
     enable = true;
@@ -262,7 +264,7 @@ in {
   networking.nat.enable = true;
   networking.nat.internalInterfaces = [
     "dns0" # iodine
-    "ve-vpn-continer" # vpn container
+    "ve-vpn" # vpn container
   ];
   networking.nat.externalInterface = "enp1s0";
 
