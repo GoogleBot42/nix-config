@@ -6,6 +6,7 @@
     ./pia.nix
     ./zerotier.nix
     ./auto-update.nix
+    ./hosts.nix
     ./boot
     ./server
     ./pc

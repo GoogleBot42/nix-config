@@ -1,0 +1,48 @@
+{ config, lib, ... }:
+
+let
+  system = (import ./ssh.nix).system;
+in {
+  programs.ssh.knownHosts = {
+    liza = {
+      hostNames = [ "liza" "liza.neet.dev" ];
+      publicKey = system.liza;
+    };
+    ray = {
+      hostNames = [ "ray" ];
+      publicKey = system.ray;
+    };
+    s0 = {
+      hostNames = [ "s0" ];
+      publicKey = system.s0;
+    };
+    n1 = {
+      hostNames = [ "n1" ];
+      publicKey = system.n1;
+    };
+    n2 = {
+      hostNames = [ "n2" ];
+      publicKey = system.n2;
+    };
+    n3 = {
+      hostNames = [ "n3" ];
+      publicKey = system.n3;
+    };
+    n4 = {
+      hostNames = [ "n4" ];
+      publicKey = system.n4;
+    };
+    n5 = {
+      hostNames = [ "n5" ];
+      publicKey = system.n5;
+    };
+    n6 = {
+      hostNames = [ "n6" ];
+      publicKey = system.n6;
+    };
+    n7 = {
+      hostNames = [ "n7" ];
+      publicKey = system.n7;
+    };
+  };
+}
