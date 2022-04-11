@@ -268,6 +268,8 @@ in {
   ];
   networking.nat.externalInterface = "enp1s0";
 
+  services.postgresql.package = pkgs.postgresql_11;
+
   security.acme.acceptTerms = true;
   security.acme.email = "zuckerberg@neet.dev";
 }
