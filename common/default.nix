@@ -42,6 +42,7 @@
     screen
     micro
     helix
+    lm_sensors
   ];
 
   nixpkgs.config.allowUnfree = true;
