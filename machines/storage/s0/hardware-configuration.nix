@@ -21,7 +21,7 @@
   boot.initrd.luks.devices."enc-pv2".device = "/dev/disk/by-uuid/514231c1-5934-401f-80e1-e3b6b62dc9d5";
   boot.initrd.luks.devices."enc-pv3".device = "/dev/disk/by-uuid/f45abe73-d0c6-446f-b28c-7a96a3f87851";
   boot.initrd.luks.devices."enc-pv4".device = "/dev/disk/by-uuid/953efe14-af9f-4fb5-a658-417ec02dbdda";
-  boot.initrd.luks.devices."enc-pv5".device = "/dev/disk/by-uuid/e8e40fd0-92d9-416b-b4aa-609d1ce64f42";
+  boot.initrd.luks.devices."enc-pv5".device = "/dev/disk/by-uuid/5d1002b8-a0ed-4a1c-99f5-24b8816d9e38";
 
   fileSystems."/" =
     { device = "/dev/mapper/enc-pv1:/dev/mapper/enc-pv2:/dev/mapper/enc-pv3:/dev/mapper/enc-pv4:/dev/mapper/enc-pv5";
