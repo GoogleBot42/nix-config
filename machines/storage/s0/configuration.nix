@@ -57,10 +57,18 @@
   containers.vpn = mkVpnContainer pkgs "/data/samba/Public/Plex" {
     services.prowlarr.enable = true;
     services.sonarr.enable = true;
+    services.sonarr.user = "public_data";
+    services.sonarr.group = "public_data";
     services.bazarr.enable = true;
+    services.bazarr.user = "public_data";
+    services.bazarr.group = "public_data";
     services.radarr.enable = true;
+    services.radarr.user = "public_data";
+    services.radarr.group = "public_data";
     services.lidarr.enable = true;
-    users.groups.transmission.members = [ "prowlarr" "sonarr" "bazarr" "radarr" "lidarr" ];
+    services.lidarr.user = "public_data";
+    services.lidarr.group = "public_data";
+    users.groups.transmission.members = [ "sonarr" "bazarr" "radarr" "lidarr" ];
     services.transmission = {
       enable = true;
       performanceNetParameters = true;
@@ -107,8 +115,12 @@
         "download-queue-size" = 20; # gotta go fast
       };
     };
-    users.groups.public_data.members = [ "prowlarr" "sonarr" "bazarr" "radarr" "lidarr" "transmission" ];
     users.groups.public_data.gid = 994;
+    users.users.public_data = {
+      isSystemUser = true;
+      group = "public_data";
+      uid = 994;
+    };
   };
   # containers cannot unlock their own secrets right now. unlock it here
   age.secrets."pia-login.conf".file = ../../../secrets/pia-login.conf;

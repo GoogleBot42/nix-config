@@ -34,7 +34,7 @@
           "guest ok" = "yes";
           "create mask" = "0644";
           "directory mask" = "0755";
-          "force user" = "googlebot";
+          "force user" = "public_data";
           "force group" = "public_data";
         };
         private = {
@@ -84,5 +84,10 @@
     ];
 
     users.groups.public_data.gid = 994;
+    users.users.public_data = {
+      isSystemUser = true;
+      group = "public_data";
+      uid = 994;
+    };
   };
 }
