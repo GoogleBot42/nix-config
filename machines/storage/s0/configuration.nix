@@ -143,6 +143,17 @@
     proxyWebsockets = true;
   };
 
+  # navidrome over cloudflare
+  services.cloudflared = {
+    enable = true;
+    config = {
+      url = config.services.nginx.virtualHosts."music.s0".locations."/".proxyPass;
+      tunnel = "5975c2f1-d1f4-496a-a704-6d89ccccae0d";
+      credentials-file = "/run/agenix/cloudflared-navidrome.json";
+    };
+  };
+  age.secrets."cloudflared-navidrome.json".file = ../../../secrets/cloudflared-navidrome.json.age;
+
   nixpkgs.overlays = [
     (final: prev: {
       radarr = prev.radarr.overrideAttrs (old: rec {

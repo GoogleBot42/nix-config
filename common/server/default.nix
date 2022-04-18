@@ -13,5 +13,6 @@
     ./privatebin/privatebin.nix
     ./radio.nix
     ./samba.nix
+    ./cloudflared.nix
   ];
 }
