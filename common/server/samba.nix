@@ -89,5 +89,6 @@
       group = "public_data";
       uid = 994;
     };
+    users.users.googlebot.extraGroups = [ "public_data" ];
   };
 }

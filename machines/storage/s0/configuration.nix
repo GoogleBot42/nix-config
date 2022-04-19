@@ -29,12 +29,6 @@
 
   services.samba.enable = true;
 
-  services.plex = {
-    enable = true;
-    openFirewall = true;
-    dataDir = "/data/plex";
-  };
-
   services.jellyfin = {
     enable = true;
     openFirewall = true;
@@ -49,7 +43,6 @@
     };
   };
 
-  users.users.${config.services.plex.user}.extraGroups = [ "public_data" ];
   users.users.${config.services.jellyfin.user}.extraGroups = [ "public_data" ];
   users.users.googlebot.extraGroups = [ "transmission" ];
   users.groups.transmission.gid = config.ids.gids.transmission;
@@ -68,7 +61,7 @@
     services.lidarr.enable = true;
     services.lidarr.user = "public_data";
     services.lidarr.group = "public_data";
-    users.groups.transmission.members = [ "sonarr" "bazarr" "radarr" "lidarr" ];
+    users.groups.transmission.members = [ "public_data" ];
     services.transmission = {
       enable = true;
       performanceNetParameters = true;
@@ -142,10 +135,6 @@
   services.nginx.virtualHosts."sonarr.s0".locations."/".proxyPass = "http://172.16.100.2:8989";
   services.nginx.virtualHosts."prowlarr.s0".locations."/".proxyPass = "http://172.16.100.2:9696";
   services.nginx.virtualHosts."music.s0".locations."/".proxyPass = "http://localhost:4533";
-  services.nginx.virtualHosts."plex.s0".locations."/" = {
-    proxyPass = "http://localhost:32400";
-    proxyWebsockets = true;
-  };
   services.nginx.virtualHosts."jellyfin.s0".locations."/" = {
     proxyPass = "http://localhost:8096";
     proxyWebsockets = true;
