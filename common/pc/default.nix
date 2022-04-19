@@ -42,7 +42,6 @@ in {
       signal-desktop
       minecraft
       sauerbraten
-      gnome.file-roller
       gparted
       libreoffice-fresh
       thunderbird
@@ -64,6 +63,8 @@ in {
     # Printer discovery
     services.avahi.enable = true;
     services.avahi.nssmdns = true;
+
+    programs.file-roller.enable = true;
 
     # Security
     services.gnome.gnome-keyring.enable = true;
