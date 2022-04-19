@@ -63,6 +63,7 @@ in {
         "fihnjjcciajhdojfnbdddfaoknhalnja" # I don't care about cookies
         "mnjggcdmjocbbbhaepdhchncahnbgone" # SponsorBlock
         "dhdgffkkebhmkfjojejmpbldmpobfkfo" # Tampermonkey
+        "ehpdicggenhgapiikfpnmppdonadlnmp" # Disable Scroll Jacking
       ];
       extraOpts = {
         "BrowserSignin" = 0;
