@@ -154,15 +154,6 @@ in {
     };
   };
 
-  services.nginx.virtualHosts."paradigminteractive.agency" = {
-    enableACME = true;
-    forceSSL = true;
-    locations."/".root = builtins.fetchTarball {
-      url = "https://git.neet.dev/zuckerberg/paradigminteractive.agency/archive/b91f3ea2884ddd902461a8acb47f20ae04bc28ee.tar.gz";
-      sha256 = "1x1fpsd1qr0004hfcxk6j4c4n3wwxykzhnv47gmrdnx5hq1nbzq4";
-    };
-  };
-
   services.matrix = {
     enable = true;
     host = "neet.space";
