@@ -8,6 +8,14 @@ in {
       hostNames = [ "liza" "liza.neet.dev" ];
       publicKey = system.liza;
     };
+    ponyo = {
+      hostNames = [ "ponyo" "ponyo.neet.dev" ];
+      publicKey = system.ponyo;
+    };
+    ponyo-unlock = {
+      hostNames = [ "unlock.ponyo.neet.dev" "cfamr6artx75qvt7ho3rrbsc7mkucmv5aawebwflsfuorusayacffryd.onion" ];
+      publicKey = system.ponyo-unlock;
+    };
     ray = {
       hostNames = [ "ray" ];
       publicKey = system.ray;

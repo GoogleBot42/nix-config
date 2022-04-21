@@ -5,8 +5,6 @@
     ./hardware-configuration.nix
   ];
 
-  # cfamr6artx75qvt7ho3rrbsc7mkucmv5aawebwflsfuorusayacffryd.onion
-
   networking.hostName = "ponyo";
 
   firmware.x86_64.enable = true;
