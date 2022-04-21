@@ -7,7 +7,7 @@
 
   boot.initrd.availableKernelModules = [ "ata_piix" "uhci_hcd" "virtio_pci" "virtio_scsi" "sd_mod" ];
   boot.initrd.kernelModules = [ ];
-  boot.kernelModules = [ "kvm-intel" ];
+  boot.kernelModules = [ "kvm-intel" "nvme" ];
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
@@ -16,13 +16,13 @@
     };
 
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/4CB6-D9F3";
-      fsType = "vfat";
+    { device = "/dev/disk/by-uuid/d3a3777d-1e70-47fa-a274-804dc70ee7fd";
+      fsType = "ext4";
     };
 
   swapDevices = [
     {
-      device = "/dev/disk/by-partuuid/af3c7ed6-9cc6-8241-bc36-8e1aff5c1a34";
+      device = "/dev/disk/by-partuuid/b14668b8-9026-b041-8b71-f302b6b291bf";
       randomEncryption.enable = true;
     }
   ];

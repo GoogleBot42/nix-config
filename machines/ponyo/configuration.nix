@@ -5,17 +5,19 @@
     ./hardware-configuration.nix
   ];
 
-  # un23pkwc3ij7pugl4uiwvdrjjw7xghxbkzppgn3siubqggchbosi6cyd.onion
+  # cfamr6artx75qvt7ho3rrbsc7mkucmv5aawebwflsfuorusayacffryd.onion
 
   networking.hostName = "ponyo";
 
   firmware.x86_64.enable = true;
-  efi.enable = true;
-  boot.loader.grub.efiInstallAsRemovable = true;
+  bios = {
+    enable = true;
+    device = "/dev/sda";
+  };
 
   luks = {
     enable = true;
-    device.path = "/dev/disk/by-uuid/84eaca59-6b03-47b1-9296-9d4736bcf0e0";
+    device.path = "/dev/disk/by-uuid/4cc36be4-dbff-4afe-927d-69bf4637bae2";
   };
 
   system.autoUpgrade.enable = true;
