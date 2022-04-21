@@ -37,11 +37,12 @@
   services.navidrome = {
     enable = true;
     settings = {
-      Address = "127.0.0.1";
+      Address = "0.0.0.0";
       Port = 4533;
       MusicFolder = "/data/samba/Public/Plex/Music";
     };
   };
+  networking.firewall.allowedTCPPorts = [ config.services.navidrome.settings.Port ];
 
   users.users.${config.services.jellyfin.user}.extraGroups = [ "public_data" ];
   users.users.googlebot.extraGroups = [ "transmission" ];
@@ -143,17 +144,6 @@
     proxyPass = "http://172.16.100.2:9091";
     proxyWebsockets = true;
   };
-
-  # navidrome over cloudflare
-  services.cloudflared = {
-    enable = true;
-    config = {
-      url = config.services.nginx.virtualHosts."music.s0".locations."/".proxyPass;
-      tunnel = "5975c2f1-d1f4-496a-a704-6d89ccccae0d";
-      credentials-file = "/run/agenix/cloudflared-navidrome.json";
-    };
-  };
-  age.secrets."cloudflared-navidrome.json".file = ../../../secrets/cloudflared-navidrome.json.age;
 
   nixpkgs.overlays = [
     (final: prev: {

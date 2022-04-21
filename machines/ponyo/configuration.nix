@@ -22,6 +22,21 @@
 
   services.zerotierone.enable = true;
 
+  services.nginx.enable = true;
+  services.nginx.virtualHosts."jellyfin.neet.cloud" = {
+    enableACME = true;
+    forceSSL = true;
+    locations."/" = {
+      proxyPass = "http://s0.zt.neet.dev:8096";
+      proxyWebsockets = true;
+    };
+  };
+  services.nginx.virtualHosts."navidrome.neet.cloud" = {
+    enableACME = true;
+    forceSSL = true;
+    locations."/".proxyPass = "http://s0.zt.neet.dev:4533";
+  };
+
   security.acme.acceptTerms = true;
   security.acme.email = "zuckerberg@neet.dev";
 }
