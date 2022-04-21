@@ -16,13 +16,13 @@
     };
 
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/396E-1E13";
+    { device = "/dev/disk/by-uuid/4CB6-D9F3";
       fsType = "vfat";
     };
 
   swapDevices = [
     {
-      device = "/dev/sdb2";
+      device = "/dev/disk/by-partuuid/af3c7ed6-9cc6-8241-bc36-8e1aff5c1a34";
       randomEncryption.enable = true;
     }
   ];
