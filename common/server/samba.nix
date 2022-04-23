@@ -24,6 +24,18 @@
         load printers = yes
         printing = cups
         printcap name = cups
+
+        # encryption
+        server smb encrypt = desired
+
+        # gotta go fast https://wiki.archlinux.org/title/Samba#Improve_throughput
+        server multi channel support = yes
+        deadtime = 30
+        use sendfile = yes
+        min receivefile size = 16384
+        aio read size = 1
+        aio write size = 1
+        socket options = IPTOS_LOWDELAY TCP_NODELAY IPTOS_THROUGHPUT SO_RCVBUF=131072 SO_SNDBUF=131072
       '';
 
       shares = {
