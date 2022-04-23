@@ -62,15 +62,16 @@
     services.lidarr.enable = true;
     services.lidarr.user = "public_data";
     services.lidarr.group = "public_data";
-    users.groups.transmission.members = [ "public_data" ];
     services.transmission = {
       enable = true;
       performanceNetParameters = true;
+      user = "public_data";
+      group = "public_data";
       settings = {
         /* directory settings */
         # "watch-dir" = "/srv/storage/Transmission/To-Download";
         # "watch-dir-enabled" = true;
-        "download-dir" = "/var/lib/transmission/Downloads";
+        "download-dir" = "/data/samba/Public/Plex/Transmission";
         "incomplete-dir" = "/var/lib/transmission/.incomplete";
         "incomplete-dir-enabled" = true;
 
