@@ -131,18 +131,18 @@
   # flaresolverr
 
   services.nginx.enable = true;
-  services.nginx.virtualHosts."bazarr.s0".locations."/".proxyPass = "http://172.16.100.2:6767";
-  services.nginx.virtualHosts."radarr.s0".locations."/".proxyPass = "http://172.16.100.2:7878";
-  services.nginx.virtualHosts."lidarr.s0".locations."/".proxyPass = "http://172.16.100.2:8686";
-  services.nginx.virtualHosts."sonarr.s0".locations."/".proxyPass = "http://172.16.100.2:8989";
-  services.nginx.virtualHosts."prowlarr.s0".locations."/".proxyPass = "http://172.16.100.2:9696";
+  services.nginx.virtualHosts."bazarr.s0".locations."/".proxyPass = "http://vpn.containers:6767";
+  services.nginx.virtualHosts."radarr.s0".locations."/".proxyPass = "http://vpn.containers:7878";
+  services.nginx.virtualHosts."lidarr.s0".locations."/".proxyPass = "http://vpn.containers:8686";
+  services.nginx.virtualHosts."sonarr.s0".locations."/".proxyPass = "http://vpn.containers:8989";
+  services.nginx.virtualHosts."prowlarr.s0".locations."/".proxyPass = "http://vpn.containers:9696";
   services.nginx.virtualHosts."music.s0".locations."/".proxyPass = "http://localhost:4533";
   services.nginx.virtualHosts."jellyfin.s0".locations."/" = {
     proxyPass = "http://localhost:8096";
     proxyWebsockets = true;
   };
   services.nginx.virtualHosts."transmission.s0".locations."/" = {
-    proxyPass = "http://172.16.100.2:9091";
+    proxyPass = "http://vpn.containers:9091";
     proxyWebsockets = true;
   };
 

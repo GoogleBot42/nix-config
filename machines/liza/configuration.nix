@@ -145,7 +145,7 @@ in {
     forceSSL = true;
     locations = {
       "/stream.mp3" = {
-        proxyPass = "http://172.16.100.2:8001/stream.mp3";
+        proxyPass = "http://vpn.containers:8001/stream.mp3";
         extraConfig = ''
           add_header Access-Control-Allow-Origin *;
         '';
