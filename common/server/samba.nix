@@ -37,14 +37,26 @@
           "force user" = "public_data";
           "force group" = "public_data";
         };
-        private = {
-          path = "/data/samba/Private";
+        googlebot = {
+          path = "/data/samba/googlebot";
           browseable = "yes";
           "read only" = "no";
           "guest ok" = "no";
+          "valid users" = "googlebot";
           "create mask" = "0644";
           "directory mask" = "0755";
           "force user" = "googlebot";
+          "force group" = "users";
+        };
+        cris = {
+          path = "/data/samba/cris";
+          browseable = "yes";
+          "read only" = "no";
+          "guest ok" = "no";
+          "valid users" = "cris";
+          "create mask" = "0644";
+          "directory mask" = "0755";
+          "force user" = "root";
           "force group" = "users";
         };
         printers = {
