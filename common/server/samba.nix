@@ -102,5 +102,10 @@
       uid = 994;
     };
     users.users.googlebot.extraGroups = [ "public_data" ];
+
+    # samba user for share
+    users.users.cris.isSystemUser = true;
+    users.users.cris.group = "cris";
+    users.groups.cris = {};
   };
 }
