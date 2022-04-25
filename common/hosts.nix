@@ -6,6 +6,8 @@ in {
   networking.hosts = {
     # some DNS providers filter local ip results from DNS request
     "172.30.145.180" = [ "s0.zt.neet.dev" ];
+    "172.30.109.9" = [ "ponyo.zt.neet.dev" ];
+    "172.30.189.212" = [ "ray.zt.neet.dev" ];
   };
 
   programs.ssh.knownHosts = {
@@ -14,7 +16,7 @@ in {
       publicKey = system.liza;
     };
     ponyo = {
-      hostNames = [ "ponyo" "ponyo.neet.dev" ];
+      hostNames = [ "ponyo" "ponyo.neet.dev" "ponyo.zt.neet.dev" ];
       publicKey = system.ponyo;
     };
     ponyo-unlock = {
@@ -22,11 +24,11 @@ in {
       publicKey = system.ponyo-unlock;
     };
     ray = {
-      hostNames = [ "ray" ];
+      hostNames = [ "ray" "ray.zt.neet.dev" ];
       publicKey = system.ray;
     };
     s0 = {
-      hostNames = [ "s0" ];
+      hostNames = [ "s0" "s0.zt.neet.dev" ];
       publicKey = system.s0;
     };
     n1 = {
