@@ -173,6 +173,15 @@
           runHook postInstall
         '';
       });
+
+      pykms = prev.pykms.overrideAttrs (old: {
+        src = pkgs.fetchFromGitHub {
+          owner = "Py-KMS-Organization";
+          repo = "py-kms";
+          rev = "7bea3a2cb03c4c3666ff41185ace9f7ea2a07b99";
+          sha256 = "90DqMqPjfqfyRq86UzG9B/TjY+yclJBlggw+eIDgRe0=";
+        };
+      });
     })
   ];
 }
