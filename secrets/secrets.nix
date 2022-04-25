@@ -17,4 +17,5 @@ in
   "spotifyd.age".publicKeys = all;
   "wolframalpha.age".publicKeys = all;
   "cloudflared-navidrome.json.age".publicKeys = all;
+  "smb-secrets.age".publicKeys = all;
 }

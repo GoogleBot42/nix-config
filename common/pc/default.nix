@@ -17,6 +17,7 @@ in {
     ./discord.nix
     ./steam.nix
     ./touchpad.nix
+    ./mount-samba.nix
   ];
 
   options.de = {

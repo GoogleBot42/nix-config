@@ -49,6 +49,8 @@
 
   services.zerotierone.enable = true;
 
+  services.mount-samba.enable = true;
+
   de.enable = true;
   de.touchpad.enable = true;
 }

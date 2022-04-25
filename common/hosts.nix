@@ -3,6 +3,11 @@
 let
   system = (import ./ssh.nix).system;
 in {
+  networking.hosts = {
+    # some DNS providers filter local ip results from DNS request
+    "172.30.145.180" = [ "s0.zt.neet.dev" ];
+  };
+
   programs.ssh.knownHosts = {
     liza = {
       hostNames = [ "liza" "liza.neet.dev" ];
