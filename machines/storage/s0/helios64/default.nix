@@ -14,9 +14,10 @@
 
   # Required for rootfs on sata
   boot.initrd.availableKernelModules = [
-    "pcie-rockchip-host"
-    "phy-rockchip-pcie"
-    "phy-rockchip-usb"
+    "pcie-rockchip-host" # required for rootfs on pcie sata disks
+    "phy-rockchip-pcie" # required for rootfs on pcie sata disks
+    "phy-rockchip-usb" # maybe not needed
+    "uas" # required for rootfs on USB 3.0 sata disks
   ];
 
   # bcachefs kernel is 5.15. but need patches that are only in 5.16+

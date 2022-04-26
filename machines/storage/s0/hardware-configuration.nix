@@ -17,14 +17,21 @@
   boot.kernelModules = [ ];
   boot.extraModulePackages = [ ];
 
-  boot.initrd.luks.devices."enc-pv1".device = "/dev/disk/by-uuid/36c4fab0-ea98-4ebc-9612-893f8f61c228";
+  boot.initrd.luks.devices."enc-pv1" = {
+    device = "/dev/disk/by-uuid/e3b588b6-d07f-4221-a194-e1e900299752";
+    allowDiscards = true; # SSD
+  };
   boot.initrd.luks.devices."enc-pv2".device = "/dev/disk/by-uuid/514231c1-5934-401f-80e1-e3b6b62dc9d5";
   boot.initrd.luks.devices."enc-pv3".device = "/dev/disk/by-uuid/f45abe73-d0c6-446f-b28c-7a96a3f87851";
   boot.initrd.luks.devices."enc-pv4".device = "/dev/disk/by-uuid/e2c7402a-e72c-4c4a-998f-82e4c10187bc";
   boot.initrd.luks.devices."enc-pv5".device = "/dev/disk/by-uuid/5d1002b8-a0ed-4a1c-99f5-24b8816d9e38";
+  boot.initrd.luks.devices."enc-pvUSB" = {
+    device = "/dev/disk/by-uuid/c8e18f86-a950-4e4e-8f3c-366cc78db29b";
+    allowDiscards = true; # SSD
+  };
 
   fileSystems."/" =
-    { device = "/dev/mapper/enc-pv1:/dev/mapper/enc-pv2:/dev/mapper/enc-pv3:/dev/mapper/enc-pv4:/dev/mapper/enc-pv5";
+    { device = "/dev/mapper/enc-pv1:/dev/mapper/enc-pv2:/dev/mapper/enc-pv3:/dev/mapper/enc-pv4:/dev/mapper/enc-pv5:/dev/mapper/enc-pvUSB";
       fsType = "bcachefs";
     };
 
