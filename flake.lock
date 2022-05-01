@@ -154,16 +154,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1633288285,
-        "narHash": "sha256-pL8oEB1AoghvFTsSLLKA1zhV8Z8TM8vcAkeodS6/IZs=",
+        "lastModified": 1631585589,
+        "narHash": "sha256-q4o/4/2pEuJyaKZwNQC5KHnzG1obClzFB7zWk9XSDfY=",
         "ref": "main",
-        "rev": "eb95b31089f5a107cb7efe0c55d45beb1399ebbb",
-        "revCount": 51,
+        "rev": "5bf607fed977d41a269942a7d1e92f3e6d4f2473",
+        "revCount": 38,
         "type": "git",
         "url": "https://git.neet.dev/zuckerberg/radio.git"
       },
       "original": {
         "ref": "main",
+        "rev": "5bf607fed977d41a269942a7d1e92f3e6d4f2473",
         "type": "git",
         "url": "https://git.neet.dev/zuckerberg/radio.git"
       }

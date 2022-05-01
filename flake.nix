@@ -15,7 +15,7 @@
     agenix.inputs.nixpkgs.follows = "nixpkgs";
 
     # radio
-    radio.url = "git+https://git.neet.dev/zuckerberg/radio.git?ref=main";
+    radio.url = "git+https://git.neet.dev/zuckerberg/radio.git?ref=main&rev=5bf607fed977d41a269942a7d1e92f3e6d4f2473";
     radio.inputs.nixpkgs.follows = "nixpkgs";
     radio.inputs.flake-utils.follows = "flake-utils";
     radio-web.url = "git+https://git.neet.dev/zuckerberg/radio-web.git";
