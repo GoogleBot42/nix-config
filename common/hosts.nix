@@ -16,7 +16,7 @@ in {
       publicKey = system.liza;
     };
     ponyo = {
-      hostNames = [ "ponyo" "ponyo.neet.dev" "ponyo.zt.neet.dev" ];
+      hostNames = [ "ponyo" "ponyo.neet.dev" "ponyo.zt.neet.dev" "git.neet.dev" ];
       publicKey = system.ponyo;
     };
     ponyo-unlock = {
