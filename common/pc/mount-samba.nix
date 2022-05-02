@@ -6,7 +6,7 @@ let
   cfg = config.services.mount-samba;
 
   # prevents hanging on network split
-  network_opts = "x-systemd.automount,noauto,x-systemd.idle-timeout=60,x-systemd.device-timeout=5s,x-systemd.mount-timeout=5s";
+  network_opts = "x-systemd.automount,noauto,x-systemd.idle-timeout=60,x-systemd.device-timeout=5s,x-systemd.mount-timeout=5s,nostrictsync,cache=loose,handlecache,handletimeout=30000,rwpidforward,mapposix,soft,resilienthandles,echo_interval=10,noblocksend";
 
   user_opts = "uid=${toString config.users.users.googlebot.uid},file_mode=0660,dir_mode=0770,user";
   auth_opts = "credentials=/run/agenix/smb-secrets";
