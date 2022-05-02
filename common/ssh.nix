@@ -24,6 +24,7 @@ rec {
   # groups
   systems = with system; [
     liza
+    ponyo
     ray
     s0
     n1
@@ -39,6 +40,7 @@ rec {
   ];
   servers = with system; [
     liza
+    ponyo
     s0
     n1
     n2
