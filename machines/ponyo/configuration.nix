@@ -22,6 +22,23 @@
 
   services.zerotierone.enable = true;
 
+  services.thelounge = {
+    enable = true;
+    port = 9000;
+    fileUploadBaseUrl = "https://files.neet.cloud/irc/";
+    host = "irc.neet.dev";
+    fileHost = {
+      host = "files.neet.cloud";
+      path = "/irc";
+    };
+  };
+
+  services.murmur = {
+    enable = true;
+    port = 23563;
+    domain = "voice.neet.space";
+  };
+
   services.nginx.enable = true;
   services.nginx.virtualHosts."jellyfin.neet.cloud" = {
     enableACME = true;

@@ -108,7 +108,6 @@
       "reg" = mkSystem "x86_64-linux" nixpkgs ./machines/reg/configuration.nix;
       "ray" = mkSystem "x86_64-linux" nixpkgs ./machines/ray/configuration.nix;
       "nat" = mkSystem "aarch64-linux" nixpkgs ./machines/nat/configuration.nix;
-      "neetdev" = mkSystem "x86_64-linux" nixpkgs ./machines/neet.dev/configuration.nix;
       "liza" = mkSystem "x86_64-linux" nixpkgs ./machines/liza/configuration.nix;
       "ponyo" = mkSystem "x86_64-linux" nixpkgs ./machines/ponyo/configuration.nix;
       "s0" = mkSystem "aarch64-linux" nixpkgs-unstable ./machines/storage/s0/configuration.nix;
