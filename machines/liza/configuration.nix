@@ -1,17 +1,6 @@
 { config, pkgs, lib, mkVpnContainer, ... }:
 
-let
-  mta-sts-web = {
-    enableACME = true;
-    forceSSL = true;
-    locations."=/.well-known/mta-sts.txt".alias = pkgs.writeText "mta-sts.txt" ''
-      version: STSv1
-      mode: none
-      mx: mail.neet.dev
-      max_age: 86400
-    '';
-  };
-in {
+{
   imports =[
     ./hardware-configuration.nix
   ];
@@ -99,26 +88,6 @@ in {
     };
   };
   age.secrets.searx.file = ../../secrets/searx.age;
-
-  services.minecraft-server = {
-    enable = true;
-    jvmOpts = "-Xms2048M -Xmx4092M -XX:+UseG1GC -XX:ParallelGCThreads=2 -XX:MinHeapFreeRatio=5 -XX:MaxHeapFreeRatio=10";
-    eula = true;
-    declarative = true;
-    serverProperties = {
-      motd = "Welcome :)";
-      server-port = 38358;
-      white-list = false;
-    };
-    openFirewall = true;
-    package = pkgs.minecraft-server.overrideAttrs (old: {
-      version = "1.17";
-      src = pkgs.fetchurl {
-        url = "https://launcher.mojang.com/v1/objects/0a269b5f2c5b93b1712d0f5dc43b6182b9ab254e/server.jar";
-        sha1 = "0a269b5f2c5b93b1712d0f5dc43b6182b9ab254e";
-      };
-    });
-  };
 
   # wrap radio in a VPN
   containers.vpn = mkVpnContainer pkgs "/dev/null" {
@@ -215,12 +184,6 @@ in {
     certificateScheme = 3; # use let's encrypt for certs
   };
   age.secrets.email-pw.file = ../../secrets/email-pw.age;
-  services.nginx.virtualHosts."mta-sts.runyan.org" = mta-sts-web;
-  services.nginx.virtualHosts."mta-sts.runyan.rocks" = mta-sts-web;
-  services.nginx.virtualHosts."mta-sts.thunderhex.com" = mta-sts-web;
-  services.nginx.virtualHosts."mta-sts.tar.ninja" = mta-sts-web;
-  services.nginx.virtualHosts."mta-sts.bsd.ninja" = mta-sts-web;
-  services.nginx.virtualHosts."mta-sts.bsd.rocks" = mta-sts-web;
 
   services.nextcloud = {
     enable = true;
