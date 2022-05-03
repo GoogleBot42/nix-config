@@ -18,4 +18,5 @@ in
   "wolframalpha.age".publicKeys = all;
   "cloudflared-navidrome.json.age".publicKeys = all;
   "smb-secrets.age".publicKeys = all;
+  "sasl_relay_passwd.age".publicKeys = all;
 }
