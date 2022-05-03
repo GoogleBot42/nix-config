@@ -24,6 +24,10 @@
         load printers = yes
         printing = cups
         printcap name = cups
+
+        # horrible files
+        veto files = /._*/.DS_Store/ /._*/._.DS_Store/
+        delete veto files = yes
       '';
 
       shares = {
