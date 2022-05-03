@@ -68,6 +68,7 @@
     smtp_sasl_password_maps = "hash:/var/lib/postfix/conf/sasl_relay_passwd";
     smtp_use_tls = "yes";
     sender_dependent_relayhost_maps = "hash:/var/lib/postfix/conf/sender_relay";
+    smtp_sender_dependent_authentication = "yes";
   };
   services.postfix.mapFiles.sender_relay = let
     relayHost = "[smtp.mailgun.org]:587";
