@@ -58,14 +58,14 @@
   containers.vpn = mkVpnContainer pkgs "/dev/null" {
     services.radio = {
       enable = true;
-      host = "radio.neet.space";
+      host = "radio.runyan.org";
     };
   };
   # containers cannot unlock their own secrets right now. unlock it here
   age.secrets."pia-login.conf".file = ../../secrets/pia-login.conf;
 
   # icecast endpoint + website
-  services.nginx.virtualHosts."radio.neet.space" = {
+  services.nginx.virtualHosts."radio.runyan.org" = {
     enableACME = true;
     forceSSL = true;
     locations = {
@@ -158,6 +158,15 @@
     enableACME = true;
     forceSSL = true;
     root = "/var/www/tmp";
+  };
+
+  # redirect to github
+  services.nginx.virtualHosts."runyan.org" = {
+    enableACME = true;
+    forceSSL = true;
+    extraConfig = ''
+      rewrite ^/(.*)$ https://github.com/GoogleBot42 redirect;
+    '';
   };
 
   security.acme.acceptTerms = true;
