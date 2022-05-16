@@ -60,6 +60,9 @@
   };
   age.secrets.email-pw.file = ../../secrets/email-pw.age;
 
+  # sendmail to use xxx@domain instead of xxx@mail.domain
+  services.postfix.origin = "$mydomain";
+
   # relay sent mail through mailgun
   # https://www.howtoforge.com/community/threads/different-smtp-relays-for-different-domains-in-postfix.82711/#post-392620
   services.postfix.config = {
