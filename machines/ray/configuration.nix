@@ -17,6 +17,8 @@
     allowDiscards = true;
   };
 
+  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+
   networking.hostName = "ray";
 
   hardware.enableAllFirmware = true;

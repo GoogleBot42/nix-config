@@ -32,13 +32,10 @@
     archivebox.inputs.flake-utils.follows = "flake-utils";
   };
 
-  outputs = inputs: {
+  outputs = { self, nixpkgs, nixpkgs-unstable, ... }@inputs: {
 
     nixosConfigurations =
     let
-      nixpkgs = inputs.nixpkgs;
-      nixpkgs-unstable = inputs.nixpkgs-unstable;
-
       modules = system: [
         ./common
         inputs.simple-nixos-mailserver.nixosModule
@@ -118,6 +115,17 @@
       "n5" = mkSystem "aarch64-linux" nixpkgs ./machines/compute/n5/configuration.nix;
       "n6" = mkSystem "aarch64-linux" nixpkgs ./machines/compute/n6/configuration.nix;
       "n7" = mkSystem "aarch64-linux" nixpkgs ./machines/compute/n7/configuration.nix;
+    };
+
+    packages = let
+      mkKexec = system:
+        (nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [ ./machines/kexec.nix ];
+        }).config.system.build.kexec_tarball;
+    in {
+      "x86_64-linux"."kexec" = mkKexec "x86_64-linux";
+      "aarch64-linux"."kexec" = mkKexec "aarch64-linux";
     };
   };
 }
