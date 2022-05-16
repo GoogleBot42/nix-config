@@ -42,7 +42,6 @@ in {
       nextcloud-client
       signal-desktop
       minecraft
-      sauerbraten
       gparted
       libreoffice-fresh
       thunderbird
