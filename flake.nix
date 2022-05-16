@@ -5,6 +5,9 @@
 
     flake-utils.url = "github:numtide/flake-utils";
 
+    nix-locate.url = "github:bennofs/nix-index";
+    nix-locate.inputs.nixpkgs.follows = "nixpkgs";
+
     # mail server
     simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver/nixos-21.11";
     simple-nixos-mailserver.inputs.nixpkgs.follows = "nixpkgs";
@@ -43,7 +46,9 @@
         inputs.dailybuild_modules.nixosModule
         inputs.archivebox.nixosModule
         ({ lib, ... }: {
-          config.environment.systemPackages = [ inputs.agenix.defaultPackage.${system} ];
+          config.environment.systemPackages = [
+            inputs.agenix.defaultPackage.${system}
+          ];
 
           # because nixos specialArgs doesn't work for containers... need to pass in inputs a different way
           options.inputs = lib.mkOption { default = inputs; };

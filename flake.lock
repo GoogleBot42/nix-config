@@ -82,6 +82,22 @@
         "url": "https://git.neet.dev/zuckerberg/dailybuild_modules.git"
       }
     },
+    "flake-compat": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1641205782,
+        "narHash": "sha256-4jY7RCWUoZ9cKD8co0/4tFARpWB+57+r1bLLvXNJliY=",
+        "owner": "edolstra",
+        "repo": "flake-compat",
+        "rev": "b7547d3eed6f32d06102ead8991ec52ab0a4f1a7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "edolstra",
+        "repo": "flake-compat",
+        "type": "github"
+      }
+    },
     "flake-utils": {
       "locked": {
         "lastModified": 1648297722,
@@ -94,6 +110,27 @@
       "original": {
         "owner": "numtide",
         "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "nix-locate": {
+      "inputs": {
+        "flake-compat": "flake-compat",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1647808006,
+        "narHash": "sha256-aBlJcylH7/MDiu0RVEiUwV1XufGfVk4OvsFutImCszY=",
+        "owner": "bennofs",
+        "repo": "nix-index",
+        "rev": "e7c66ba52fcfba6bfe51adb5400c29a9622664a2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "bennofs",
+        "repo": "nix-index",
         "type": "github"
       }
     },
@@ -191,6 +228,7 @@
         "archivebox": "archivebox",
         "dailybuild_modules": "dailybuild_modules",
         "flake-utils": "flake-utils",
+        "nix-locate": "nix-locate",
         "nixpkgs": "nixpkgs",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "radio": "radio",
