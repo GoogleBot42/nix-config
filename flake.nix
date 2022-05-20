@@ -5,7 +5,7 @@
 
     flake-utils.url = "github:numtide/flake-utils";
 
-    nix-locate.url = "github:bennofs/nix-index";
+    nix-locate.url = "github:googlebot42/nix-index";
     nix-locate.inputs.nixpkgs.follows = "nixpkgs";
 
     # mail server
