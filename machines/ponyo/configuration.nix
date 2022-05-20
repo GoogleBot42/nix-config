@@ -144,7 +144,7 @@
     enableACME = true;
     forceSSL = true;
     locations."/" = {
-      proxyPass = "http://s0.zt.neet.dev:8096";
+      proxyPass = "http://s0.zt.neet.dev";
       proxyWebsockets = true;
     };
   };

@@ -129,15 +129,6 @@
   # unpackerr
   # flaresolverr
 
-  # forward port for jellyfin
-  networking.nat.forwardPorts = [
-    {
-      destination = "vpn.containers:8096"; # http
-      proto = "tcp";
-      sourcePort = 8096;
-    }
-  ];
-
   services.nginx.enable = true;
   services.nginx.virtualHosts."bazarr.s0".locations."/".proxyPass = "http://vpn.containers:6767";
   services.nginx.virtualHosts."radarr.s0".locations."/".proxyPass = "http://vpn.containers:7878";
@@ -146,6 +137,10 @@
   services.nginx.virtualHosts."prowlarr.s0".locations."/".proxyPass = "http://vpn.containers:9696";
   services.nginx.virtualHosts."music.s0".locations."/".proxyPass = "http://localhost:4533";
   services.nginx.virtualHosts."jellyfin.s0".locations."/" = {
+    proxyPass = "http://vpn.containers:8096";
+    proxyWebsockets = true;
+  };
+  services.nginx.virtualHosts."s0".locations."/" = {
     proxyPass = "http://vpn.containers:8096";
     proxyWebsockets = true;
   };
