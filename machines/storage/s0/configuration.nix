@@ -130,7 +130,7 @@
   # flaresolverr
 
   services.nginx.enable = true;
-  # services.nginx.virtualHosts."bazarr.s0".locations."/".proxyPass = "http://vpn.containers:6767";
+  services.nginx.virtualHosts."bazarr.s0".locations."/".proxyPass = "http://vpn.containers:6767";
   services.nginx.virtualHosts."radarr.s0".locations."/".proxyPass = "http://vpn.containers:7878";
   services.nginx.virtualHosts."lidarr.s0".locations."/".proxyPass = "http://vpn.containers:8686";
   services.nginx.virtualHosts."sonarr.s0".locations."/".proxyPass = "http://vpn.containers:8989";
@@ -140,7 +140,7 @@
     proxyPass = "http://vpn.containers:8096";
     proxyWebsockets = true;
   };
-  services.nginx.virtualHosts."s0".locations."/" = {
+  services.nginx.virtualHosts."jellyfin.neet.cloud".locations."/" = {
     proxyPass = "http://vpn.containers:8096";
     proxyWebsockets = true;
   };
