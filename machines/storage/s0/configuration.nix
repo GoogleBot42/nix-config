@@ -29,11 +29,6 @@
 
   services.samba.enable = true;
 
-  services.jellyfin = {
-    enable = true;
-    openFirewall = true;
-  };
-
   services.navidrome = {
     enable = true;
     settings = {
@@ -44,11 +39,11 @@
   };
   networking.firewall.allowedTCPPorts = [ config.services.navidrome.settings.Port ];
 
-  users.users.${config.services.jellyfin.user}.extraGroups = [ "public_data" ];
   users.users.googlebot.extraGroups = [ "transmission" ];
   users.groups.transmission.gid = config.ids.gids.transmission;
 
   containers.vpn = mkVpnContainer pkgs "/data/samba/Public/Plex" {
+    # servarr services
     services.prowlarr.enable = true;
     services.sonarr.enable = true;
     services.sonarr.user = "public_data";
@@ -62,6 +57,10 @@
     services.lidarr.enable = true;
     services.lidarr.user = "public_data";
     services.lidarr.group = "public_data";
+
+    services.jellyfin.enable = true;
+    users.users.${config.services.jellyfin.user}.extraGroups = [ "public_data" ];
+
     services.transmission = {
       enable = true;
       performanceNetParameters = true;
@@ -103,7 +102,7 @@
         # "speed-limit-up-enabled" = true;
 
         /* seeding limit */
-        "ratio-limit" = 10;
+        "ratio-limit" = 2;
         "ratio-limit-enabled" = true;
 
         "download-queue-enabled" = true;
@@ -130,6 +129,15 @@
   # unpackerr
   # flaresolverr
 
+  # forward port for jellyfin
+  networking.nat.forwardPorts = [
+    {
+      destination = "vpn.containers:8096"; # http
+      proto = "tcp";
+      sourcePort = 8096;
+    }
+  ];
+
   services.nginx.enable = true;
   services.nginx.virtualHosts."bazarr.s0".locations."/".proxyPass = "http://vpn.containers:6767";
   services.nginx.virtualHosts."radarr.s0".locations."/".proxyPass = "http://vpn.containers:7878";
@@ -138,7 +146,7 @@
   services.nginx.virtualHosts."prowlarr.s0".locations."/".proxyPass = "http://vpn.containers:9696";
   services.nginx.virtualHosts."music.s0".locations."/".proxyPass = "http://localhost:4533";
   services.nginx.virtualHosts."jellyfin.s0".locations."/" = {
-    proxyPass = "http://localhost:8096";
+    proxyPass = "http://vpn.containers:8096";
     proxyWebsockets = true;
   };
   services.nginx.virtualHosts."transmission.s0".locations."/" = {
