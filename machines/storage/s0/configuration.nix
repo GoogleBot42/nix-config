@@ -43,6 +43,9 @@
   users.groups.transmission.gid = config.ids.gids.transmission;
 
   containers.vpn = mkVpnContainer pkgs "/data/samba/Public/Plex" {
+    # swiss vpn
+    pia.server = "swiss.privacy.network";
+
     # servarr services
     services.prowlarr.enable = true;
     services.sonarr.enable = true;
