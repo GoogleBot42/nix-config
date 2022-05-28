@@ -1,4 +1,4 @@
-{ config, pkgs, lib, mkVpnContainer, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   imports =[

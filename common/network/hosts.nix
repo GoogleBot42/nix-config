@@ -1,7 +1,7 @@
 { config, lib, ... }:
 
 let
-  system = (import ./ssh.nix).system;
+  system = (import ../ssh.nix).system;
 in {
   networking.hosts = {
     # some DNS providers filter local ip results from DNS request

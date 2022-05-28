@@ -31,7 +31,7 @@
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
   networking.useDHCP = lib.mkDefault false;
-  networking.interfaces.ens3.useDHCP = lib.mkDefault true;
+  networking.interfaces.eth0.useDHCP = lib.mkDefault true;
 
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }

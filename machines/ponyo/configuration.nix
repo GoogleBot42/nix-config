@@ -1,4 +1,4 @@
-{ config, pkgs, lib, mkVpnContainer, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   imports =[
@@ -55,14 +55,13 @@
   };
 
   # wrap radio in a VPN
-  containers.vpn = mkVpnContainer pkgs "/dev/null" {
+  vpn-container.enable = true;
+  vpn-container.config = {
     services.radio = {
       enable = true;
       host = "radio.runyan.org";
     };
   };
-  # containers cannot unlock their own secrets right now. unlock it here
-  age.secrets."pia-login.conf".file = ../../secrets/pia-login.conf;
 
   # icecast endpoint + website
   services.nginx.virtualHosts."radio.runyan.org" = {
@@ -131,13 +130,9 @@
   age.secrets.iodine.file = ../../secrets/iodine.age;
   networking.firewall.allowedUDPPorts = [ 53 ];
 
-  boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
-  networking.nat.enable = true;
   networking.nat.internalInterfaces = [
     "dns0" # iodine
-    "ve-vpn" # vpn container
   ];
-  networking.nat.externalInterface = "ens3";
 
   services.nginx.enable = true;
   services.nginx.virtualHosts."jellyfin.neet.cloud" = {

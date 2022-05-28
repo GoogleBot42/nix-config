@@ -56,53 +56,15 @@
         })
       ];
 
-      mkVpnContainer = system: pkgs: mount: config: {
-        ephemeral = true;
-        autoStart = true;
-        bindMounts = {
-          "/var/lib" = {
-            hostPath = "/var/lib/";
-            isReadOnly = false;
-          };
-          "/run/agenix" = {
-            hostPath = "/run/agenix";
-            isReadOnly = true;
-          };
-          "/dev/fuse" = {
-            hostPath = "/dev/fuse";
-            isReadOnly = false;
-          };
-          "${mount}" = {
-            hostPath = mount;
-            isReadOnly = false;
-          };
-        };
-        enableTun = true;
-        privateNetwork = true;
-        hostAddress = "172.16.100.1";
-        localAddress = "172.16.100.2";
-
-        config = { lib, ... }: {
-          imports = (modules system) ++ [config];
-
-          nixpkgs.pkgs = pkgs;
-
-          networking.firewall.enable = lib.mkForce false;
-          pia.enable = true;
-
-          # run it's own DNS resolver
-          networking.useHostResolvConf = false;
-          services.resolved.enable = true;
-        };
-      };
-
       mkSystem = system: nixpkgs: path:
-        nixpkgs.lib.nixosSystem {
+        let
+          allModules = modules system;
+        in nixpkgs.lib.nixosSystem {
           inherit system;
-          modules = (modules system) ++ [path];
+          modules = allModules ++ [path];
 
           specialArgs = {
-            mkVpnContainer = (mkVpnContainer system);
+            inherit allModules;
           };
         };
     in

@@ -1,4 +1,4 @@
-{ config, pkgs, lib, mkVpnContainer, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   imports =[
@@ -42,10 +42,12 @@
   users.users.googlebot.extraGroups = [ "transmission" ];
   users.groups.transmission.gid = config.ids.gids.transmission;
 
-  containers.vpn = mkVpnContainer pkgs "/data/samba/Public/Plex" {
-    # swiss vpn
-    pia.server = "swiss.privacy.network";
-
+  vpn-container.enable = true;
+  vpn-container.mounts = [
+    "/var/lib"
+    "/data/samba/Public/Plex"
+  ];
+  vpn-container.config = {
     # servarr services
     services.prowlarr.enable = true;
     services.sonarr.enable = true;
@@ -119,15 +121,6 @@
       uid = 994;
     };
   };
-  # containers cannot unlock their own secrets right now. unlock it here
-  age.secrets."pia-login.conf".file = ../../../secrets/pia-login.conf;
-  boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
-  # forwarding for vpn container
-  networking.nat.enable = true;
-  networking.nat.internalInterfaces = [
-    "ve-vpn" # vpn container
-  ];
-  networking.nat.externalInterface = "eth0";
 
   # unpackerr
   # flaresolverr

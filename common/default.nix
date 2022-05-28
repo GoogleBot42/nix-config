@@ -5,10 +5,8 @@ let
 in {
   imports = [
     ./flakes.nix
-    ./pia.nix
-    ./zerotier.nix
     ./auto-update.nix
-    ./hosts.nix
+    ./network
     ./boot
     ./server
     ./pc

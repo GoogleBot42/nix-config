@@ -121,15 +121,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1647808006,
-        "narHash": "sha256-aBlJcylH7/MDiu0RVEiUwV1XufGfVk4OvsFutImCszY=",
-        "owner": "bennofs",
+        "lastModified": 1652819416,
+        "narHash": "sha256-OzYSb66kQUVP1FM0E7Z0ij13mm14DkJi79FAMprAavo=",
+        "owner": "googlebot42",
         "repo": "nix-index",
-        "rev": "e7c66ba52fcfba6bfe51adb5400c29a9622664a2",
+        "rev": "a28bb3175d370c6cb9569e6d4b5570e9ca016a3e",
         "type": "github"
       },
       "original": {
-        "owner": "bennofs",
+        "owner": "googlebot42",
         "repo": "nix-index",
         "type": "github"
       }
