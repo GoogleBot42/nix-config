@@ -88,5 +88,5 @@ in {
   };
 
   security.acme.acceptTerms = true;
-  security.acme.default.email = "zuckerberg@neet.dev";
+  security.acme.defaults.email = "zuckerberg@neet.dev";
 }
