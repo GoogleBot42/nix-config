@@ -49,6 +49,7 @@ in {
       spotify-qt
       arduino
       yt-dlp
+      jellyfin-media-player
     ];
 
     # Networking
