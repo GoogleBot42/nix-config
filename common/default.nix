@@ -44,6 +44,7 @@ in {
     helix
     lm_sensors
     nix-locate
+    jellyfin-media-player
   ];
 
   nixpkgs.config.allowUnfree = true;
