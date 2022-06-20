@@ -23,7 +23,7 @@ in {
 
   config = lib.mkIf cfg.enable {
     services.thelounge = {
-      private = true;
+      public = false;
       extraConfig = {
         reverseProxy = true;
         maxHistory = -1;

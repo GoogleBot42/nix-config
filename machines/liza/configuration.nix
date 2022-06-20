@@ -107,7 +107,4 @@
     enableACME = true;
     forceSSL = true;
   };
-
-  security.acme.acceptTerms = true;
-  security.acme.email = "zuckerberg@neet.dev";
 }

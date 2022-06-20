@@ -59,23 +59,25 @@ in {
   config = lib.mkIf cfg.enable {
     services.matrix-synapse = {
       enable = true;
-      server_name = cfg.host;
-      enable_registration = cfg.enable_registration;
-      listeners = [ {
-        bind_address = "127.0.0.1";
-        port = cfg.port;
-        tls = false;
-        resources = [ {
-          compress = true;
-          names = [ "client" "federation" ];
+      settings = {
+        server_name = cfg.host;
+        enable_registration = cfg.enable_registration;
+        listeners = [ {
+          bind_addresses = ["127.0.0.1"];
+          port = cfg.port;
+          tls = false;
+          resources = [ {
+            compress = true;
+            names = [ "client" "federation" ];
+          } ];
         } ];
-      } ];
-      turn_uris = [
-        "turn:${cfg.turn.host}:${toString cfg.turn.port}?transport=udp"
-        "turn:${cfg.turn.host}:${toString cfg.turn.port}?transport=tcp"
-      ];
-      turn_shared_secret = cfg.turn.secret;
-      turn_user_lifetime = "1h";
+        turn_uris = [
+          "turn:${cfg.turn.host}:${toString cfg.turn.port}?transport=udp"
+          "turn:${cfg.turn.host}:${toString cfg.turn.port}?transport=tcp"
+        ];
+        turn_shared_secret = cfg.turn.secret;
+        turn_user_lifetime = "1h";
+      };
     };
 
     services.coturn = {

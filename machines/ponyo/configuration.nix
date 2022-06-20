@@ -163,7 +163,4 @@
       rewrite ^/(.*)$ https://github.com/GoogleBot42 redirect;
     '';
   };
-
-  security.acme.acceptTerms = true;
-  security.acme.email = "zuckerberg@neet.dev";
 }

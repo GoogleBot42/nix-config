@@ -86,4 +86,7 @@ in {
       set fish_greeting
     '';
   };
+
+  security.acme.acceptTerms = true;
+  security.acme.default.email = "zuckerberg@neet.dev";
 }
