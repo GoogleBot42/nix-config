@@ -74,7 +74,7 @@
       "nat" = mkSystem "aarch64-linux" nixpkgs ./machines/nat/configuration.nix;
       "liza" = mkSystem "x86_64-linux" nixpkgs ./machines/liza/configuration.nix;
       "ponyo" = mkSystem "x86_64-linux" nixpkgs ./machines/ponyo/configuration.nix;
-      "s0" = mkSystem "aarch64-linux" nixpkgs ./machines/storage/s0/configuration.nix;
+      "s0" = mkSystem "aarch64-linux" nixpkgs-unstable ./machines/storage/s0/configuration.nix;
       "n1" = mkSystem "aarch64-linux" nixpkgs ./machines/compute/n1/configuration.nix;
       "n2" = mkSystem "aarch64-linux" nixpkgs ./machines/compute/n2/configuration.nix;
       "n3" = mkSystem "aarch64-linux" nixpkgs ./machines/compute/n3/configuration.nix;
