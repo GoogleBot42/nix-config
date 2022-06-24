@@ -145,6 +145,9 @@
     proxyWebsockets = true;
   };
 
+  # tailscale
+  services.tailscale.exitNode = true;
+
   nixpkgs.overlays = [
     (final: prev: {
       radarr = prev.radarr.overrideAttrs (old: rec {

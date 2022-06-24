@@ -63,6 +63,9 @@
     };
   };
 
+  # tailscale
+  services.tailscale.exitNode = true;
+
   # icecast endpoint + website
   services.nginx.virtualHosts."radio.runyan.org" = {
     enableACME = true;

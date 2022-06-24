@@ -88,7 +88,7 @@ in
     networking.nat.internalInterfaces = [
       "ve-${cfg.containerName}"
     ];
-    boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
+    networking.ip_forward = true;
 
     # assumes only one potential interface
     networking.usePredictableInterfaceNames = false;
