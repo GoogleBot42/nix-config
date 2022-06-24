@@ -8,7 +8,7 @@ in
 {
   options.services.tailscale.exitNode = mkEnableOption "Enable exit node support";
 
-  config.services.tailscale.enable = true;
+  config.services.tailscale.enable = !config.boot.isContainer;
 
   # exit node
   config.networking.firewall.checkReversePath = mkIf cfg.exitNode "loose";
