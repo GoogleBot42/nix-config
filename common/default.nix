@@ -1,11 +1,10 @@
 { config, pkgs, ... }:
 
-let
-  nix-locate = config.inputs.nix-locate.defaultPackage.${config.currentSystem};
-in {
+{
   imports = [
     ./flakes.nix
     ./auto-update.nix
+    ./shell.nix
     ./network
     ./boot
     ./server
@@ -43,7 +42,6 @@ in {
     micro
     helix
     lm_sensors
-    nix-locate
   ];
 
   nixpkgs.config.allowUnfree = true;
@@ -63,28 +61,6 @@ in {
   nix.trustedUsers = [ "root" "googlebot" ];
 
   nix.gc.automatic = true;
-
-  programs.command-not-found.enable = false;
-
-  programs.fish = {
-    enable = true;
-
-    shellInit = let
-      wrapper = pkgs.writeScript "command-not-found" ''
-        #!${pkgs.bash}/bin/bash
-        source ${nix-locate}/etc/profile.d/command-not-found.sh
-        command_not_found_handle "$@"
-      '';
-    in ''
-      # use nix-locate for command-not-found functionality
-      function __fish_command_not_found_handler --on-event fish_command_not_found
-          ${wrapper} $argv
-      end
-
-      # disable annoying fish shell greeting
-      set fish_greeting
-    '';
-  };
 
   security.acme.acceptTerms = true;
   security.acme.defaults.email = "zuckerberg@neet.dev";

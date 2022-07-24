@@ -13,6 +13,7 @@
 - Format everything here using nixfmt
 - Cleanup the line between hardware-configuration.nix and configuration.nix in machine config
 - CI https://gvolpe.com/blog/nixos-binary-cache-ci/
+- remove `options.currentSystem`
 
 ### NAS
 - helios64 extra led lights
@@ -28,15 +29,6 @@
     - just need a kernel module? https://github.com/firestack/bcachefs-tools-flake/blob/kf/dev/mvp/nixos/module/bcachefs.nix#L40
 
 ### Shell Comands
-
-- myip = dig +short myip.opendns.com @resolver1.opendns.com
-
-#### https://linuxreviews.org/HOWTO_Test_Disk_I/O_Performance
-
-- seq read = `fio --name TEST --eta-newline=5s --filename=temp.file --rw=read --size=2g --io_size=10g --blocksize=1024k --ioengine=libaio --fsync=10000 --iodepth=32 --direct=1 --numjobs=1 --runtime=60 --group_reporting`
-- seq write = `fio --name TEST --eta-newline=5s --filename=temp.file --rw=write --size=2g --io_size=10g --blocksize=1024k --ioengine=libaio --fsync=10000 --iodepth=32 --direct=1 --numjobs=1 --runtime=60 --group_reporting`
-- random read = `fio --name TEST --eta-newline=5s --filename=temp.file --rw=randread --size=2g --io_size=10g --blocksize=4k --ioengine=libaio --fsync=1 --iodepth=1 --direct=1 --numjobs=32 --runtime=60 --group_reporting`
-- random write = `fio --name TEST --eta-newline=5s --filename=temp.file --rw=randrw --size=2g --io_size=10g --blocksize=4k --ioengine=libaio --fsync=1 --iodepth=1 --direct=1 --numjobs=1 --runtime=60 --group_reporting`
 - tailexitnode = `sudo tailscale up --exit-node=<exit-node-ip> --exit-node-allow-lan-access=true`
 
 ### Services
