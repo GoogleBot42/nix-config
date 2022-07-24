@@ -14,5 +14,6 @@
     ./radio.nix
     ./samba.nix
     ./cloudflared.nix
+    ./owncast.nix
   ];
 }

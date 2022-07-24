@@ -166,4 +166,7 @@
       rewrite ^/(.*)$ https://github.com/GoogleBot42 redirect;
     '';
   };
+
+  services.owncast.enable = true;
+  services.owncast.hostname = "live.neet.dev";
 }

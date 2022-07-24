@@ -14,6 +14,7 @@
 - Cleanup the line between hardware-configuration.nix and configuration.nix in machine config
 - CI https://gvolpe.com/blog/nixos-binary-cache-ci/
 - remove `options.currentSystem`
+- allow `hostname` option for webservices to be null to disable configuring nginx
 
 ### NAS
 - helios64 extra led lights
