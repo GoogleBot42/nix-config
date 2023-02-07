@@ -23,6 +23,11 @@
 
   hardware.enableAllFirmware = true;
 
+  # depthai
+  services.udev.extraRules = ''
+    SUBSYSTEM=="usb", ATTRS{idVendor}=="03e7", MODE="0666"
+  '';
+
   # newer kernel for wifi
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
