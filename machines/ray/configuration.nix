@@ -41,12 +41,19 @@
       nvidiaBusId = "PCI:1:0:0";
       amdgpuBusId = "PCI:4:0:0";
     };
-    powerManagement = {
+#    powerManagement = {
 #      enable = true;
 #      finegrained = true;
 #      coarsegrained = true;
-    };
+#    };
   };
+
+  # virt-manager
+  virtualisation.libvirtd.enable = true;
+  programs.dconf.enable = true;
+  virtualisation.spiceUSBRedirection.enable = true;
+  environment.systemPackages = with pkgs; [ virt-manager ];
+  users.users.googlebot.extraGroups = [ "libvirtd" ];
 
   # vpn-container.enable = true;
   # containers.vpn.interfaces = [ "piaw" ];
