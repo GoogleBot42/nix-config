@@ -28,9 +28,6 @@
     SUBSYSTEM=="usb", ATTRS{idVendor}=="03e7", MODE="0666"
   '';
 
-  # newer kernel for wifi
-  boot.kernelPackages = pkgs.linuxPackages_latest;
-
   # gpu
   services.xserver.videoDrivers = [ "nvidia" ];
   services.xserver.logFile = "/var/log/Xorg.0.log";
