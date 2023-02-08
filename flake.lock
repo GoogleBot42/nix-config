@@ -108,11 +108,11 @@
     "flake-compat": {
       "flake": false,
       "locked": {
-        "lastModified": 1641205782,
-        "narHash": "sha256-4jY7RCWUoZ9cKD8co0/4tFARpWB+57+r1bLLvXNJliY=",
+        "lastModified": 1668681692,
+        "narHash": "sha256-Ht91NGdewz8IQLtWZ9LCeNXMSXHUss+9COoqu6JLmXU=",
         "owner": "edolstra",
         "repo": "flake-compat",
-        "rev": "b7547d3eed6f32d06102ead8991ec52ab0a4f1a7",
+        "rev": "009399224d5e398d03b22badca40a37ac85412a1",
         "type": "github"
       },
       "original": {
@@ -144,15 +144,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1652819416,
-        "narHash": "sha256-OzYSb66kQUVP1FM0E7Z0ij13mm14DkJi79FAMprAavo=",
-        "owner": "googlebot42",
+        "lastModified": 1673969751,
+        "narHash": "sha256-U6aYz3lqZ4NVEGEWiti1i0FyqEo4bUjnTAnA73DPnNU=",
+        "owner": "bennofs",
         "repo": "nix-index",
-        "rev": "a28bb3175d370c6cb9569e6d4b5570e9ca016a3e",
+        "rev": "5f98881b1ed27ab6656e6d71b534f88430f6823a",
         "type": "github"
       },
       "original": {
-        "owner": "googlebot42",
+        "owner": "bennofs",
         "repo": "nix-index",
         "type": "github"
       }
@@ -190,11 +190,11 @@
     },
     "nixpkgs-unstable": {
       "locked": {
-        "lastModified": 1675834324,
-        "narHash": "sha256-GemQdW6lvcgkhEsUo+XOUyfirC0v6i3Fpuon8j8RiQw=",
+        "lastModified": 1675835843,
+        "narHash": "sha256-y1dSCQPcof4CWzRYRqDj4qZzbBl+raVPAko5Prdil28=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "836b2bed01d19dce142298e58c998f4f65057c6a",
+        "rev": "32f914af34f126f54b45e482fb2da4ae78f3095f",
         "type": "github"
       },
       "original": {
