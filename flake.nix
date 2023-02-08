@@ -1,17 +1,16 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.05";
-    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/master";
 
     flake-utils.url = "github:numtide/flake-utils";
 
-    nix-locate.url = "github:googlebot42/nix-index";
+    nix-locate.url = "github:bennofs/nix-index";
     nix-locate.inputs.nixpkgs.follows = "nixpkgs";
 
     # mail server
     simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver/nixos-22.05";
     simple-nixos-mailserver.inputs.nixpkgs.follows = "nixpkgs";
-    simple-nixos-mailserver.inputs.nixpkgs-21_11.follows = "nixpkgs";
 
     # agenix
     agenix.url = "github:ryantm/agenix";
@@ -42,12 +41,12 @@
       modules = system: [
         ./common
         inputs.simple-nixos-mailserver.nixosModule
-        inputs.agenix.nixosModule
+        inputs.agenix.nixosModules.default
         inputs.dailybuild_modules.nixosModule
         inputs.archivebox.nixosModule
         ({ lib, ... }: {
           config.environment.systemPackages = [
-            inputs.agenix.defaultPackage.${system}
+            inputs.agenix.packages.${system}.agenix
           ];
 
           # because nixos specialArgs doesn't work for containers... need to pass in inputs a different way
@@ -70,7 +69,7 @@
     in
     {
       "reg" = mkSystem "x86_64-linux" nixpkgs ./machines/reg/configuration.nix;
-      "ray" = mkSystem "x86_64-linux" nixpkgs ./machines/ray/configuration.nix;
+      "ray" = mkSystem "x86_64-linux" nixpkgs-unstable ./machines/ray/configuration.nix;
       "nat" = mkSystem "aarch64-linux" nixpkgs ./machines/nat/configuration.nix;
       "liza" = mkSystem "x86_64-linux" nixpkgs ./machines/liza/configuration.nix;
       "ponyo" = mkSystem "x86_64-linux" nixpkgs ./machines/ponyo/configuration.nix;

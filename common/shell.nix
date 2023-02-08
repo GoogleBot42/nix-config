@@ -6,7 +6,7 @@
 # - add some handy shell commands
 
 let
-  nix-locate = config.inputs.nix-locate.defaultPackage.${config.currentSystem};
+  nix-locate = config.inputs.nix-locate.packages.${config.currentSystem}.default;
 in {
   programs.command-not-found.enable = false;
 

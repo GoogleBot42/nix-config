@@ -1,12 +1,8 @@
 { config, pkgs, lib, ... }:
 
 {
-   disabledModules = [
-    "hardware/video/nvidia.nix"
-   ];
   imports = [
     ./hardware-configuration.nix
-    ./nvidia.nix
   ];
 
   firmware.x86_64.enable = true;
@@ -30,19 +26,14 @@
 
   # gpu
   services.xserver.videoDrivers = [ "nvidia" ];
-  services.xserver.logFile = "/var/log/Xorg.0.log";
   hardware.nvidia = {
     modesetting.enable = true; # for nvidia-vaapi-driver
     prime = {
-      sync.enable = true;
+      reverseSync.enable = true;
+      offload.enableOffloadCmd = true;
       nvidiaBusId = "PCI:1:0:0";
       amdgpuBusId = "PCI:4:0:0";
     };
-#    powerManagement = {
-#      enable = true;
-#      finegrained = true;
-#      coarsegrained = true;
-#    };
   };
 
   # virt-manager
