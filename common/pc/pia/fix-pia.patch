@@ -1,0 +1,147 @@
+diff --git a/Rakefile b/Rakefile
+index fa6d771..bcd6fb1 100644
+--- a/Rakefile
++++ b/Rakefile
+@@ -151,41 +151,6 @@ end
+ # Install LICENSE.txt
+ stage.install('LICENSE.txt', :res)
+ 
+-# Download server lists to ship preloaded copies with the app.  These tasks
+-# depend on version.txt so they're refreshed periodically (whenver a new commit
+-# is made), but not for every build.
+-#
+-# SERVER_DATA_DIR can be set to use existing files instead of downloading them;
+-# this is primarily intended for reproducing a build.
+-#
+-# Create a probe for SERVER_DATA_DIR so these are updated if it changes.
+-serverDataProbe = Probe.new('serverdata')
+-serverDataProbe.file('serverdata.txt', "#{ENV['SERVER_DATA_DIR']}")
+-# JSON resource build directory
+-jsonFetched = Build.new('json-fetched')
+-# These are the assets we need to fetch and the URIs we get them from
+-{
+-    'modern_shadowsocks.json': 'https://serverlist.piaservers.net/shadow_socks',
+-    'modern_servers.json': 'https://serverlist.piaservers.net/vpninfo/servers/v6',
+-    'modern_region_meta.json': 'https://serverlist.piaservers.net/vpninfo/regions/v2'
+-}.each do |k, v|
+-    fetchedFile = jsonFetched.artifact(k.to_s)
+-    serverDataDir = ENV['SERVER_DATA_DIR']
+-    file fetchedFile => [version.artifact('version.txt'),
+-                         serverDataProbe.artifact('serverdata.txt'),
+-                         jsonFetched.componentDir] do |t|
+-        if(serverDataDir)
+-            # Use the copy provided instead of fetching (for reproducing a build)
+-            File.copy(File.join(serverDataDir, k), fetchedFile)
+-        else
+-            # Fetch from the web API (write with "binary" mode so LF is not
+-            # converted to CRLF on Windows)
+-            File.binwrite(t.name, Net::HTTP.get(URI(v)))
+-        end
+-    end
+-    stage.install(fetchedFile, :res)
+-end
+-
+ # Install version/brand/arch info in case an upgrade needs to know what is
+ # currently installed
+ stage.install(version.artifact('version.txt'), :res)
+diff --git a/common/src/posix/unixsignalhandler.cpp b/common/src/posix/unixsignalhandler.cpp
+index f820a6d..e1b6c33 100644
+--- a/common/src/posix/unixsignalhandler.cpp
++++ b/common/src/posix/unixsignalhandler.cpp
+@@ -132,7 +132,7 @@ void UnixSignalHandler::_signalHandler(int, siginfo_t *info, void *)
+     // we checked it, we can't even log because the logger is not reentrant.
+     auto pThis = instance();
+     if(pThis)
+-        ::write(pThis->_sigFd[0], info, sizeof(siginfo_t));
++        auto _ = ::write(pThis->_sigFd[0], info, sizeof(siginfo_t));
+ }
+ template<int Signal>
+ void UnixSignalHandler::setAbortAction()
+diff --git a/daemon/src/linux/linux_nl.cpp b/daemon/src/linux/linux_nl.cpp
+index fd3aced..2367a5e 100644
+--- a/daemon/src/linux/linux_nl.cpp
++++ b/daemon/src/linux/linux_nl.cpp
+@@ -642,6 +642,6 @@ LinuxNl::~LinuxNl()
+     unsigned char term = 0;
+     PosixFd killSocket = _workerKillSocket.get();
+     if(killSocket)
+-        ::write(killSocket.get(), &term, sizeof(term));
++        auto _ = ::write(killSocket.get(), &term, sizeof(term));
+     _workerThread.join();
+ }
+diff --git a/extras/support-tool/launcher/linux-launcher.cpp b/extras/support-tool/launcher/linux-launcher.cpp
+index 3f63ac2..420d54d 100644
+--- a/extras/support-tool/launcher/linux-launcher.cpp
++++ b/extras/support-tool/launcher/linux-launcher.cpp
+@@ -48,7 +48,7 @@ int fork_execv(gid_t gid, char *filename, char *const argv[])
+     if(forkResult == 0)
+     {
+         // Apply gid as both real and effective
+-        setregid(gid, gid);
++        auto _ = setregid(gid, gid);
+ 
+         int execErr = execv(filename, argv);
+         std::cerr << "exec err: " << execErr << " / " << errno << " - "
+diff --git a/rake/model/qt.rb b/rake/model/qt.rb
+index c8cd362..a6abe59 100644
+--- a/rake/model/qt.rb
++++ b/rake/model/qt.rb
+@@ -171,12 +171,7 @@ class Qt
+     end
+ 
+     def getQtRoot(qtVersion, arch)
+-        qtToolchainPtns = getQtToolchainPatterns(arch)
+-        qtRoots = FileList[*Util.joinPaths([[qtVersion], qtToolchainPtns])]
+-        # Explicitly filter for existing paths - if the pattern has wildcards
+-        # we only get existing directories, but if the patterns are just
+-        # alternates with no wildcards, we can get directories that don't exist
+-        qtRoots.find_all { |r| File.exist?(r) }.max
++        ENV['QTROOT']
+     end
+ 
+     def getQtVersionScore(minor, patch)
+@@ -192,12 +187,7 @@ class Qt
+     end
+ 
+     def getQtPathVersion(path)
+-        verMatch = path.match('^.*/Qt[^/]*/5\.(\d+)\.?(\d*)$')
+-        if(verMatch == nil)
+-            nil
+-        else
+-            [verMatch[1].to_i, verMatch[2].to_i]
+-        end
++        [ENV['QT_MAJOR'].to_i, ENV['QT_MINOR'].to_i]
+     end
+ 
+     # Build a component definition with the defaults.  The "Core" component will
+diff --git a/rake/product/linux.rb b/rake/product/linux.rb
+index f43fb3e..83505af 100644
+--- a/rake/product/linux.rb
++++ b/rake/product/linux.rb
+@@ -18,8 +18,7 @@ module PiaLinux
+     QT_BINARIES = %w(pia-client pia-daemon piactl pia-support-tool)
+ 
+     # Version of libicu (needed to determine lib*.so.## file names in deployment)
+-    ICU_VERSION = FileList[File.join(Executable::Qt.targetQtRoot, 'lib', 'libicudata.so.*')]
+-        .first.match(/libicudata\.so\.(\d+)(\..*|)/)[1]
++    ICU_VERSION = ENV['ICU_MAJOR'].to_i;
+ 
+     # Copy a directory recursively, excluding *.debug files (debugging symbols)
+     def self.copyWithoutDebug(sourceDir, destDir)
+@@ -220,16 +219,5 @@ module PiaLinux
+     # Since these are just development workflow tools, they can be skipped if
+     # specific dependencies are not available.
+     def self.defineTools(toolsStage)
+-        # Test if we have libthai-dev, for the Thai word breaking utility
+-        if(Executable::Tc.sysHeaderAvailable?('thai/thwbrk.h'))
+-            Executable.new('thaibreak')
+-                .source('tools/thaibreak')
+-                .lib('thai')
+-                .install(toolsStage, :bin)
+-            toolsStage.install('tools/thaibreak/thai_ts.sh', :bin)
+-            toolsStage.install('tools/onesky_import/import_translations.sh', :bin)
+-        else
+-            puts "skipping thaibreak utility, install libthai-dev to build thaibreak"
+-        end
+     end
+ end
