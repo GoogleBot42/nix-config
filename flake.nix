@@ -87,11 +87,18 @@
       mkKexec = system:
         (nixpkgs.lib.nixosSystem {
           inherit system;
-          modules = [ ./machines/kexec.nix ];
+          modules = [ ./machines/ephemeral/kexec.nix ];
         }).config.system.build.kexec_tarball;
+      mkIso = system:
+        (nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [ ./machines/ephemeral/iso.nix ];
+        }).config.system.build.isoImage;
     in {
       "x86_64-linux"."kexec" = mkKexec "x86_64-linux";
+      "x86_64-linux"."iso" = mkIso "x86_64-linux";
       "aarch64-linux"."kexec" = mkKexec "aarch64-linux";
+      "aarch64-linux"."iso" = mkIso "aarch64-linux";
     };
   };
 }
