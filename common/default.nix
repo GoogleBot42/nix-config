@@ -20,7 +20,7 @@
   networking.firewall.enable = true;
   networking.firewall.allowPing = true;
 
-  time.timeZone = "America/New_York";
+  time.timeZone = "America/Denver";
   i18n.defaultLocale = "en_US.UTF-8";
 
   services.openssh.enable = true;
