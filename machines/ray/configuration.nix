@@ -43,6 +43,8 @@
   environment.systemPackages = with pkgs; [ virt-manager ];
   users.users.googlebot.extraGroups = [ "libvirtd" ];
 
+  services.spotifyd.enable = true;
+
   # vpn-container.enable = true;
   # containers.vpn.interfaces = [ "piaw" ];
 
