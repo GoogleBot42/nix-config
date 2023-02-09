@@ -85,12 +85,12 @@
 
     packages = let
       mkKexec = system:
-        (nixpkgs.lib.nixosSystem {
+        (nixpkgs-unstable.lib.nixosSystem {
           inherit system;
           modules = [ ./machines/ephemeral/kexec.nix ];
         }).config.system.build.kexec_tarball;
       mkIso = system:
-        (nixpkgs.lib.nixosSystem {
+        (nixpkgs-unstable.lib.nixosSystem {
           inherit system;
           modules = [ ./machines/ephemeral/iso.nix ];
         }).config.system.build.isoImage;
