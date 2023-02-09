@@ -15,6 +15,9 @@
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
+  # hardware.enableAllFirmware = true;
+  # nixpkgs.config.allowUnfree = true;
+
   environment.systemPackages = with pkgs; [
     cryptsetup
     btrfs-progs
