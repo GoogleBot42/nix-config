@@ -19,6 +19,10 @@
 
   hardware.enableAllFirmware = true;
 
+  hardware.openrazer.enable = true;
+  hardware.openrazer.users = [ "googlebot" ];
+  users.users.googlebot.packages = [ pkgs.polychromatic ];
+
   # depthai
   services.udev.extraRules = ''
     SUBSYSTEM=="usb", ATTRS{idVendor}=="03e7", MODE="0666"
