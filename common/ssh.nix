@@ -2,15 +2,17 @@ rec {
   users = [
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMVR/R3ZOsv7TZbICGBCHdjh1NDT8SnswUyINeJOC7QG"
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE0dcqL/FhHmv+a1iz3f9LJ48xubO7MZHy35rW9SZOYM"
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO0VFnn3+Mh0nWeN92jov81qNE9fpzTAHYBphNoY7HUx" # reg
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHSkKiRUUmnErOKGx81nyge/9KqjkPh8BfDk0D3oP586" # nat
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFeTK1iARlNIKP/DS8/ObBm9yUM/3L1Ub4XI5A2r9OzP" # ray
   ];
   system = {
     liza = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDY/pNyWedEfU7Tq9ikGbriRuF1ZWkHhegGS17L0Vcdl";
+    liza-unlock = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ6eMKW7jBNUKm2r9zEoape4s3KVrmLTLC0nkW9t/8JK";
     ponyo = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMBBlTAIp38RhErU1wNNV5MBeb+WGH0mhF/dxh5RsAXN";
     ponyo-unlock = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC9LQuuImgWlkjDhEEIbM1wOd+HqRv1RxvYZuLXPSdRi";
     ray = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDQM8hwKRgl8cZj7UVYATSLYu4LhG7I0WFJ9m2iWowiB";
+    router = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFr2IHmWFlaLaLp5dGoSmFEYKA/eg2SwGXAogaOmLsHL";
+    router-unlock = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJOw5dTPmtKqiPBH6VKyz5MYBubn8leAh5Eaw7s/O85c";
     s0 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAwiXcUFtAvZCayhu4+AIcF+Ktrdgv9ee/mXSIhJbp4q";
     n1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPWlhd1Oid5Xf2zdcBrcdrR0TlhObutwcJ8piobRTpRt";
     n2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ7bRiRutnI7Bmyt/I238E3Fp5DqiClIXiVibsccipOr";
@@ -26,6 +28,7 @@ rec {
     liza
     ponyo
     ray
+    router
     s0
     n1
     n2
@@ -41,6 +44,7 @@ rec {
   servers = with system; [
     liza
     ponyo
+    router
     s0
     n1
     n2

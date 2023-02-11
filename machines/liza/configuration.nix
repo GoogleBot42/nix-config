@@ -5,8 +5,6 @@
     ./hardware-configuration.nix
   ];
 
-  # 5synsrjgvfzywruomjsfvfwhhlgxqhyofkzeqt2eisyijvjvebnu2xyd.onion
-
   system.autoUpgrade.enable = true;
 
   networking.hostName = "liza";
