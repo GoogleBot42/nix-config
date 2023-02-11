@@ -7,9 +7,12 @@
 
   networking.hostName = "ray";
 
+  services.tor.enable = true;
+  services.tor.client.enable = true;
 
   hardware.openrazer.enable = true;
   hardware.openrazer.users = [ "googlebot" ];
+  hardware.openrazer.devicesOffOnScreensaver = false;
   users.users.googlebot.packages = [ pkgs.polychromatic ];
 
   # depthai
