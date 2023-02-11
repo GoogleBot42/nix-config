@@ -56,9 +56,6 @@
     services.lidarr.user = "public_data";
     services.lidarr.group = "public_data";
 
-    services.jellyfin.enable = true;
-    users.users.${config.services.jellyfin.user}.extraGroups = [ "public_data" ];
-
     services.transmission = {
       enable = true;
       performanceNetParameters = true;
@@ -115,8 +112,24 @@
     };
   };
 
-  # unpackerr
-  # flaresolverr
+  # jellyfin
+  # jellyfin cannot run in the vpn container and use hardware encoding
+  # I could not figure out how to allow the container to access the encoder
+  services.jellyfin.enable = true;
+  users.users.${config.services.jellyfin.user}.extraGroups = [ "public_data" ];
+  nixpkgs.config.packageOverrides = pkgs: {
+    vaapiIntel = pkgs.vaapiIntel.override { enableHybridCodec = true; };
+  };
+  hardware.opengl = {
+    enable = true;
+    extraPackages = with pkgs; [
+      intel-media-driver
+      vaapiIntel
+      vaapiVdpau
+      libvdpau-va-gl
+      intel-compute-runtime # OpenCL filter support (hardware tonemapping and subtitle burn-in)
+    ];
+  };
 
   # nginx
   services.nginx.enable = true;
