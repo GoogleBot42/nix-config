@@ -2,28 +2,18 @@
 
 {
   imports =[
-    ./helios64
     ./hardware-configuration.nix
   ];
 
   networking.hostName = "s0";
 
-  boot.loader.grub.enable = false;
-  boot.loader.generic-extlinux-compatible.enable = true;
-
   system.autoUpgrade.enable = true;
-
-  boot.supportedFilesystems = [ "bcachefs" ];
 
   services.zerotierone.enable = true;
 
   # for education purposes only
   services.pykms.enable = true;
   services.pykms.openFirewallPort = true;
-
-  users.users.googlebot.packages = with pkgs; [
-    bcachefs-tools
-  ];
 
   services.samba.enable = true;
 
