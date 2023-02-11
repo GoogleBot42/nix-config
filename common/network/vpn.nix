@@ -74,9 +74,11 @@ in
         pia.enable = true;
         pia.server = "swiss.privacy.network"; # swiss vpn
 
+        # TODO fix so it does run it's own resolver again
         # run it's own DNS resolver
         networking.useHostResolvConf = false;
-        services.resolved.enable = true;
+        # services.resolved.enable = true;
+        networking.nameservers = [ "1.1.1.1" "8.8.8.8" ];
       };
     };
 
