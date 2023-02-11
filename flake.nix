@@ -68,7 +68,6 @@
         };
     in
     {
-      "reg" = mkSystem "x86_64-linux" nixpkgs ./machines/reg/configuration.nix;
       "ray" = mkSystem "x86_64-linux" nixpkgs-unstable ./machines/ray/configuration.nix;
       "nat" = mkSystem "aarch64-linux" nixpkgs ./machines/nat/configuration.nix;
       "liza" = mkSystem "x86_64-linux" nixpkgs ./machines/liza/configuration.nix;
