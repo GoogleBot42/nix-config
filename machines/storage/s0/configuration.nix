@@ -9,31 +9,36 @@
 
   system.autoUpgrade.enable = true;
 
+  # mesh networking
+  services.tailscale.exitNode = true;
   services.zerotierone.enable = true;
 
   # for education purposes only
   services.pykms.enable = true;
   services.pykms.openFirewallPort = true;
 
+  # samba
   services.samba.enable = true;
 
+  # navidrome
   services.navidrome = {
     enable = true;
     settings = {
       Address = "0.0.0.0";
       Port = 4533;
-      MusicFolder = "/data/samba/Public/Plex/Music";
+      MusicFolder = "/data/samba/Public/Media/Music";
     };
   };
   networking.firewall.allowedTCPPorts = [ config.services.navidrome.settings.Port ];
 
+  # allow access to transmisson data
   users.users.googlebot.extraGroups = [ "transmission" ];
   users.groups.transmission.gid = config.ids.gids.transmission;
 
   vpn-container.enable = true;
   vpn-container.mounts = [
     "/var/lib"
-    "/data/samba/Public/Plex"
+    "/data/samba/Public"
   ];
   vpn-container.config = {
     # servarr services
@@ -63,7 +68,7 @@
         /* directory settings */
         # "watch-dir" = "/srv/storage/Transmission/To-Download";
         # "watch-dir-enabled" = true;
-        "download-dir" = "/data/samba/Public/Plex/Transmission";
+        "download-dir" = "/data/samba/Public/Media/Transmission";
         "incomplete-dir" = "/var/lib/transmission/.incomplete";
         "incomplete-dir-enabled" = true;
 
@@ -113,6 +118,7 @@
   # unpackerr
   # flaresolverr
 
+  # nginx
   services.nginx.enable = true;
   services.nginx.virtualHosts."bazarr.s0".locations."/".proxyPass = "http://vpn.containers:6767";
   services.nginx.virtualHosts."radarr.s0".locations."/".proxyPass = "http://vpn.containers:7878";
@@ -121,57 +127,15 @@
   services.nginx.virtualHosts."prowlarr.s0".locations."/".proxyPass = "http://vpn.containers:9696";
   services.nginx.virtualHosts."music.s0".locations."/".proxyPass = "http://localhost:4533";
   services.nginx.virtualHosts."jellyfin.s0".locations."/" = {
-    proxyPass = "http://vpn.containers:8096";
+    proxyPass = "http://localhost:8096";
     proxyWebsockets = true;
   };
   services.nginx.virtualHosts."jellyfin.neet.cloud".locations."/" = {
-    proxyPass = "http://vpn.containers:8096";
+    proxyPass = "http://localhost:8096";
     proxyWebsockets = true;
   };
   services.nginx.virtualHosts."transmission.s0".locations."/" = {
     proxyPass = "http://vpn.containers:9091";
     proxyWebsockets = true;
   };
-
-  # tailscale
-  services.tailscale.exitNode = true;
-
-  nixpkgs.overlays = [
-    (final: prev: {
-      radarr = prev.radarr.overrideAttrs (old: rec {
-        installPhase = ''
-          runHook preInstall
-          mkdir -p $out/{bin,share/${old.pname}-${old.version}}
-          cp -r * $out/share/${old.pname}-${old.version}/.
-          makeWrapper "${final.dotnet-runtime}/bin/dotnet" $out/bin/Radarr \
-            --add-flags "$out/share/${old.pname}-${old.version}/Radarr.dll" \
-            --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [
-              final.curl final.sqlite final.libmediainfo final.mono final.openssl final.icu final.zlib ]}
-          runHook postInstall
-        '';
-      });
-
-      prowlarr = prev.prowlarr.overrideAttrs (old: {
-        installPhase = ''
-          runHook preInstall
-          mkdir -p $out/{bin,share/${old.pname}-${old.version}}
-          cp -r * $out/share/${old.pname}-${old.version}/.
-          makeWrapper "${final.dotnet-runtime}/bin/dotnet" $out/bin/Prowlarr \
-            --add-flags "$out/share/${old.pname}-${old.version}/Prowlarr.dll" \
-            --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [
-              final.curl final.sqlite final.libmediainfo final.mono final.openssl final.icu final.zlib ]}
-          runHook postInstall
-        '';
-      });
-
-      pykms = prev.pykms.overrideAttrs (old: {
-        src = pkgs.fetchFromGitHub {
-          owner = "Py-KMS-Organization";
-          repo = "py-kms";
-          rev = "7bea3a2cb03c4c3666ff41185ace9f7ea2a07b99";
-          sha256 = "90DqMqPjfqfyRq86UzG9B/TjY+yclJBlggw+eIDgRe0=";
-        };
-      });
-    })
-  ];
 }
