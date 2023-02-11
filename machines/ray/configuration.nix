@@ -5,19 +5,8 @@
     ./hardware-configuration.nix
   ];
 
-  firmware.x86_64.enable = true;
-  efi.enable = true;
-
-  boot.initrd.luks.devices."enc-pv" = {
-    device = "/dev/disk/by-uuid/c1822e5f-4137-44e1-885f-954e926583ce";
-    allowDiscards = true;
-  };
-
-  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
-
   networking.hostName = "ray";
 
-  hardware.enableAllFirmware = true;
 
   hardware.openrazer.enable = true;
   hardware.openrazer.users = [ "googlebot" ];
@@ -28,24 +17,15 @@
     SUBSYSTEM=="usb", ATTRS{idVendor}=="03e7", MODE="0666"
   '';
 
-  # gpu
-  services.xserver.videoDrivers = [ "nvidia" ];
-  hardware.nvidia = {
-    modesetting.enable = true; # for nvidia-vaapi-driver
-    prime = {
-      reverseSync.enable = true;
-      offload.enableOffloadCmd = true;
-      nvidiaBusId = "PCI:1:0:0";
-      amdgpuBusId = "PCI:4:0:0";
-    };
-  };
-
   # virt-manager
   virtualisation.libvirtd.enable = true;
   programs.dconf.enable = true;
   virtualisation.spiceUSBRedirection.enable = true;
   environment.systemPackages = with pkgs; [ virt-manager ];
   users.users.googlebot.extraGroups = [ "libvirtd" ];
+
+  # allow building ARM derivations
+  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
 
   services.spotifyd.enable = true;
 
