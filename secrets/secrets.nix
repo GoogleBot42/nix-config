@@ -5,18 +5,13 @@ let
   all = users ++ systems;
 in
 {
-  "searx.age".publicKeys = all;
-  "pia-login.conf".publicKeys = all;
-  "peertube-init.age".publicKeys = all;
-  "peertube-db-pw.age".publicKeys = all;
-  "peertube-redis-pw.age".publicKeys = all;
-  "peertube-smtp.age".publicKeys = all;
   "email-pw.age".publicKeys = all;
-  "nextcloud-pw.age".publicKeys = all;
   "iodine.age".publicKeys = all;
+  "nextcloud-pw.age".publicKeys = all;
+  "pia-login.conf".publicKeys = all;
+  "sasl_relay_passwd.age".publicKeys = all;
+  "searx.age".publicKeys = all;
+  "smb-secrets.age".publicKeys = all;
   "spotifyd.age".publicKeys = all;
   "wolframalpha.age".publicKeys = all;
-  "cloudflared-navidrome.json.age".publicKeys = all;
-  "smb-secrets.age".publicKeys = all;
-  "sasl_relay_passwd.age".publicKeys = all;
 }
