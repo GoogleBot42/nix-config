@@ -13,6 +13,18 @@
   boot.kernelModules = [ ];
   boot.extraModulePackages = [ ];
 
+  firmware.x86_64.enable = true;
+
+  bios = {
+    enable = true;
+    device = "/dev/sda";
+  };
+
+  luks = {
+    enable = true;
+    device.path = "/dev/disk/by-uuid/2f736fba-8a0c-4fb5-8041-c849fb5e1297";
+  };
+
   fileSystems."/" =
     { device = "/dev/disk/by-uuid/b90eaf3c-2f91-499a-a066-861e0f4478df";
       fsType = "btrfs";
