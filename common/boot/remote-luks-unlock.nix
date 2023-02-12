@@ -1,22 +1,14 @@
 { config, pkgs, lib, ... }:
 
 let
-  cfg = config.luks;
+  cfg = config.remoteLuksUnlock;
 in {
-  options.luks = {
+  options.remoteLuksUnlock = {
     enable = lib.mkEnableOption "enable luks root remote decrypt over ssh/tor";
-    device = {
-      name = lib.mkOption {
-        type = lib.types.str;
-        default = "enc-pv";
-      };
-      path = lib.mkOption {
-        type = lib.types.either lib.types.str lib.types.path;
-      };
-      allowDiscards = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-      };
+    enableTorUnlock = lib.mkOption {
+      type = lib.types.bool;
+      default = cfg.enable;
+      description = "Make machine accessable over tor for ssh boot unlock";
     };
     sshHostKeys = lib.mkOption {
       type = lib.types.listOf (lib.types.either lib.types.str lib.types.path);
@@ -40,10 +32,10 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    boot.initrd.luks.devices.${cfg.device.name} = {
-      device = cfg.device.path;
-      allowDiscards = cfg.device.allowDiscards;
-    };
+    # boot.initrd.luks.devices.${cfg.device.name} = {
+    #   device = cfg.device.path;
+    #   allowDiscards = cfg.device.allowDiscards;
+    # };
 
     # Unlock LUKS disk over ssh
     boot.initrd.network.enable = true;
@@ -61,41 +53,41 @@ in {
       echo /crypt-ramfs/passphrase >> /dev/null
     '';
 
-    # Make machine accessable over tor for boot unlock
-    boot.initrd.secrets = {
+    boot.initrd.secrets = lib.mkIf cfg.enableTorUnlock {
       "/etc/tor/onion/bootup" = cfg.onionConfig;
     };
-    boot.initrd.extraUtilsCommands = ''
+    boot.initrd.extraUtilsCommands = lib.mkIf cfg.enableTorUnlock ''
       copy_bin_and_libs ${pkgs.tor}/bin/tor
       copy_bin_and_libs ${pkgs.haveged}/bin/haveged
     '';
-    # start tor during boot process
-    boot.initrd.network.postCommands = let
-      torRc = (pkgs.writeText "tor.rc" ''
+    boot.initrd.network.postCommands = lib.mkMerge [
+      (''
+        # Add nice prompt for giving LUKS passphrase over ssh
+        echo 'read -s -p "Unlock Passphrase: " passphrase && echo $passphrase > /crypt-ramfs/passphrase && exit' >> /root/.profile
+      '')
+      
+      (let torRc = (pkgs.writeText "tor.rc" ''
         DataDirectory /etc/tor
         SOCKSPort 127.0.0.1:9050 IsolateDestAddr
         SOCKSPort 127.0.0.1:9063
         HiddenServiceDir /etc/tor/onion/bootup
         HiddenServicePort 22 127.0.0.1:22
-      '');
-    in ''
-      # Add nice prompt for giving LUKS passphrase over ssh
-      echo 'read -s -p "Unlock Passphrase: " passphrase && echo $passphrase > /crypt-ramfs/passphrase && exit' >> /root/.profile
+      ''); in lib.mkIf cfg.enableTorUnlock ''
+        echo "tor: preparing onion folder"
+        # have to do this otherwise tor does not want to start
+        chmod -R 700 /etc/tor
 
-      echo "tor: preparing onion folder"
-      # have to do this otherwise tor does not want to start
-      chmod -R 700 /etc/tor
+        echo "make sure localhost is up"
+        ip a a 127.0.0.1/8 dev lo
+        ip link set lo up
 
-      echo "make sure localhost is up"
-      ip a a 127.0.0.1/8 dev lo
-      ip link set lo up
+        echo "haveged: starting haveged"
+        haveged -F &
 
-      echo "haveged: starting haveged"
-      haveged -F &
-
-      echo "tor: starting tor"
-      tor -f ${torRc} --verify-config
-      tor -f ${torRc} &
-    '';
+        echo "tor: starting tor"
+        tor -f ${torRc} --verify-config
+        tor -f ${torRc} &
+      '')
+    ];
   };
 }

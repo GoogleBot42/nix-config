@@ -5,6 +5,6 @@
     ./firmware.nix
     ./efi.nix
     ./bios.nix
-    ./luks.nix
+    ./remote-luks-unlock.nix
   ];
 }

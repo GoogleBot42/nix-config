@@ -8,6 +8,7 @@ let
   # hostnames that resolve on clearnet for LUKS unlocking
   unlock-clearnet-hosts = {
     ponyo = "unlock.ponyo.neet.dev";
+    s0 = "s0";
   };
 
   # hostnames that resolve on tor for LUKS unlocking
@@ -15,6 +16,7 @@ let
     liza = "5synsrjgvfzywruomjsfvfwhhlgxqhyofkzeqt2eisyijvjvebnu2xyd.onion";
     router = "jxx2exuihlls2t6ncs7rvrjh2dssubjmjtclwr2ysvxtr4t7jv55xmqd.onion";
     ponyo = "cfamr6artx75qvt7ho3rrbsc7mkucmv5aawebwflsfuorusayacffryd.onion";
+    s0 = "r3zvf7f2ppaeithzswigma46pajt3hqytmkg3rshgknbl3jbni455fqd.onion";
   };
 in {
   networking.hosts = {
@@ -56,6 +58,10 @@ in {
     s0 = {
       hostNames = [ "s0" "s0.zt.neet.dev" ];
       publicKey = system.s0;
+    };
+    s0-unlock = {
+      hostNames = [ unlock-onion-hosts.s0 ];
+      publicKey = system.s0-unlock;
     };
     n1 = {
       hostNames = [ "n1" ];

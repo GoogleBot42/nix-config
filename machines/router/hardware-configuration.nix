@@ -27,10 +27,8 @@
   };
 
   # disks
-  luks = {
-    enable = true;
-    device.path = "/dev/disk/by-uuid/9b090551-f78e-45ca-8570-196ed6a4af0c";
-  };
+  remoteLuksUnlock.enable = true;
+  boot.initrd.luks.devices."enc-pv".device = "/dev/disk/by-uuid/9b090551-f78e-45ca-8570-196ed6a4af0c";
   fileSystems."/" =
     { device = "/dev/disk/by-uuid/421c82b9-d67c-4811-8824-8bb57cb10fce";
       fsType = "btrfs";

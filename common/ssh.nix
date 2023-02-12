@@ -14,6 +14,7 @@ rec {
     router = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFr2IHmWFlaLaLp5dGoSmFEYKA/eg2SwGXAogaOmLsHL";
     router-unlock = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJOw5dTPmtKqiPBH6VKyz5MYBubn8leAh5Eaw7s/O85c";
     s0 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAwiXcUFtAvZCayhu4+AIcF+Ktrdgv9ee/mXSIhJbp4q";
+    s0-unlock = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFNiceeFMos5ZXcYem4yFxh8PiZNNnuvhlyLbQLrgIZH";
     n1 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPWlhd1Oid5Xf2zdcBrcdrR0TlhObutwcJ8piobRTpRt";
     n2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ7bRiRutnI7Bmyt/I238E3Fp5DqiClIXiVibsccipOr";
     n3 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB+rJEaRrFDGirQC2UoWQkmpzLg4qgTjGJgVqiipWiU5";

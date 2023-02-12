@@ -17,10 +17,8 @@
     device = "/dev/sda";
   };
 
-  luks = {
-    enable = true;
-    device.path = "/dev/disk/by-uuid/4cc36be4-dbff-4afe-927d-69bf4637bae2";
-  };
+  remoteLuksUnlock.enable = true;
+  boot.initrd.luks.devices."enc-pv".device = "/dev/disk/by-uuid/4cc36be4-dbff-4afe-927d-69bf4637bae2";
 
   fileSystems."/" =
     { device = "/dev/mapper/enc-pv";
