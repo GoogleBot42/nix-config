@@ -4,7 +4,7 @@ rec {
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE0dcqL/FhHmv+a1iz3f9LJ48xubO7MZHy35rW9SZOYM"
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHSkKiRUUmnErOKGx81nyge/9KqjkPh8BfDk0D3oP586" # nat
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFeTK1iARlNIKP/DS8/ObBm9yUM/3L1Ub4XI5A2r9OzP" # ray
-  ];
+  ] ++ higherTrustUserKeys;
   system = {
     liza = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDY/pNyWedEfU7Tq9ikGbriRuF1ZWkHhegGS17L0Vcdl";
     liza-unlock = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ6eMKW7jBNUKm2r9zEoape4s3KVrmLTLC0nkW9t/8JK";
@@ -23,6 +23,10 @@ rec {
     n6 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID/P/pa9+qhKAPfvvd8xSO2komJqDW0M1nCK7ZrP6PO7";
     n7 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPtOlOvTlMX2mxPaXDJ6VlMe5rmroUXpKmJVNxgV32xL";
   };
+
+  higherTrustUserKeys = [
+    "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIEaGIwLiUa6wQLlEF+keQOIYy/tCmJvV6eENzUQjSqW2AAAABHNzaDo=" # ray fido
+  ];
 
   # groups
   systems = with system; [
