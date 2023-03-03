@@ -105,6 +105,31 @@
         "type": "github"
       }
     },
+    "deploy-rs": {
+      "inputs": {
+        "flake-compat": "flake-compat",
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "utils": [
+          "simple-nixos-mailserver",
+          "utils"
+        ]
+      },
+      "locked": {
+        "lastModified": 1674127017,
+        "narHash": "sha256-QO1xF7stu5ZMDLbHN30LFolMAwY6TVlzYvQoUs1RD68=",
+        "owner": "serokell",
+        "repo": "deploy-rs",
+        "rev": "8c9ea9605eed20528bf60fae35a2b613b901fd77",
+        "type": "github"
+      },
+      "original": {
+        "owner": "serokell",
+        "repo": "deploy-rs",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -136,39 +161,38 @@
         "type": "github"
       }
     },
-    "nix-locate": {
+    "nix-index-database": {
       "inputs": {
-        "flake-compat": "flake-compat",
         "nixpkgs": [
           "nixpkgs"
         ]
       },
       "locked": {
-        "lastModified": 1673969751,
-        "narHash": "sha256-U6aYz3lqZ4NVEGEWiti1i0FyqEo4bUjnTAnA73DPnNU=",
-        "owner": "bennofs",
-        "repo": "nix-index",
-        "rev": "5f98881b1ed27ab6656e6d71b534f88430f6823a",
+        "lastModified": 1677382901,
+        "narHash": "sha256-2idFWlTVG+qUZkU2/W50amGSIxmN56igIkMAXKbv4S4=",
+        "owner": "Mic92",
+        "repo": "nix-index-database",
+        "rev": "4306fa7c12e098360439faac1a2e6b8e509ec97c",
         "type": "github"
       },
       "original": {
-        "owner": "bennofs",
-        "repo": "nix-index",
+        "owner": "Mic92",
+        "repo": "nix-index-database",
         "type": "github"
       }
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1672580127,
-        "narHash": "sha256-3lW3xZslREhJogoOkjeZtlBtvFMyxHku7I/9IVehhT8=",
+        "lastModified": 1677823547,
+        "narHash": "sha256-xD2qco8Pw8HAXgjf9OSi2H2N20WaTrtvgcl21525kVE=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "0874168639713f547c05947c76124f78441ea46c",
+        "rev": "78c4d33c16092e535bc4ba1284ba49e3e138483a",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
-        "ref": "nixos-22.05",
+        "ref": "master",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -186,22 +210,6 @@
         "id": "nixpkgs",
         "ref": "nixos-22.05",
         "type": "indirect"
-      }
-    },
-    "nixpkgs-unstable": {
-      "locked": {
-        "lastModified": 1675835843,
-        "narHash": "sha256-y1dSCQPcof4CWzRYRqDj4qZzbBl+raVPAko5Prdil28=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "32f914af34f126f54b45e482fb2da4ae78f3095f",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "master",
-        "repo": "nixpkgs",
-        "type": "github"
       }
     },
     "radio": {
@@ -250,10 +258,10 @@
         "agenix": "agenix",
         "archivebox": "archivebox",
         "dailybuild_modules": "dailybuild_modules",
+        "deploy-rs": "deploy-rs",
         "flake-utils": "flake-utils",
-        "nix-locate": "nix-locate",
+        "nix-index-database": "nix-index-database",
         "nixpkgs": "nixpkgs",
-        "nixpkgs-unstable": "nixpkgs-unstable",
         "radio": "radio",
         "radio-web": "radio-web",
         "simple-nixos-mailserver": "simple-nixos-mailserver"

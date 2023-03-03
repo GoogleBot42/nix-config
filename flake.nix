@@ -1,12 +1,8 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.05";
-    nixpkgs-unstable.url = "github:NixOS/nixpkgs/master";
+    nixpkgs.url = "github:NixOS/nixpkgs/master";
 
     flake-utils.url = "github:numtide/flake-utils";
-
-    nix-locate.url = "github:bennofs/nix-index";
-    nix-locate.inputs.nixpkgs.follows = "nixpkgs";
 
     # mail server
     simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver/nixos-22.05";
@@ -37,21 +33,26 @@
     deploy-rs.url = "github:serokell/deploy-rs";
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
     deploy-rs.inputs.utils.follows = "simple-nixos-mailserver/utils";
+
+    # prebuilt nix-index database
+    nix-index-database.url = "github:Mic92/nix-index-database";
+    nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, nixpkgs-unstable, ... }@inputs: {
+  outputs = { self, nixpkgs, ... }@inputs: {
 
     nixosConfigurations =
     let
-      modules = system: [
+      modules = system: with inputs; [
         ./common
-        inputs.simple-nixos-mailserver.nixosModule
-        inputs.agenix.nixosModules.default
-        inputs.dailybuild_modules.nixosModule
-        inputs.archivebox.nixosModule
+        simple-nixos-mailserver.nixosModule
+        agenix.nixosModules.default
+        dailybuild_modules.nixosModule
+        archivebox.nixosModule
+        nix-index-database.nixosModules.nix-index
         ({ lib, ... }: {
           config.environment.systemPackages = [
-            inputs.agenix.packages.${system}.agenix
+            agenix.packages.${system}.agenix
           ];
 
           # because nixos specialArgs doesn't work for containers... need to pass in inputs a different way
@@ -73,22 +74,22 @@
         };
     in
     {
-      "ray" = mkSystem "x86_64-linux" nixpkgs-unstable ./machines/ray/configuration.nix;
-      "nat" = mkSystem "aarch64-linux" nixpkgs ./machines/nat/configuration.nix;
+      "ray" = mkSystem "x86_64-linux" nixpkgs ./machines/ray/configuration.nix;
+      # "nat" = mkSystem "aarch64-linux" nixpkgs ./machines/nat/configuration.nix;
       "liza" = mkSystem "x86_64-linux" nixpkgs ./machines/liza/configuration.nix;
       "ponyo" = mkSystem "x86_64-linux" nixpkgs ./machines/ponyo/configuration.nix;
-      "router" = mkSystem "x86_64-linux" nixpkgs-unstable ./machines/router/configuration.nix;
-      "s0" = mkSystem "x86_64-linux" nixpkgs-unstable ./machines/storage/s0/configuration.nix;
+      "router" = mkSystem "x86_64-linux" nixpkgs ./machines/router/configuration.nix;
+      "s0" = mkSystem "x86_64-linux" nixpkgs ./machines/storage/s0/configuration.nix;
     };
 
     packages = let
       mkKexec = system:
-        (nixpkgs-unstable.lib.nixosSystem {
+        (nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [ ./machines/ephemeral/kexec.nix ];
         }).config.system.build.kexec_tarball;
       mkIso = system:
-        (nixpkgs-unstable.lib.nixosSystem {
+        (nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [ ./machines/ephemeral/iso.nix ];
         }).config.system.build.isoImage;
