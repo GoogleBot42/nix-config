@@ -50,6 +50,7 @@ in {
       arduino
       yt-dlp
       jellyfin-media-player
+      config.inputs.deploy-rs.packages.${config.currentSystem}.deploy-rs
     ];
 
     # Networking

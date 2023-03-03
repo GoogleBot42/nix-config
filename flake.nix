@@ -32,6 +32,11 @@
     archivebox.url = "git+https://git.neet.dev/zuckerberg/archivebox.git";
     archivebox.inputs.nixpkgs.follows = "nixpkgs";
     archivebox.inputs.flake-utils.follows = "flake-utils";
+
+    # nixos config deployment
+    deploy-rs.url = "github:serokell/deploy-rs";
+    deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
+    deploy-rs.inputs.utils.follows = "simple-nixos-mailserver/utils";
   };
 
   outputs = { self, nixpkgs, nixpkgs-unstable, ... }@inputs: {
@@ -93,5 +98,21 @@
       "aarch64-linux"."kexec" = mkKexec "aarch64-linux";
       "aarch64-linux"."iso" = mkIso "aarch64-linux";
     };
+
+    deploy.nodes = 
+      let
+        mkDeploy = configName: hostname: {
+          inherit hostname;
+          magicRollback = false;
+          sshUser = "root";
+          profiles.system.path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.${configName};
+        };
+
+      in {
+        s0 = mkDeploy "s0" "s0";
+        router = mkDeploy "router" "192.168.1.228";
+      };
+
+    # checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) inputs.deploy-rs.lib;
   };
 }
