@@ -50,6 +50,7 @@ in
     micro
     helix
     lm_sensors
+    picocom
   ];
 
   nixpkgs.config.allowUnfree = true;
