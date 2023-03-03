@@ -11,9 +11,13 @@
   # Enable serial output
   boot.kernelParams = [
     "panic=30" "boot.panic_on_fail" # reboot the machine upon fatal boot issues
-    "console=ttyS0,115200" # enable serial console
-    "console=tty1"
+    "console=ttyS0,115200n8" # enable serial console
   ];
+  boot.loader.grub.extraConfig = "
+    serial --speed=115200 --unit=0 --word=8 --parity=no --stop=1
+    terminal_input serial
+    terminal_output serial
+  ";
 
   # firmware
   firmware.x86_64.enable = true;
