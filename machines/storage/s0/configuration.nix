@@ -20,6 +20,9 @@
   # samba
   services.samba.enable = true;
 
+  # disable suspend on lid close
+  services.logind.lidSwitch = "ignore";
+
   # navidrome
   services.navidrome = {
     enable = true;
