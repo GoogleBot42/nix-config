@@ -1,6 +1,8 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/master";
+    nixpkgs-patch-howdy.url = "https://github.com/NixOS/nixpkgs/pull/216245.diff";
+    nixpkgs-patch-howdy.flake = false;
 
     flake-utils.url = "github:numtide/flake-utils";
 
@@ -64,7 +66,18 @@
       mkSystem = system: nixpkgs: path:
         let
           allModules = modules system;
-        in nixpkgs.lib.nixosSystem {
+
+          # allow patching nixpkgs, remove this hack once this is solved: https://github.com/NixOS/nix/issues/3920
+          patchedNixpkgsSrc = nixpkgs.legacyPackages.${system}.applyPatches {
+            name = "nixpkgs-patched";
+            src = nixpkgs;
+            patches = [
+              inputs.nixpkgs-patch-howdy
+            ];
+          };
+          patchedNixpkgs = nixpkgs.lib.fix (self: (import "${patchedNixpkgsSrc}/flake.nix").outputs { self=nixpkgs; });
+
+        in patchedNixpkgs.lib.nixosSystem {
           inherit system;
           modules = allModules ++ [path];
 
