@@ -30,7 +30,9 @@ in
 
   services.openssh = {
     enable = true;
-    passwordAuthentication = false;
+    settings = {
+      PasswordAuthentication = false;
+    };
   };
   programs.mosh.enable = true;
 
@@ -70,7 +72,9 @@ in
   users.users.root = {
     openssh.authorizedKeys.keys = sshHigherTrustKeys;
   };
-  nix.trustedUsers = [ "root" "googlebot" ];
+  nix.settings = {
+    trusted-users = [ "root" "googlebot" ];
+  };
 
   nix.gc.automatic = true;
 
