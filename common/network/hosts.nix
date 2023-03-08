@@ -3,6 +3,10 @@
 with builtins;
 
 let
+  # TODO: remove when all systems are updated to new enough nixpkgs
+  concatMapAttrs =
+    f: with lib; flip pipe [ (mapAttrs f) attrValues (foldl' mergeAttrs { }) ];
+
   system = (import ../ssh.nix).system;
 
   # hostnames that resolve on clearnet for LUKS unlocking
@@ -18,13 +22,18 @@ let
     ponyo = "cfamr6artx75qvt7ho3rrbsc7mkucmv5aawebwflsfuorusayacffryd.onion";
     s0 = "r3zvf7f2ppaeithzswigma46pajt3hqytmkg3rshgknbl3jbni455fqd.onion";
   };
-in {
-  networking.hosts = {
-    # some DNS providers filter local ip results from DNS request
-    "172.30.145.180" = [ "s0.zt.neet.dev" ];
-    "172.30.109.9" = [ "ponyo.zt.neet.dev" ];
-    "172.30.189.212" = [ "ray.zt.neet.dev" ];
+
+  zerotierHosts = {
+    "s0.zt.neet.dev" = "172.30.145.180";
+    "ponyo.zt.neet.dev" = "172.30.109.9";
+    "ray.zt.neet.dev" = "172.30.189.212";
   };
+in {
+  # some DNS providers filter local ip results from DNS request
+  networking.hosts = concatMapAttrs (host: ip: {ip = [host];}) zerotierHosts;
+
+  # TODO only add if zerotier is enabled
+  keepalive-ping.hosts = attrNames zerotierHosts;
 
   programs.ssh.knownHosts = {
     liza = {
@@ -95,12 +104,7 @@ in {
 
   # prebuilt cmds for easy ssh LUKS unlock
   environment.shellAliases =
-    let
-      # TODO: remove when all systems are updated to new enough nixpkgs
-      concatMapAttrs =
-        f: with lib; flip pipe [ (mapAttrs f) attrValues (foldl' mergeAttrs { }) ];
-    in
-      concatMapAttrs (host: addr: {"unlock-over-tor_${host}" = "torsocks ssh root@${addr}";}) unlock-onion-hosts
-        //
-      concatMapAttrs (host: addr: {"unlock_${host}" = "torsocks ssh root@${addr}";}) unlock-clearnet-hosts;
+    concatMapAttrs (host: addr: {"unlock-over-tor_${host}" = "torsocks ssh root@${addr}";}) unlock-onion-hosts
+      //
+    concatMapAttrs (host: addr: {"unlock_${host}" = "torsocks ssh root@${addr}";}) unlock-clearnet-hosts;
 }
