@@ -106,5 +106,5 @@ in {
   environment.shellAliases =
     concatMapAttrs (host: addr: {"unlock-over-tor_${host}" = "torsocks ssh root@${addr}";}) unlock-onion-hosts
       //
-    concatMapAttrs (host: addr: {"unlock_${host}" = "torsocks ssh root@${addr}";}) unlock-clearnet-hosts;
+    concatMapAttrs (host: addr: {"unlock_${host}" = "ssh root@${addr}";}) unlock-clearnet-hosts;
 }
