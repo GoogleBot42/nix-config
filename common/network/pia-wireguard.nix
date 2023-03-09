@@ -6,6 +6,8 @@
 #   https://github.com/pia-foss/manual-connections
 #   https://github.com/thrnz/docker-wireguard-pia/blob/master/extra/wg-gen.sh
 
+with builtins;
+
 let
   cfg = config.pia.wireguard;
 
@@ -30,6 +32,12 @@ in {
       type = lib.types.str;
       default = "piaw";
     };
+    # forwardedPort = lib.mkOption {
+    #   type = lib.types.port;
+    #   description = "The port to redirect port forwarded TCP VPN traffic too";
+    #   default = 15050;
+    # };
+    # TODO allow disabling this
     portForwarding = lib.mkEnableOption "Enables PIA port fowarding";
 
     # TODO implement this such that the wireguard VPN doesn't have to live in a container
@@ -60,6 +68,7 @@ in {
       after = [ "network.target" "network-online.target" ];
       before = [ "container@vpn.service" ];
       requiredBy = [ "container@vpn.service" ];
+      partOf = [ "container@vpn.service" ];
       wantedBy = [ "multi-user.target" ];
 
       path = with pkgs; [ wireguard-tools jq curl iproute ];
@@ -120,7 +129,7 @@ in {
       after = [ "network.target" "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
 
-      path = with pkgs; [ wireguard-tools iproute curl jq ];
+      path = with pkgs; [ wireguard-tools iproute curl jq iptables ];
 
       serviceConfig = {
         Type = "oneshot";
@@ -159,15 +168,32 @@ in {
         echo $port > /tmp/${cfg.interfaceName}-port
         chmod 644 /tmp/${cfg.interfaceName}-port
 
+        # write payload and signature info needed to allow refreshing allocated forwarded port
         rm -f /tmp/${cfg.interfaceName}-port-renewal
         touch /tmp/${cfg.interfaceName}-port-renewal
         chmod 700 /tmp/${cfg.interfaceName}-port-renewal
         echo $signature >> /tmp/${cfg.interfaceName}-port-renewal
         echo $payload >> /tmp/${cfg.interfaceName}-port-renewal
+
+        # redirect the fowarded port
+        # iptables -A INPUT -i ${cfg.interfaceName} -p tcp --dport $port -j ACCEPT
+        # iptables -A INPUT -i ${cfg.interfaceName} -p udp --dport $port -j ACCEPT
+        # iptables -A INPUT -i ${cfg.interfaceName} -p tcp --dport ${toString cfg.forwardedPort} -j ACCEPT
+        # iptables -A INPUT -i ${cfg.interfaceName} -p udp --dport ${toString cfg.forwardedPort} -j ACCEPT
+        # iptables -A PREROUTING -t nat -i ${cfg.interfaceName} -p tcp --dport $port -j REDIRECT --to-port ${toString cfg.forwardedPort}
+        # iptables -A PREROUTING -t nat -i ${cfg.interfaceName} -p udp --dport $port -j REDIRECT --to-port ${toString cfg.forwardedPort}
       '';
 
       preStop = ''
         wg-quick down /tmp/${cfg.interfaceName}.conf
+
+        # stop redirecting the forwarded port
+        # iptables -D INPUT -i ${cfg.interfaceName} -p tcp --dport $port -j ACCEPT
+        # iptables -D INPUT -i ${cfg.interfaceName} -p udp --dport $port -j ACCEPT
+        # iptables -D INPUT -i ${cfg.interfaceName} -p tcp --dport ${toString cfg.forwardedPort} -j ACCEPT
+        # iptables -D INPUT -i ${cfg.interfaceName} -p udp --dport ${toString cfg.forwardedPort} -j ACCEPT
+        # iptables -D PREROUTING -t nat -i ${cfg.interfaceName} -p tcp --dport $port -j REDIRECT --to-port ${toString cfg.forwardedPort}
+        # iptables -D PREROUTING -t nat -i ${cfg.interfaceName} -p udp --dport $port -j REDIRECT --to-port ${toString cfg.forwardedPort}
       '';
     };
 
@@ -176,7 +202,13 @@ in {
       description = "PIA VPN WireGuard Tunnel Port Forwarding";
       after = [ "pia-vpn-wireguard.service" ];
       requires = [ "pia-vpn-wireguard.service" ];
+
       path = with pkgs; [ curl ];
+
+      serviceConfig = {
+        Type = "oneshot";
+      };
+
       script = ''
         signature=`sed '1q;d' /tmp/${cfg.interfaceName}-port-renewal`
         payload=`sed '2q;d' /tmp/${cfg.interfaceName}-port-renewal`
@@ -186,7 +218,7 @@ in {
 
     vpn-container.config.systemd.timers.pia-vpn-wireguard-forward-port = {
       enable = cfg.portForwarding;
-      # partOf = [ "pia-vpn-wireguard-forward-port.service" ];
+      partOf = [ "pia-vpn-wireguard-forward-port.service" ];
       wantedBy = [ "timers.target" ];
       timerConfig.OnCalendar = "*:0/10"; # 10 minutes
     };
@@ -195,6 +227,7 @@ in {
     # TODO handle errors
     # TODO handle 2 month limit for port
     # TODO print status, success, and failures to the console
+    # TODO handle VPN container with different name
 
     age.secrets."pia-login.conf".file = ../../secrets/pia-login.conf;
   };
