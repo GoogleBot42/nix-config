@@ -1,7 +1,7 @@
 { config, pkgs, lib, ... }:
 
 let
-  cfg = config.pia;
+  cfg = config.pia.openvpn;
   vpnfailsafe = pkgs.stdenv.mkDerivation {
     pname = "vpnfailsafe";
     version = "0.0.1";
@@ -14,7 +14,7 @@ let
   };
 in
 {
-  options.pia = {
+  options.pia.openvpn = {
     enable = lib.mkEnableOption "Enable private internet access";
     server = lib.mkOption {
       type = lib.types.str;
