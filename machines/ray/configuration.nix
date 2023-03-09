@@ -11,8 +11,7 @@
   services.tor.enable = true;
   services.tor.client.enable = true;
 
-  services.howdy.enable = true;
-  # services.linux-enable-ir-emitter.enable = true;
+  # services.howdy.enable = true;
 
   hardware.openrazer.enable = true;
   hardware.openrazer.users = [ "googlebot" ];

@@ -1,8 +1,8 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/master";
-    nixpkgs-patch-howdy.url = "https://github.com/NixOS/nixpkgs/pull/216245.diff";
-    nixpkgs-patch-howdy.flake = false;
+    # nixpkgs-patch-howdy.url = "https://github.com/NixOS/nixpkgs/pull/216245.diff";
+    # nixpkgs-patch-howdy.flake = false;
 
     flake-utils.url = "github:numtide/flake-utils";
 
@@ -72,7 +72,7 @@
             name = "nixpkgs-patched";
             src = nixpkgs;
             patches = [
-              inputs.nixpkgs-patch-howdy
+              # inputs.nixpkgs-patch-howdy
             ];
           };
           patchedNixpkgs = nixpkgs.lib.fix (self: (import "${patchedNixpkgsSrc}/flake.nix").outputs { self=nixpkgs; });
