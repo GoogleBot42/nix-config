@@ -39,6 +39,9 @@
     # prebuilt nix-index database
     nix-index-database.url = "github:Mic92/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
+
+    nixpkgs-hostapd-pr.url = "https://github.com/NixOS/nixpkgs/pull/222536.patch";
+    nixpkgs-hostapd-pr.flake = false;
   };
 
   outputs = { self, nixpkgs, ... }@inputs: {
@@ -72,7 +75,7 @@
             name = "nixpkgs-patched";
             src = nixpkgs;
             patches = [
-              # inputs.nixpkgs-patch-howdy
+              inputs.nixpkgs-hostapd-pr
             ];
           };
           patchedNixpkgs = nixpkgs.lib.fix (self: (import "${patchedNixpkgsSrc}/flake.nix").outputs { self=nixpkgs; });

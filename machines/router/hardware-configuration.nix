@@ -21,7 +21,6 @@
 
   # firmware
   firmware.x86_64.enable = true;
-  hardware.enableAllFirmware = true;
   nixpkgs.config.allowUnfree = true;
 
   # boot

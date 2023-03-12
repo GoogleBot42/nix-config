@@ -212,6 +212,18 @@
         "type": "indirect"
       }
     },
+    "nixpkgs-hostapd-pr": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-XwZgYqlPmqNU2vWl/xgeg6X15U2b3ln2KOVPY2yPwlI=",
+        "type": "file",
+        "url": "https://github.com/NixOS/nixpkgs/pull/222536.patch"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://github.com/NixOS/nixpkgs/pull/222536.patch"
+      }
+    },
     "radio": {
       "inputs": {
         "flake-utils": [
@@ -262,6 +274,7 @@
         "flake-utils": "flake-utils",
         "nix-index-database": "nix-index-database",
         "nixpkgs": "nixpkgs",
+        "nixpkgs-hostapd-pr": "nixpkgs-hostapd-pr",
         "radio": "radio",
         "radio-web": "radio-web",
         "simple-nixos-mailserver": "simple-nixos-mailserver"

@@ -5,6 +5,7 @@ let
   all = users ++ systems;
 in
 {
+  # TODO: Minimum necessary access to keys
   "email-pw.age".publicKeys = all;
   "iodine.age".publicKeys = all;
   "nextcloud-pw.age".publicKeys = all;
@@ -14,4 +15,7 @@ in
   "smb-secrets.age".publicKeys = all;
   "spotifyd.age".publicKeys = all;
   "wolframalpha.age".publicKeys = all;
+
+  # hostapd
+  "hostapd-pw-experimental-tower.age".publicKeys = all;
 }
