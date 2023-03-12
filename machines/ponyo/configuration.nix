@@ -13,6 +13,8 @@
 
   mailserver.enable = true;
 
+  services.nextcloud.enable = true;
+
   services.gitea = {
     enable = true;
     hostname = "git.neet.dev";
