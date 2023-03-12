@@ -1,8 +1,20 @@
 { config, pkgs, lib, ... }:
 
+with builtins;
 
 let
   cfg = config.mailserver;
+  domains = [
+    "neet.space"
+    "neet.dev"
+    "neet.cloud"
+    "runyan.org"
+    "runyan.rocks"
+    "thunderhex.com"
+    "tar.ninja"
+    "bsd.ninja"
+    "bsd.rocks"
+  ];
 in {
   config = lib.mkIf cfg.enable {
     mailserver = {
@@ -13,21 +25,11 @@ in {
       fullTextSearch.enable = true;
       fullTextSearch.indexAttachments = true;
       fullTextSearch.memoryLimit = 500;
-      domains = [
-        "neet.space" "neet.dev" "neet.cloud"
-        "runyan.org" "runyan.rocks"
-        "thunderhex.com" "tar.ninja"
-        "bsd.ninja" "bsd.rocks"
-      ];
+      inherit domains;
       loginAccounts = {
         "jeremy@runyan.org" = {
           hashedPasswordFile = "/run/agenix/email-pw";
-          aliases = [
-            "@neet.space" "@neet.cloud" "@neet.dev"
-            "@runyan.org" "@runyan.rocks"
-            "@thunderhex.com" "@tar.ninja"
-            "@bsd.ninja" "@bsd.rocks"
-          ];
+          aliases = map (domain: "@${domain}") domains;
         };
       };
       rejectRecipients = [
@@ -55,17 +57,8 @@ in {
     };
     services.postfix.mapFiles.sender_relay = let
       relayHost = "[smtp.mailgun.org]:587";
-    in pkgs.writeText "sender_relay" ''
-      @neet.space ${relayHost}
-      @neet.cloud ${relayHost}
-      @neet.dev ${relayHost}
-      @runyan.org ${relayHost}
-      @runyan.rocks ${relayHost}
-      @thunderhex.com ${relayHost}
-      @tar.ninja ${relayHost}
-      @bsd.ninja ${relayHost}
-      @bsd.rocks ${relayHost}
-    '';
+    in pkgs.writeText "sender_relay"
+      (concatStringsSep "\n" (map (domain: "@${domain} ${relayHost}") domains));
     services.postfix.mapFiles.sasl_relay_passwd = "/run/agenix/sasl_relay_passwd";
     age.secrets.sasl_relay_passwd.file = ../../secrets/sasl_relay_passwd.age;
   };
