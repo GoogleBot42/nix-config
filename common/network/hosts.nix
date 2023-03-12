@@ -72,34 +72,6 @@ in {
       hostNames = [ unlock-onion-hosts.s0 ];
       publicKey = system.s0-unlock;
     };
-    n1 = {
-      hostNames = [ "n1" ];
-      publicKey = system.n1;
-    };
-    n2 = {
-      hostNames = [ "n2" ];
-      publicKey = system.n2;
-    };
-    n3 = {
-      hostNames = [ "n3" ];
-      publicKey = system.n3;
-    };
-    n4 = {
-      hostNames = [ "n4" ];
-      publicKey = system.n4;
-    };
-    n5 = {
-      hostNames = [ "n5" ];
-      publicKey = system.n5;
-    };
-    n6 = {
-      hostNames = [ "n6" ];
-      publicKey = system.n6;
-    };
-    n7 = {
-      hostNames = [ "n7" ];
-      publicKey = system.n7;
-    };
   };
 
   # prebuilt cmds for easy ssh LUKS unlock
