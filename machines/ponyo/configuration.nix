@@ -91,7 +91,7 @@
   services.postgresql.package = pkgs.postgresql_11;
 
   services.searx = {
-    enable = true;
+    enable = false;
     environmentFile = "/run/agenix/searx";
     settings = {
       server.port = 43254;
