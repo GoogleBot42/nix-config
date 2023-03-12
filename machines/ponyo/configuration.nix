@@ -9,17 +9,23 @@
 
   system.autoUpgrade.enable = true;
 
+  # p2p mesh network
+  services.tailscale.exitNode = true;
   services.zerotierone.enable = true;
 
+  # email server
   mailserver.enable = true;
 
+  # nextcloud
   services.nextcloud.enable = true;
 
+  # git
   services.gitea = {
     enable = true;
     hostname = "git.neet.dev";
   };
 
+  # IRC
   services.thelounge = {
     enable = true;
     port = 9000;
@@ -31,12 +37,14 @@
     };
   };
 
+  # mumble
   services.murmur = {
     enable = true;
     port = 23563;
     domain = "voice.neet.space";
   };
 
+  # IRC bot
   services.drastikbot = {
     enable = true;
     wolframAppIdFile = "/run/agenix/wolframalpha";
@@ -46,7 +54,7 @@
     owner = config.services.drastikbot.user;
   };
 
-  # wrap radio in a VPN
+  # music radio
   vpn-container.enable = true;
   vpn-container.config = {
     services.radio = {
@@ -54,11 +62,6 @@
       host = "radio.runyan.org";
     };
   };
-
-  # tailscale
-  services.tailscale.exitNode = true;
-
-  # icecast endpoint + website
   services.nginx.virtualHosts."radio.runyan.org" = {
     enableACME = true;
     forceSSL = true;
@@ -73,6 +76,7 @@
     };
   };
 
+  # matrix home server
   services.matrix = {
     enable = true;
     host = "neet.space";
@@ -90,45 +94,13 @@
       secret = "a8369a0e96922abf72494bb888c85831b";
     };
   };
+  # pin postgresql for matrix (will need to migrate eventually)
   services.postgresql.package = pkgs.postgresql_11;
 
-  services.searx = {
-    enable = false;
-    environmentFile = "/run/agenix/searx";
-    settings = {
-      server.port = 43254;
-      server.secret_key = "@SEARX_SECRET_KEY@";
-      engines = [ {
-        name = "wolframalpha";
-        shortcut = "wa";
-        api_key = "@WOLFRAM_API_KEY@";
-        engine = "wolframalpha_api";
-      } ];
-    };
-  };
-  services.nginx.virtualHosts."search.neet.space" = {
-    enableACME = true;
-    forceSSL = true;
-    locations."/" = {
-      proxyPass = "http://localhost:${toString config.services.searx.settings.server.port}";
-    };
-  };
-  age.secrets.searx.file = ../../secrets/searx.age;
-
   # iodine DNS-based vpn
-  services.iodine.server = {
-    enable = true;
-    ip = "192.168.99.1";
-    domain = "tun.neet.dev";
-    passwordFile = "/run/agenix/iodine";
-  };
-  age.secrets.iodine.file = ../../secrets/iodine.age;
-  networking.firewall.allowedUDPPorts = [ 53 ];
+  services.iodine.server.enable = true;
 
-  networking.nat.internalInterfaces = [
-    "dns0" # iodine
-  ];
-
+  # proxied web services
   services.nginx.enable = true;
   services.nginx.virtualHosts."jellyfin.neet.cloud" = {
     enableACME = true;
@@ -144,13 +116,14 @@
     locations."/".proxyPass = "http://s0.zt.neet.dev:4533";
   };
 
+  # TODO replace with a proper file hosting service
   services.nginx.virtualHosts."tmp.neet.dev" = {
     enableACME = true;
     forceSSL = true;
     root = "/var/www/tmp";
   };
 
-  # redirect to github
+  # redirect runyan.org to github
   services.nginx.virtualHosts."runyan.org" = {
     enableACME = true;
     forceSSL = true;
@@ -159,6 +132,7 @@
     '';
   };
 
+  # owncast live streaming
   services.owncast.enable = true;
   services.owncast.hostname = "live.neet.dev";
 }

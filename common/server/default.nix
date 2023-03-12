@@ -16,5 +16,7 @@
     ./owncast.nix
     ./mailserver.nix
     ./nextcloud.nix
+    ./iodine.nix
+    ./searx.nix
   ];
 }
