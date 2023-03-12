@@ -36,14 +36,6 @@ in {
   keepalive-ping.hosts = attrNames zerotierHosts;
 
   programs.ssh.knownHosts = {
-    liza = {
-      hostNames = [ "liza" "mail.neet.dev" ];
-      publicKey = system.liza;
-    };
-    liza-unlock = {
-      hostNames = [ unlock-onion-hosts.liza ];
-      publicKey = system.liza-unlock;
-    };
     ponyo = {
       hostNames = [ "ponyo" "ponyo.neet.dev" "ponyo.zt.neet.dev" "git.neet.dev" ];
       publicKey = system.ponyo;

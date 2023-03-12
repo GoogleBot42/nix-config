@@ -6,8 +6,6 @@ rec {
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFeTK1iARlNIKP/DS8/ObBm9yUM/3L1Ub4XI5A2r9OzP" # ray
   ] ++ higherTrustUserKeys;
   system = {
-    liza = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDY/pNyWedEfU7Tq9ikGbriRuF1ZWkHhegGS17L0Vcdl";
-    liza-unlock = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ6eMKW7jBNUKm2r9zEoape4s3KVrmLTLC0nkW9t/8JK";
     ponyo = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMBBlTAIp38RhErU1wNNV5MBeb+WGH0mhF/dxh5RsAXN";
     ponyo-unlock = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC9LQuuImgWlkjDhEEIbM1wOd+HqRv1RxvYZuLXPSdRi";
     ray = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDQM8hwKRgl8cZj7UVYATSLYu4LhG7I0WFJ9m2iWowiB";
@@ -23,7 +21,6 @@ rec {
 
   # groups
   systems = with system; [
-    liza
     ponyo
     ray
     router
@@ -33,7 +30,6 @@ rec {
     ray
   ];
   servers = with system; [
-    liza
     ponyo
     router
     s0
