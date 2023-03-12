@@ -29,6 +29,7 @@ in {
       loginAccounts = {
         "jeremy@runyan.org" = {
           hashedPasswordFile = "/run/agenix/email-pw";
+          # catchall for all domains
           aliases = map (domain: "@${domain}") domains;
         };
       };
