@@ -14,5 +14,7 @@
     ./radio.nix
     ./samba.nix
     ./owncast.nix
+    ./mailserver.nix
+    ./nextcloud.nix
   ];
 }

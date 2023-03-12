@@ -14,17 +14,20 @@ in {
       domain = cfg.hostname;
       rootUrl = "https://${cfg.hostname}/";
       appName = cfg.hostname;
-      ssh.enable = true;
       # lfs.enable = true;
       dump.enable = true;
-      cookieSecure = true;
-      disableRegistration = true;
       settings = {
         other = {
           SHOW_FOOTER_VERSION = false;
         };
         ui = {
           DEFAULT_THEME = "arc-green";
+        };
+        service = {
+          DISABLE_REGISTRATION = true;
+        };
+        session = {
+          COOKIE_SECURE = true;
         };
       };
     };

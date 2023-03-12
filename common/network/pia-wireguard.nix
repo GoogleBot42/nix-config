@@ -32,11 +32,11 @@ in {
       type = lib.types.str;
       default = "piaw";
     };
-    # forwardedPort = lib.mkOption {
-    #   type = lib.types.port;
-    #   description = "The port to redirect port forwarded TCP VPN traffic too";
-    #   default = 15050;
-    # };
+    forwardedPort = lib.mkOption {
+      type = lib.types.port;
+      description = "The port to redirect port forwarded TCP VPN traffic too";
+      default = 15050;
+    };
     # TODO allow disabling this
     portForwarding = lib.mkEnableOption "Enables PIA port fowarding";
 

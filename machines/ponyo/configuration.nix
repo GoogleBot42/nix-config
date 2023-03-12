@@ -11,10 +11,11 @@
 
   services.zerotierone.enable = true;
 
+  mailserver.enable = true;
+
   services.gitea = {
     enable = true;
     hostname = "git.neet.dev";
-    disableRegistration = true;
   };
 
   services.thelounge = {
