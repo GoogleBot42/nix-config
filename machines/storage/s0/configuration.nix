@@ -114,6 +114,14 @@
       uid = 994;
     };
   };
+  pia.wireguard.badPortForwardPorts = [
+    9696 # prowlarr
+    8989 # sonarr
+    6767 # bazarr
+    7878 # radarr
+    8686 # lidarr
+    9091 # transmission web
+  ];
 
   # jellyfin
   # jellyfin cannot run in the vpn container and use hardware encoding

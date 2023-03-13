@@ -6,7 +6,6 @@
 #   https://github.com/pia-foss/manual-connections
 #   https://github.com/thrnz/docker-wireguard-pia/blob/master/extra/wg-gen.sh
 
-# TODO reassign ports of other VPN container services to ones that PIA won't forward to and add bash code to check to be sure port stays in this range
 # TODO handle potential errors (or at least print status, success, and failures to the console)
 # TODO handle 2 month limit for port
 # TODO handle VPN container with different name
@@ -14,6 +13,7 @@
 #   - TODO implement this module such that the wireguard VPN doesn't have to live in a container
 # TODO add some variance to the port forward timer
 # TODO look at wg-gen script for example of looking up a random server in a region and connect to that (user should not need to specify IP addr)
+# TODO don't add forward rules if the PIA port is the same as cfg.forwardedPort
 
 with builtins;
 
@@ -37,6 +37,14 @@ let
 in {
   options.pia.wireguard = {
     enable = lib.mkEnableOption "Enable private internet access";
+    badPortForwardPorts = lib.mkOption {
+      type = lib.types.listOf lib.types.port;
+      description = ''
+        Ports that will not be accepted from PIA.
+        If PIA assigns a port from this list, the connection is aborted since we cannot ask for a different port.
+        This is used to guarantee we are not assigned a port that is used by a service we do not want exposed.
+      '';
+    };
     wireguardListenPort = lib.mkOption {
       type = lib.types.port;
       description = "The port wireguard listens on for this VPN connection";
@@ -200,6 +208,14 @@ in {
         signature=$(echo "$payload_and_signature" | jq -r '.signature')
         payload=$(echo "$payload_and_signature" | jq -r '.payload')
         port=$(echo "$payload" | base64 -d | jq -r '.port')
+
+        # Check if the port is acceptable
+        notallowed=(${lib.concatStringsSep " " (map toString cfg.badPortForwardPorts)})
+        if [[ " ''${notallowed[*]} " =~ " $port " ]]; then
+          # the port PIA assigned is not allowed, kill the connection
+          wg-quick down /tmp/${cfg.interfaceName}.conf
+          exit 1
+        fi
 
         # write reserved port to file readable for all users
         echo $port > /tmp/${cfg.interfaceName}-port

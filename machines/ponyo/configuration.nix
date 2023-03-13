@@ -62,6 +62,7 @@
       host = "radio.runyan.org";
     };
   };
+  pia.wireguard.badPortForwardPorts = [];
   services.nginx.virtualHosts."radio.runyan.org" = {
     enableACME = true;
     forceSSL = true;
