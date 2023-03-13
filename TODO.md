@@ -52,15 +52,6 @@
         - https://ampache.org/
 - replace nextcloud with seafile
 
-### VPN container
-- use wireguard for vpn
-    - https://github.com/triffid/pia-wg/blob/master/pia-wg.sh
-    - https://github.com/pia-foss/manual-connections
-    - port forwarding for vpn
-        - transmission using forwarded port
-    - https://www.wireguard.com/netns/
-    - one way firewall for vpn container
-
 ### Networking
 - tailscale for p2p connections
     - remove all use of zerotier

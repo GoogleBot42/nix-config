@@ -6,6 +6,16 @@
 #   https://github.com/pia-foss/manual-connections
 #   https://github.com/thrnz/docker-wireguard-pia/blob/master/extra/wg-gen.sh
 
+# TODO turn on firewall for VPN interface
+# TODO handle potential errors (or at least print status, success, and failures to the console)
+# TODO handle 2 month limit for port
+# TODO handle VPN container with different name
+# TODO parameterize names of systemd services so that multiple wg VPNs could coexist in theory easier
+# TODO add some variance to the port forward timer
+# TODO allow not forwarding a port
+# TODO implement this module such that the wireguard VPN doesn't have to live in a container
+# TODO look at wg-gen script for example of looking up a random server in a region and connect to that (user should not need to specify IP addr)
+
 with builtins;
 
 let
@@ -222,12 +232,6 @@ in {
       wantedBy = [ "timers.target" ];
       timerConfig.OnCalendar = "*:0/10"; # 10 minutes
     };
-
-    # TODO enable firewall on the PIA interface
-    # TODO handle errors
-    # TODO handle 2 month limit for port
-    # TODO print status, success, and failures to the console
-    # TODO handle VPN container with different name
 
     age.secrets."pia-login.conf".file = ../../secrets/pia-login.conf;
   };
