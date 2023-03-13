@@ -6,7 +6,7 @@
 #   https://github.com/pia-foss/manual-connections
 #   https://github.com/thrnz/docker-wireguard-pia/blob/master/extra/wg-gen.sh
 
-# TODO turn on firewall for VPN interface
+# TODO reassign ports of other VPN container services to ones that PIA won't forward to and add bash code to check to be sure port stays in this range
 # TODO handle potential errors (or at least print status, success, and failures to the console)
 # TODO handle 2 month limit for port
 # TODO handle VPN container with different name
@@ -211,6 +211,10 @@ in {
         chmod 700 /tmp/${cfg.interfaceName}-port-renewal
         echo $signature >> /tmp/${cfg.interfaceName}-port-renewal
         echo $payload >> /tmp/${cfg.interfaceName}-port-renewal
+
+        # Block all traffic from VPN interface except for traffic that is from the forwarded port
+        iptables -I INPUT -i ${cfg.interfaceName} -j DROP
+        iptables -I INPUT -i ${cfg.interfaceName} -p tcp --dport $port -j ACCEPT
 
         # The first port refresh triggers the port to be actually allocated
         ${refreshPIAPort}
