@@ -16,6 +16,7 @@
 # TODO don't add forward rules if the PIA port is the same as cfg.forwardedPort
 
 with builtins;
+with lib;
 
 let
   cfg = config.pia.wireguard;
@@ -36,41 +37,41 @@ let
   portForwarding = cfg.forwardPortForTransmission || cfg.forwardedPort != null;
 in {
   options.pia.wireguard = {
-    enable = lib.mkEnableOption "Enable private internet access";
-    badPortForwardPorts = lib.mkOption {
-      type = lib.types.listOf lib.types.port;
+    enable = mkEnableOption "Enable private internet access";
+    badPortForwardPorts = mkOption {
+      type = types.listOf types.port;
       description = ''
         Ports that will not be accepted from PIA.
         If PIA assigns a port from this list, the connection is aborted since we cannot ask for a different port.
         This is used to guarantee we are not assigned a port that is used by a service we do not want exposed.
       '';
     };
-    wireguardListenPort = lib.mkOption {
-      type = lib.types.port;
+    wireguardListenPort = mkOption {
+      type = types.port;
       description = "The port wireguard listens on for this VPN connection";
       default = 51820;
     };
-    serverHostname = lib.mkOption {
-      type = lib.types.str;
+    serverHostname = mkOption {
+      type = types.str;
       default = "zurich406";
     };
-    serverIp = lib.mkOption {
-      type = lib.types.str;
+    serverIp = mkOption {
+      type = types.str;
       default = "156.146.62.153";
     };
-    interfaceName = lib.mkOption {
-      type = lib.types.str;
+    interfaceName = mkOption {
+      type = types.str;
       default = "piaw";
     };
-    forwardedPort = lib.mkOption {
-      type = lib.types.nullOr lib.types.port;
+    forwardedPort = mkOption {
+      type = types.nullOr types.port;
       description = "The port to redirect port forwarded TCP VPN traffic too";
       default = null;
     };
-    forwardPortForTransmission = lib.mkEnableOption "PIA port forwarding for transmission should be performed.";
+    forwardPortForTransmission = mkEnableOption "PIA port forwarding for transmission should be performed.";
   };
 
-  config = lib.mkIf cfg.enable {
+  config = mkIf cfg.enable {
     assertions = [
       {
         assertion = cfg.forwardPortForTransmission != (cfg.forwardedPort != null);
@@ -200,7 +201,7 @@ in {
         ip -4 rule add table main suppress_prefixlength 0
 
         # The rest of the script is only for only for port forwarding skip if not needed
-        if [ ${lib.boolToString portForwarding} == false ]; then exit 0; fi
+        if [ ${boolToString portForwarding} == false ]; then exit 0; fi
 
         # Reserve port
         ${getPIAToken}
@@ -210,7 +211,7 @@ in {
         port=$(echo "$payload" | base64 -d | jq -r '.port')
 
         # Check if the port is acceptable
-        notallowed=(${lib.concatStringsSep " " (map toString cfg.badPortForwardPorts)})
+        notallowed=(${concatStringsSep " " (map toString cfg.badPortForwardPorts)})
         if [[ " ''${notallowed[*]} " =~ " $port " ]]; then
           # the port PIA assigned is not allowed, kill the connection
           wg-quick down /tmp/${cfg.interfaceName}.conf
@@ -235,7 +236,7 @@ in {
         # The first port refresh triggers the port to be actually allocated
         ${refreshPIAPort}
 
-        ${lib.optionalString (cfg.forwardedPort != null) ''
+        ${optionalString (cfg.forwardedPort != null) ''
           # redirect the fowarded port
           iptables -A INPUT -i ${cfg.interfaceName} -p tcp --dport $port -j ACCEPT
           iptables -A INPUT -i ${cfg.interfaceName} -p udp --dport $port -j ACCEPT
@@ -245,7 +246,7 @@ in {
           iptables -A PREROUTING -t nat -i ${cfg.interfaceName} -p udp --dport $port -j REDIRECT --to-port ${toString cfg.forwardedPort}
         ''}
 
-        ${lib.optionalString cfg.forwardPortForTransmission ''
+        ${optionalString cfg.forwardPortForTransmission ''
           # assumes no auth needed for transmission
           curlout=$(curl localhost:9091/transmission/rpc 2>/dev/null)
           regex='X-Transmission-Session-Id\: (\w*)'
@@ -265,9 +266,9 @@ in {
         wg-quick down /tmp/${cfg.interfaceName}.conf
 
         # The rest of the script is only for only for port forwarding skip if not needed
-        if [ ${lib.boolToString portForwarding} == false ]; then exit 0; fi
+        if [ ${boolToString portForwarding} == false ]; then exit 0; fi
 
-        ${lib.optionalString (cfg.forwardedPort != null) ''
+        ${optionalString (cfg.forwardedPort != null) ''
           # stop redirecting the forwarded port
           iptables -D INPUT -i ${cfg.interfaceName} -p tcp --dport $port -j ACCEPT
           iptables -D INPUT -i ${cfg.interfaceName} -p udp --dport $port -j ACCEPT
