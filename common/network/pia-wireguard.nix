@@ -7,13 +7,10 @@
 #   https://github.com/thrnz/docker-wireguard-pia/blob/master/extra/wg-gen.sh
 
 # TODO handle potential errors (or at least print status, success, and failures to the console)
-# TODO handle 2 month limit for port
-# TODO handle VPN container with different name
-#   - TODO parameterize names of systemd services so that multiple wg VPNs could coexist in theory easier
-#   - TODO implement this module such that the wireguard VPN doesn't have to live in a container
-# TODO add some variance to the port forward timer
-# TODO look at wg-gen script for example of looking up a random server in a region and connect to that (user should not need to specify IP addr)
+# TODO parameterize names of systemd services so that multiple wg VPNs could coexist in theory easier
+# TODO implement this module such that the wireguard VPN doesn't have to live in a container
 # TODO don't add forward rules if the PIA port is the same as cfg.forwardedPort
+# TODO verify signatures of PIA responses
 
 with builtins;
 with lib;
@@ -28,13 +25,53 @@ let
     PIA_TOKEN=`curl -s -u "$PIA_USER:$PIA_PASS" https://www.privateinternetaccess.com/gtoken/generateToken | jq -r '.token'`
   '';
 
+  chooseWireguardServer = ''
+    servers=$(mktemp)
+    servers_json=$(mktemp)
+    curl -s "https://serverlist.piaservers.net/vpninfo/servers/v6" > "$servers"
+    # extract json part only
+    head -n 1 "$servers" | tr -d '\n' > "$servers_json"
+
+    echo "Available location ids:" && jq '.regions | .[] | {name, id, port_forward}' "$servers_json"
+
+    # Some locations have multiple servers available. Pick a random one.
+    totalservers=$(jq -r '.regions | .[] | select(.id=="'${cfg.serverLocation}'") | .servers.wg | length' "$servers_json")
+    if ! [[ "$totalservers" =~ ^[0-9]+$ ]] || [ "$totalservers" -eq 0 ] 2>/dev/null; then
+      echo "Location \"${cfg.serverLocation}\" not found."
+      exit 1
+    fi
+    serverindex=$(( RANDOM % totalservers))
+    WG_HOSTNAME=$(jq -r '.regions | .[] | select(.id=="'${cfg.serverLocation}'") | .servers.wg | .['$serverindex'].cn' "$servers_json")
+    WG_SERVER_IP=$(jq -r '.regions | .[] | select(.id=="'${cfg.serverLocation}'") | .servers.wg | .['$serverindex'].ip' "$servers_json")
+    WG_SERVER_PORT=$(jq -r '.groups.wg | .[0] | .ports | .[0]' "$servers_json")
+
+    # write chosen server
+    rm -f /tmp/${cfg.interfaceName}-server.conf
+    touch /tmp/${cfg.interfaceName}-server.conf
+    chmod 700 /tmp/${cfg.interfaceName}-server.conf
+    echo "$WG_HOSTNAME" >> /tmp/${cfg.interfaceName}-server.conf
+    echo "$WG_SERVER_IP" >> /tmp/${cfg.interfaceName}-server.conf
+    echo "$WG_SERVER_PORT" >> /tmp/${cfg.interfaceName}-server.conf
+
+    rm $servers_json $servers
+  '';
+
+  getChosenWireguardServer = ''
+    WG_HOSTNAME=`sed '1q;d' /tmp/${cfg.interfaceName}-server.conf`
+    WG_SERVER_IP=`sed '2q;d' /tmp/${cfg.interfaceName}-server.conf`
+    WG_SERVER_PORT=`sed '3q;d' /tmp/${cfg.interfaceName}-server.conf`
+  '';
+
   refreshPIAPort = ''
+    ${getChosenWireguardServer}
     signature=`sed '1q;d' /tmp/${cfg.interfaceName}-port-renewal`
     payload=`sed '2q;d' /tmp/${cfg.interfaceName}-port-renewal`
-    bind_port_response=`curl -Gs -m 5 --connect-to "${cfg.serverHostname}::${cfg.serverIp}:" --cacert "${./ca.rsa.4096.crt}" --data-urlencode "payload=$payload" --data-urlencode "signature=$signature" "https://${cfg.serverHostname}:19999/bindPort"`
+    bind_port_response=`curl -Gs -m 5 --connect-to "$WG_HOSTNAME::$WG_SERVER_IP:" --cacert "${./ca.rsa.4096.crt}" --data-urlencode "payload=$payload" --data-urlencode "signature=$signature" "https://$WG_HOSTNAME:19999/bindPort"`
   '';
 
   portForwarding = cfg.forwardPortForTransmission || cfg.forwardedPort != null;
+
+  containerServiceName = "container@${config.vpn-container.containerName}.service";
 in {
   options.pia.wireguard = {
     enable = mkEnableOption "Enable private internet access";
@@ -51,13 +88,9 @@ in {
       description = "The port wireguard listens on for this VPN connection";
       default = 51820;
     };
-    serverHostname = mkOption {
+    serverLocation = mkOption {
       type = types.str;
-      default = "zurich406";
-    };
-    serverIp = mkOption {
-      type = types.str;
-      default = "156.146.62.153";
+      default = "swiss";
     };
     interfaceName = mkOption {
       type = types.str;
@@ -81,7 +114,15 @@ in {
       }
     ];
 
-    vpn-container.mounts = [ "/tmp/${cfg.interfaceName}.conf" "/tmp/${cfg.interfaceName}-address.conf" ];
+    # mounts used to pass the connection parameters to the container
+    # the container doesn't have internet until it uses these parameters so it cannot fetch them itself
+    vpn-container.mounts = [
+      "/tmp/${cfg.interfaceName}.conf"
+      "/tmp/${cfg.interfaceName}-server.conf"
+      "/tmp/${cfg.interfaceName}-address.conf"
+    ];
+
+    # The container takes ownership of the wireguard interface on its startup
     containers.vpn.interfaces = [ cfg.interfaceName ];
 
     # TODO: while this is much better than "loose" networking, it seems to have issues with firewall restarts
@@ -103,9 +144,9 @@ in {
 
       requires = [ "network-online.target" ];
       after = [ "network.target" "network-online.target" ];
-      before = [ "container@vpn.service" ];
-      requiredBy = [ "container@vpn.service" ];
-      partOf = [ "container@vpn.service" ];
+      before = [ containerServiceName ];
+      requiredBy = [ containerServiceName ];
+      partOf = [ containerServiceName ];
       wantedBy = [ "multi-user.target" ];
 
       path = with pkgs; [ wireguard-tools jq curl iproute ];
@@ -113,6 +154,10 @@ in {
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
+
+        # restart once a month; PIA forwarded port expires after two months
+        # because the container is "PartOf" this unit, it gets restarted too
+        RuntimeMaxSec="30d";
       };
 
       script = ''
@@ -120,8 +165,7 @@ in {
         # cannot do without internet to start with. NAT'ing the host's internet would address this
         # issue but is not ideal because then leaking network outside of the VPN is more likely.
 
-        WG_HOSTNAME=${cfg.serverHostname}
-        WG_SERVER_IP=${cfg.serverIp}
+        ${chooseWireguardServer}
 
         ${getPIAToken}
 
@@ -130,13 +174,13 @@ in {
         pubKey=$(echo "$privKey" | wg pubkey)
 
         # authorize our WG keys with the PIA server we are about to connect to
-        wireguard_json=`curl -s -G --connect-to "$WG_HOSTNAME::$WG_SERVER_IP:" --cacert "${./ca.rsa.4096.crt}" --data-urlencode "pt=$PIA_TOKEN" --data-urlencode "pubkey=$pubKey" https://$WG_HOSTNAME:1337/addKey`
+        wireguard_json=`curl -s -G --connect-to "$WG_HOSTNAME::$WG_SERVER_IP:" --cacert "${./ca.rsa.4096.crt}" --data-urlencode "pt=$PIA_TOKEN" --data-urlencode "pubkey=$pubKey" https://$WG_HOSTNAME:$WG_SERVER_PORT/addKey`
 
         # create wg-quick config file
         rm -f /tmp/${cfg.interfaceName}.conf /tmp/${cfg.interfaceName}-address.conf
         touch /tmp/${cfg.interfaceName}.conf /tmp/${cfg.interfaceName}-address.conf
         chmod 700 /tmp/${cfg.interfaceName}.conf /tmp/${cfg.interfaceName}-address.conf
-        echo "               
+        echo "
         [Interface]
         # Address = $(echo "$wireguard_json" | jq -r '.peer_ip')
         PrivateKey = $privKey
@@ -167,7 +211,7 @@ in {
     };
 
     vpn-container.config.systemd.services.pia-vpn-wireguard = {
-      description = "PIA VPN WireGuard Tunnel";
+      description = "Initializes the PIA VPN WireGuard Tunnel";
 
       requires = [ "network-online.target" ];
       after = [ "network.target" "network-online.target" ];
@@ -188,6 +232,8 @@ in {
         # Thus, assumes wg interface was already created:
         #   ip link add ${cfg.interfaceName} type wireguard
 
+        ${getChosenWireguardServer}
+
         myaddress=`cat /tmp/${cfg.interfaceName}-address.conf`
 
         wg setconf ${cfg.interfaceName} /tmp/${cfg.interfaceName}.conf
@@ -205,7 +251,7 @@ in {
 
         # Reserve port
         ${getPIAToken}
-        payload_and_signature=`curl -s -m 5 --connect-to "${cfg.serverHostname}::${cfg.serverIp}:" --cacert "${./ca.rsa.4096.crt}" -G --data-urlencode "token=$PIA_TOKEN" "https://${cfg.serverHostname}:19999/getSignature"`
+        payload_and_signature=`curl -s -m 5 --connect-to "$WG_HOSTNAME::$WG_SERVER_IP:" --cacert "${./ca.rsa.4096.crt}" -G --data-urlencode "token=$PIA_TOKEN" "https://$WG_HOSTNAME:19999/getSignature"`
         signature=$(echo "$payload_and_signature" | jq -r '.signature')
         payload=$(echo "$payload_and_signature" | jq -r '.payload')
         port=$(echo "$payload" | base64 -d | jq -r '.port')
@@ -299,7 +345,10 @@ in {
       enable = portForwarding;
       partOf = [ "pia-vpn-wireguard-forward-port.service" ];
       wantedBy = [ "timers.target" ];
-      timerConfig.OnCalendar = "*:0/10"; # 10 minutes
+      timerConfig = {
+        OnCalendar = "*:0/10"; # 10 minutes
+        RandomizedDelaySec = "1m"; # vary by 1 min to give PIA servers some relief
+      };
     };
 
     age.secrets."pia-login.conf".file = ../../secrets/pia-login.conf;
