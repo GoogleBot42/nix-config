@@ -75,7 +75,11 @@ in
         # speeds up evaluation
         nixpkgs.pkgs = pkgs;
 
-        networking.firewall.enable = mkForce false;
+        # networking.firewall.enable = mkForce false;
+        networking.firewall.trustedInterfaces = [
+          # completely trust internal interface to host
+          "eth0"
+        ];
 
         pia.openvpn.enable = cfg.useOpenVPN;
         pia.openvpn.server = "swiss.privacy.network"; # swiss vpn

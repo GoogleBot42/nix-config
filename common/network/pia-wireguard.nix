@@ -213,8 +213,8 @@ in {
         echo $payload >> /tmp/${cfg.interfaceName}-port-renewal
 
         # Block all traffic from VPN interface except for traffic that is from the forwarded port
-        iptables -I INPUT -i ${cfg.interfaceName} -j DROP
-        iptables -I INPUT -i ${cfg.interfaceName} -p tcp --dport $port -j ACCEPT
+        iptables -I nixos-fw -p tcp --dport $port -j nixos-fw-accept -i ${cfg.interfaceName}
+        iptables -I nixos-fw -p udp --dport $port -j nixos-fw-accept -i ${cfg.interfaceName}
 
         # The first port refresh triggers the port to be actually allocated
         ${refreshPIAPort}
