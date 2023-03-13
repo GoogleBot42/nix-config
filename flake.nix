@@ -124,8 +124,9 @@
       in {
         s0 = mkDeploy "s0" "s0";
         router = mkDeploy "router" "192.168.1.228";
+        ponyo = mkDeploy "ponyo" "ponyo.neet.dev";
       };
 
-    # checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) inputs.deploy-rs.lib;
+    checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) inputs.deploy-rs.lib;
   };
 }
