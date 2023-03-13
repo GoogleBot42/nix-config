@@ -44,7 +44,7 @@ in
 
   config = mkIf cfg.enable {
     pia.wireguard.enable = !cfg.useOpenVPN;
-    pia.wireguard.portForwarding = !cfg.useOpenVPN;
+    pia.wireguard.forwardPortForTransmission = !cfg.useOpenVPN;
 
     containers.${cfg.containerName} = {
       ephemeral = true;

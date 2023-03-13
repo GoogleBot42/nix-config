@@ -10,10 +10,9 @@
 # TODO handle potential errors (or at least print status, success, and failures to the console)
 # TODO handle 2 month limit for port
 # TODO handle VPN container with different name
-# TODO parameterize names of systemd services so that multiple wg VPNs could coexist in theory easier
+#   - TODO parameterize names of systemd services so that multiple wg VPNs could coexist in theory easier
+#   - TODO implement this module such that the wireguard VPN doesn't have to live in a container
 # TODO add some variance to the port forward timer
-# TODO allow not forwarding a port
-# TODO implement this module such that the wireguard VPN doesn't have to live in a container
 # TODO look at wg-gen script for example of looking up a random server in a region and connect to that (user should not need to specify IP addr)
 
 with builtins;
@@ -27,9 +26,22 @@ let
     # PIA_TOKEN only lasts 24hrs
     PIA_TOKEN=`curl -s -u "$PIA_USER:$PIA_PASS" https://www.privateinternetaccess.com/gtoken/generateToken | jq -r '.token'`
   '';
+
+  refreshPIAPort = ''
+    signature=`sed '1q;d' /tmp/${cfg.interfaceName}-port-renewal`
+    payload=`sed '2q;d' /tmp/${cfg.interfaceName}-port-renewal`
+    bind_port_response=`curl -Gs -m 5 --connect-to "${cfg.serverHostname}::${cfg.serverIp}:" --cacert "${./ca.rsa.4096.crt}" --data-urlencode "payload=$payload" --data-urlencode "signature=$signature" "https://${cfg.serverHostname}:19999/bindPort"`
+  '';
+
+  portForwarding = cfg.forwardPortForTransmission || cfg.forwardedPort != null;
 in {
   options.pia.wireguard = {
     enable = lib.mkEnableOption "Enable private internet access";
+    wireguardListenPort = lib.mkOption {
+      type = lib.types.port;
+      description = "The port wireguard listens on for this VPN connection";
+      default = 51820;
+    };
     serverHostname = lib.mkOption {
       type = lib.types.str;
       default = "zurich406";
@@ -43,30 +55,36 @@ in {
       default = "piaw";
     };
     forwardedPort = lib.mkOption {
-      type = lib.types.port;
+      type = lib.types.nullOr lib.types.port;
       description = "The port to redirect port forwarded TCP VPN traffic too";
-      default = 15050;
+      default = null;
     };
-    # TODO allow disabling this
-    portForwarding = lib.mkEnableOption "Enables PIA port fowarding";
-
-    # TODO implement this such that the wireguard VPN doesn't have to live in a container
-    useInVPNContainer = lib.mkEnableOption "Configures the PIA WG VPN for use in the VPN container";
+    forwardPortForTransmission = lib.mkEnableOption "PIA port forwarding for transmission should be performed.";
   };
 
   config = lib.mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = cfg.forwardPortForTransmission != (cfg.forwardedPort != null);
+        message = ''
+          The PIA forwarded port cannot simultaneously be used by transmission and redirected to another port.
+        '';
+      }
+    ];
+
     vpn-container.mounts = [ "/tmp/${cfg.interfaceName}.conf" "/tmp/${cfg.interfaceName}-address.conf" ];
     containers.vpn.interfaces = [ cfg.interfaceName ];
 
+    # TODO: while this is much better than "loose" networking, it seems to have issues with firewall restarts
     # allow traffic for wireguard interface to pass since wireguard trips up rpfilter
     # networking.firewall = {
     #   extraCommands = ''
-    #     ip46tables -t raw -I nixos-fw-rpfilter -p udp -m udp --sport 51820 -j RETURN
-    #     ip46tables -t raw -I nixos-fw-rpfilter -p udp -m udp --dport 51820 -j RETURN
+    #     ip46tables -t raw -I nixos-fw-rpfilter -p udp -m udp --sport ${toString cfg.wireguardListenPort} -j RETURN
+    #     ip46tables -t raw -I nixos-fw-rpfilter -p udp -m udp --dport ${toString cfg.wireguardListenPort} -j RETURN
     #   '';
     #   extraStopCommands = ''
-    #     ip46tables -t raw -D nixos-fw-rpfilter -p udp -m udp --sport 51820 -j RETURN || true
-    #     ip46tables -t raw -D nixos-fw-rpfilter -p udp -m udp --dport 51820 -j RETURN || true
+    #     ip46tables -t raw -D nixos-fw-rpfilter -p udp -m udp --sport ${toString cfg.wireguardListenPort} -j RETURN || true
+    #     ip46tables -t raw -D nixos-fw-rpfilter -p udp -m udp --dport ${toString cfg.wireguardListenPort} -j RETURN || true
     #   '';
     # };
     networking.firewall.checkReversePath = "loose";
@@ -98,11 +116,14 @@ in {
 
         ${getPIAToken}
 
+        # generate wireguard keys
         privKey=$(wg genkey)
         pubKey=$(echo "$privKey" | wg pubkey)
 
+        # authorize our WG keys with the PIA server we are about to connect to
         wireguard_json=`curl -s -G --connect-to "$WG_HOSTNAME::$WG_SERVER_IP:" --cacert "${./ca.rsa.4096.crt}" --data-urlencode "pt=$PIA_TOKEN" --data-urlencode "pubkey=$pubKey" https://$WG_HOSTNAME:1337/addKey`
 
+        # create wg-quick config file
         rm -f /tmp/${cfg.interfaceName}.conf /tmp/${cfg.interfaceName}-address.conf
         touch /tmp/${cfg.interfaceName}.conf /tmp/${cfg.interfaceName}-address.conf
         chmod 700 /tmp/${cfg.interfaceName}.conf /tmp/${cfg.interfaceName}-address.conf
@@ -110,13 +131,15 @@ in {
         [Interface]
         # Address = $(echo "$wireguard_json" | jq -r '.peer_ip')
         PrivateKey = $privKey
-        ListenPort = 51820
+        ListenPort = ${toString cfg.wireguardListenPort}
         [Peer]
         PersistentKeepalive = 25
         PublicKey = $(echo "$wireguard_json" | jq -r '.server_key')
         AllowedIPs = 0.0.0.0/0
         Endpoint = $WG_SERVER_IP:$(echo "$wireguard_json" | jq -r '.server_port')
         " >> /tmp/${cfg.interfaceName}.conf
+
+        # create file storing the VPN ip address PIA assigned to us
         echo "$wireguard_json" | jq -r '.peer_ip' >> /tmp/${cfg.interfaceName}-address.conf
 
         # Create wg interface now so it inherits from the namespace with internet access
@@ -128,7 +151,9 @@ in {
       '';
 
       preStop = ''
+        # cleanup wireguard interface
         ip link del ${cfg.interfaceName}
+        rm -f /tmp/${cfg.interfaceName}.conf /tmp/${cfg.interfaceName}-address.conf
       '';
     };
 
@@ -148,24 +173,26 @@ in {
 
       script = ''
         # pseudo calls wg-quick
-        # wg-quick down /tmp/${cfg.interfaceName}.conf
-        # cannot actually call wg-quick because the interface has to be already created at this point
-
-        # assumes wg interface was already created
-        # ip link add ${cfg.interfaceName} type wireguard
+        # Near equivalent of "wg-quick up /tmp/${cfg.interfaceName}.conf"
+        # cannot actually call wg-quick because the interface has to be already
+        # created before the container taken ownership of the interface
+        # Thus, assumes wg interface was already created:
+        #   ip link add ${cfg.interfaceName} type wireguard
 
         myaddress=`cat /tmp/${cfg.interfaceName}-address.conf`
 
         wg setconf ${cfg.interfaceName} /tmp/${cfg.interfaceName}.conf
         ip -4 address add $myaddress dev ${cfg.interfaceName}
         ip link set mtu 1420 up dev ${cfg.interfaceName}
-        wg set ${cfg.interfaceName} fwmark 51820
-        ip -4 route add 0.0.0.0/0 dev ${cfg.interfaceName} table 51820
+        wg set ${cfg.interfaceName} fwmark ${toString cfg.wireguardListenPort}
+        ip -4 route add 0.0.0.0/0 dev ${cfg.interfaceName} table ${toString cfg.wireguardListenPort}
 
         # TODO is this needed?
-        ip -4 rule add not fwmark 51820 table 51820
+        ip -4 rule add not fwmark ${toString cfg.wireguardListenPort} table ${toString cfg.wireguardListenPort}
         ip -4 rule add table main suppress_prefixlength 0
-        # sysctl -q net.ipv4.conf.all.src_valid_mark=1
+
+        # The rest of the script is only for only for port forwarding skip if not needed
+        if [ ${lib.boolToString portForwarding} == false ]; then exit 0; fi
 
         # Reserve port
         ${getPIAToken}
@@ -185,30 +212,55 @@ in {
         echo $signature >> /tmp/${cfg.interfaceName}-port-renewal
         echo $payload >> /tmp/${cfg.interfaceName}-port-renewal
 
-        # redirect the fowarded port
-        # iptables -A INPUT -i ${cfg.interfaceName} -p tcp --dport $port -j ACCEPT
-        # iptables -A INPUT -i ${cfg.interfaceName} -p udp --dport $port -j ACCEPT
-        # iptables -A INPUT -i ${cfg.interfaceName} -p tcp --dport ${toString cfg.forwardedPort} -j ACCEPT
-        # iptables -A INPUT -i ${cfg.interfaceName} -p udp --dport ${toString cfg.forwardedPort} -j ACCEPT
-        # iptables -A PREROUTING -t nat -i ${cfg.interfaceName} -p tcp --dport $port -j REDIRECT --to-port ${toString cfg.forwardedPort}
-        # iptables -A PREROUTING -t nat -i ${cfg.interfaceName} -p udp --dport $port -j REDIRECT --to-port ${toString cfg.forwardedPort}
+        # The first port refresh triggers the port to be actually allocated
+        ${refreshPIAPort}
+
+        ${lib.optionalString (cfg.forwardedPort != null) ''
+          # redirect the fowarded port
+          iptables -A INPUT -i ${cfg.interfaceName} -p tcp --dport $port -j ACCEPT
+          iptables -A INPUT -i ${cfg.interfaceName} -p udp --dport $port -j ACCEPT
+          iptables -A INPUT -i ${cfg.interfaceName} -p tcp --dport ${toString cfg.forwardedPort} -j ACCEPT
+          iptables -A INPUT -i ${cfg.interfaceName} -p udp --dport ${toString cfg.forwardedPort} -j ACCEPT
+          iptables -A PREROUTING -t nat -i ${cfg.interfaceName} -p tcp --dport $port -j REDIRECT --to-port ${toString cfg.forwardedPort}
+          iptables -A PREROUTING -t nat -i ${cfg.interfaceName} -p udp --dport $port -j REDIRECT --to-port ${toString cfg.forwardedPort}
+        ''}
+
+        ${lib.optionalString cfg.forwardPortForTransmission ''
+          # assumes no auth needed for transmission
+          curlout=$(curl localhost:9091/transmission/rpc 2>/dev/null)
+          regex='X-Transmission-Session-Id\: (\w*)'
+          if [[ $curlout =~ $regex ]]; then
+              sessionId=''${BASH_REMATCH[1]}
+          else
+              exit 1
+          fi
+
+          # set the port in transmission
+          data='{"method": "session-set", "arguments": { "peer-port" :'$port' } }'
+          curl http://localhost:9091/transmission/rpc -d "$data" -H "X-Transmission-Session-Id: $sessionId"
+        ''}
       '';
 
       preStop = ''
         wg-quick down /tmp/${cfg.interfaceName}.conf
 
-        # stop redirecting the forwarded port
-        # iptables -D INPUT -i ${cfg.interfaceName} -p tcp --dport $port -j ACCEPT
-        # iptables -D INPUT -i ${cfg.interfaceName} -p udp --dport $port -j ACCEPT
-        # iptables -D INPUT -i ${cfg.interfaceName} -p tcp --dport ${toString cfg.forwardedPort} -j ACCEPT
-        # iptables -D INPUT -i ${cfg.interfaceName} -p udp --dport ${toString cfg.forwardedPort} -j ACCEPT
-        # iptables -D PREROUTING -t nat -i ${cfg.interfaceName} -p tcp --dport $port -j REDIRECT --to-port ${toString cfg.forwardedPort}
-        # iptables -D PREROUTING -t nat -i ${cfg.interfaceName} -p udp --dport $port -j REDIRECT --to-port ${toString cfg.forwardedPort}
+        # The rest of the script is only for only for port forwarding skip if not needed
+        if [ ${lib.boolToString portForwarding} == false ]; then exit 0; fi
+
+        ${lib.optionalString (cfg.forwardedPort != null) ''
+          # stop redirecting the forwarded port
+          iptables -D INPUT -i ${cfg.interfaceName} -p tcp --dport $port -j ACCEPT
+          iptables -D INPUT -i ${cfg.interfaceName} -p udp --dport $port -j ACCEPT
+          iptables -D INPUT -i ${cfg.interfaceName} -p tcp --dport ${toString cfg.forwardedPort} -j ACCEPT
+          iptables -D INPUT -i ${cfg.interfaceName} -p udp --dport ${toString cfg.forwardedPort} -j ACCEPT
+          iptables -D PREROUTING -t nat -i ${cfg.interfaceName} -p tcp --dport $port -j REDIRECT --to-port ${toString cfg.forwardedPort}
+          iptables -D PREROUTING -t nat -i ${cfg.interfaceName} -p udp --dport $port -j REDIRECT --to-port ${toString cfg.forwardedPort}
+        ''}
       '';
     };
 
     vpn-container.config.systemd.services.pia-vpn-wireguard-forward-port = {
-      enable = cfg.portForwarding;
+      enable = portForwarding;
       description = "PIA VPN WireGuard Tunnel Port Forwarding";
       after = [ "pia-vpn-wireguard.service" ];
       requires = [ "pia-vpn-wireguard.service" ];
@@ -219,15 +271,11 @@ in {
         Type = "oneshot";
       };
 
-      script = ''
-        signature=`sed '1q;d' /tmp/${cfg.interfaceName}-port-renewal`
-        payload=`sed '2q;d' /tmp/${cfg.interfaceName}-port-renewal`
-        bind_port_response=`curl -Gs -m 5 --connect-to "${cfg.serverHostname}::${cfg.serverIp}:" --cacert "${./ca.rsa.4096.crt}" --data-urlencode "payload=$payload" --data-urlencode "signature=$signature" "https://${cfg.serverHostname}:19999/bindPort"`
-      '';
+      script = refreshPIAPort;
     };
 
     vpn-container.config.systemd.timers.pia-vpn-wireguard-forward-port = {
-      enable = cfg.portForwarding;
+      enable = portForwarding;
       partOf = [ "pia-vpn-wireguard-forward-port.service" ];
       wantedBy = [ "timers.target" ];
       timerConfig.OnCalendar = "*:0/10"; # 10 minutes
