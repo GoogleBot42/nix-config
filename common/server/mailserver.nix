@@ -62,5 +62,18 @@ in {
       (concatStringsSep "\n" (map (domain: "@${domain} ${relayHost}") domains));
     services.postfix.mapFiles.sasl_relay_passwd = "/run/agenix/sasl_relay_passwd";
     age.secrets.sasl_relay_passwd.file = ../../secrets/sasl_relay_passwd.age;
+
+    # webmail
+    services.nginx.enable = true;
+    services.roundcube = {
+      enable = true;
+      hostName = config.mailserver.fqdn;
+      extraConfig = ''
+        # starttls needed for authentication, so the fqdn required to match the certificate
+        $config['smtp_server'] = "tls://${config.mailserver.fqdn}";
+        $config['smtp_user'] = "%u";
+        $config['smtp_pass'] = "%p";
+      '';
+    };
   };
 }
