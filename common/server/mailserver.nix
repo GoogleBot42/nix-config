@@ -17,6 +17,10 @@ let
   ];
 in {
   config = lib.mkIf cfg.enable {
+    # kresd doesn't work with tailscale MagicDNS
+    mailserver.localDnsResolver = false;
+    services.resolved.enable = true;
+
     mailserver = {
       fqdn = "mail.neet.dev";
       dkimKeyBits = 2048;

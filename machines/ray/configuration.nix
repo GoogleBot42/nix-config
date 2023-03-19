@@ -37,8 +37,6 @@
 
   virtualisation.docker.enable = true;
 
-  services.zerotierone.enable = true;
-
   services.mount-samba.enable = true;
 
   de.enable = true;

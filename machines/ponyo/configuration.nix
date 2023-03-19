@@ -11,7 +11,6 @@
 
   # p2p mesh network
   services.tailscale.exitNode = true;
-  services.zerotierone.enable = true;
 
   # email server
   mailserver.enable = true;
@@ -107,14 +106,14 @@
     enableACME = true;
     forceSSL = true;
     locations."/" = {
-      proxyPass = "http://s0.zt.neet.dev";
+      proxyPass = "http://s0.koi-bebop.ts.net";
       proxyWebsockets = true;
     };
   };
   services.nginx.virtualHosts."navidrome.neet.cloud" = {
     enableACME = true;
     forceSSL = true;
-    locations."/".proxyPass = "http://s0.zt.neet.dev:4533";
+    locations."/".proxyPass = "http://s0.koi-bebop.ts.net:4533";
   };
 
   # TODO replace with a proper file hosting service

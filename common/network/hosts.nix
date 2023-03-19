@@ -22,22 +22,10 @@ let
     ponyo = "cfamr6artx75qvt7ho3rrbsc7mkucmv5aawebwflsfuorusayacffryd.onion";
     s0 = "r3zvf7f2ppaeithzswigma46pajt3hqytmkg3rshgknbl3jbni455fqd.onion";
   };
-
-  zerotierHosts = {
-    "s0.zt.neet.dev" = "172.30.145.180";
-    "ponyo.zt.neet.dev" = "172.30.109.9";
-    "ray.zt.neet.dev" = "172.30.189.212";
-  };
 in {
-  # some DNS providers filter local ip results from DNS request
-  networking.hosts = concatMapAttrs (host: ip: {ip = [host];}) zerotierHosts;
-
-  # TODO only add if zerotier is enabled
-  keepalive-ping.hosts = attrNames zerotierHosts;
-
   programs.ssh.knownHosts = {
     ponyo = {
-      hostNames = [ "ponyo" "ponyo.neet.dev" "ponyo.zt.neet.dev" "git.neet.dev" ];
+      hostNames = [ "ponyo" "ponyo.neet.dev" "git.neet.dev" ];
       publicKey = system.ponyo;
     };
     ponyo-unlock = {
@@ -53,11 +41,11 @@ in {
       publicKey = system.router-unlock;
     };
     ray = {
-      hostNames = [ "ray" "ray.zt.neet.dev" ];
+      hostNames = [ "ray" ];
       publicKey = system.ray;
     };
     s0 = {
-      hostNames = [ "s0" "s0.zt.neet.dev" ];
+      hostNames = [ "s0" ];
       publicKey = system.s0;
     };
     s0-unlock = {

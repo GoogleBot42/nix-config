@@ -1,4 +1,4 @@
-# mounts the samba share on s0 over zeroteir
+# mounts the samba share on s0 over tailscale
 
 { config, lib, ... }:
 
@@ -18,15 +18,15 @@ in {
     enable = lib.mkEnableOption "enable mounting samba shares";
   };
 
-  config = lib.mkIf (cfg.enable && config.services.zerotierone.enable) {
+  config = lib.mkIf (cfg.enable && config.services.tailscale.enable) {
     fileSystems."/mnt/public" = {
-        device = "//s0.zt.neet.dev/public";
+        device = "//s0.koi-bebop.ts.net/public";
         fsType = "cifs";
         options = [ opts ];
     };
 
     fileSystems."/mnt/private" = {
-        device = "//s0.zt.neet.dev/googlebot";
+        device = "//s0.koi-bebop.ts.net/googlebot";
         fsType = "cifs";
         options = [ opts ];
     };

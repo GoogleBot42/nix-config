@@ -9,9 +9,8 @@
 
   system.autoUpgrade.enable = true;
 
-  # mesh networking
+  # p2p mesh network
   services.tailscale.exitNode = true;
-  services.zerotierone.enable = true;
 
   # for education purposes only
   services.pykms.enable = true;

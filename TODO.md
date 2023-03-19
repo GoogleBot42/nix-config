@@ -52,10 +52,6 @@
         - https://ampache.org/
 - replace nextcloud with seafile
 
-### Networking
-- tailscale for p2p connections
-    - remove all use of zerotier
-
 ### Archive
 - https://www.backblaze.com/b2/cloud-storage.html
 - email

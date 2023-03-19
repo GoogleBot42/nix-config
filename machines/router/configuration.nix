@@ -7,9 +7,9 @@
 
   networking.hostName = "router";
 
-  services.zerotierone.enable = true;
-
   system.autoUpgrade.enable = true;
+
+  services.tailscale.exitNode = true;
 
   networking.useDHCP = lib.mkForce true;
 }

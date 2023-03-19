@@ -3,7 +3,7 @@
 ### Source Layout
 - `/common` - common configuration imported into all `/machines`
     - `/boot` - config related to bootloaders, cpu microcode, and unlocking LUKS root disks over tor
-    - `/network` - config for tailscale, zeroteir, and NixOS container with automatic vpn tunneling via PIA
+    - `/network` - config for tailscale, and NixOS container with automatic vpn tunneling via PIA
     - `/pc` - config that a graphical desktop computer should have. Use `de.enable = true;` to enable everthing.
     - `/server` - config that creates new nixos services or extends existing ones to meet my needs
     - `/ssh.nix` - all ssh public host and user keys for all `/machines`

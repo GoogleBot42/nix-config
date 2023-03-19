@@ -8,7 +8,11 @@ in
 {
   options.services.tailscale.exitNode = mkEnableOption "Enable exit node support";
 
-  config.services.tailscale.enable = !config.boot.isContainer;
+  config.services.tailscale.enable = mkDefault (!config.boot.isContainer);
+
+  # MagicDNS
+  config.networking.nameservers = mkIf cfg.enable [ "1.1.1.1" "8.8.8.8" "100.100.100.100" ];
+  config.networking.search = mkIf cfg.enable [ "koi-bebop.ts.net" ];
 
   # exit node
   config.networking.firewall.checkReversePath = mkIf cfg.exitNode "loose";

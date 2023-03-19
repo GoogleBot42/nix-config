@@ -10,7 +10,6 @@ with builtins;
 let
   cfg = config.keepalive-ping;
 
-  # keepalive-ping = {
   serviceTemplate = host:
   {
     "keepalive-ping@${host}" = {
