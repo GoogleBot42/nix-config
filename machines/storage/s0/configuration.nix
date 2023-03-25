@@ -9,6 +9,9 @@
 
   system.autoUpgrade.enable = true;
 
+  services.iperf3.enable = true;
+  services.iperf3.openFirewall = true;
+
   # p2p mesh network
   services.tailscale.exitNode = true;
 
