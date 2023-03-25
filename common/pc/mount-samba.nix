@@ -1,6 +1,6 @@
 # mounts the samba share on s0 over tailscale
 
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   cfg = config.services.mount-samba;
@@ -32,5 +32,11 @@ in {
     };
 
     age.secrets.smb-secrets.file = ../../secrets/smb-secrets.age;
+
+    # Encrypted Vault
+    environment.shellAliases = {
+      vault_unlock = "${pkgs.gocryptfs}/bin/gocryptfs /mnt/private/.vault/ /mnt/vault/";
+      vault_lock = "umount /mnt/vault/";
+    };
   };
 }
