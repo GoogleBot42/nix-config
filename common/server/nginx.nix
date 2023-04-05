@@ -2,7 +2,8 @@
 
 let
   cfg = config.services.nginx;
-in {
+in
+{
   config = lib.mkIf cfg.enable {
     services.nginx = {
       recommendedGzipSettings = true;

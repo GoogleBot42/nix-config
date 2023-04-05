@@ -3,13 +3,13 @@
 with lib;
 let
   cfg = config.ceph;
-in {
-  options.ceph = {
-  };
+in
+{
+  options.ceph = { };
 
   config = mkIf cfg.enable {
     # ceph.enable = true;
-    
+
     ## S3 Object gateway
     #ceph.rgw.enable = true;
     #ceph.rgw.daemons = [

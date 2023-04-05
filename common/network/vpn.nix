@@ -30,7 +30,7 @@ in
 
     config = mkOption {
       type = types.anything;
-      default = {};
+      default = { };
       example = ''
         {
           services.nginx.enable = true;
@@ -70,7 +70,7 @@ in
       localAddress = "172.16.100.2";
 
       config = {
-        imports = allModules ++ [cfg.config];
+        imports = allModules ++ [ cfg.config ];
 
         # speeds up evaluation
         nixpkgs.pkgs = pkgs;

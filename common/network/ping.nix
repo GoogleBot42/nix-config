@@ -11,34 +11,35 @@ let
   cfg = config.keepalive-ping;
 
   serviceTemplate = host:
-  {
-    "keepalive-ping@${host}" = {
-      description = "Periodic ping keep alive for ${host} connection";
+    {
+      "keepalive-ping@${host}" = {
+        description = "Periodic ping keep alive for ${host} connection";
 
-      requires = [ "network-online.target" ];
-      after = [ "network.target" "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig.Restart="always";
+        requires = [ "network-online.target" ];
+        after = [ "network.target" "network-online.target" ];
+        wantedBy = [ "multi-user.target" ];
+        serviceConfig.Restart = "always";
 
-      path = with pkgs; [ iputils ];
+        path = with pkgs; [ iputils ];
 
-      script = ''
-        ping -i ${cfg.delay} ${host} &>/dev/null
-      '';
+        script = ''
+          ping -i ${cfg.delay} ${host} &>/dev/null
+        '';
+      };
     };
-  };
 
-  combineAttrs = foldl recursiveUpdate {};
+  combineAttrs = foldl recursiveUpdate { };
 
   serviceList = map serviceTemplate cfg.hosts;
 
   services = combineAttrs serviceList;
-in {
+in
+{
   options.keepalive-ping = {
     enable = mkEnableOption "Enable keep alive ping task";
     hosts = mkOption {
       type = types.listOf types.str;
-      default = [];
+      default = [ ];
       description = ''
         Hosts to ping periodically
       '';

@@ -3,7 +3,8 @@
 let
   cfg = config.services.murmur;
   certs = config.security.acme.certs;
-in {
+in
+{
   options.services.murmur.domain = lib.mkOption {
     type = lib.types.str;
   };

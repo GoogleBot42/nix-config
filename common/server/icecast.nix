@@ -7,7 +7,8 @@
 
 let
   cfg = config.services.icecast;
-in {
+in
+{
   options.services.icecast = {
     mount = lib.mkOption {
       type = lib.types.str;

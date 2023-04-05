@@ -2,7 +2,8 @@
 
 let
   cfg = config.de;
-in {
+in
+{
   config = lib.mkIf cfg.enable {
     # kde plasma
     services.xserver = {
@@ -19,5 +20,5 @@ in {
       # plasma5Packages.kmail-account-wizard
       kate
     ];
-  };  
+  };
 }

@@ -14,7 +14,8 @@ let
       cp -ar $src $out
     '';
   };
-in {
+in
+{
   options.services.privatebin = {
     enable = lib.mkEnableOption "enable privatebin";
     host = lib.mkOption {
@@ -30,7 +31,7 @@ in {
       group = "privatebin";
       isSystemUser = true;
     };
-    users.groups.privatebin = {};
+    users.groups.privatebin = { };
 
     services.nginx.enable = true;
     services.nginx.virtualHosts.${cfg.host} = {
@@ -53,7 +54,7 @@ in {
       "d '/var/lib/privatebin' 0750 privatebin privatebin - -"
     ];
 
-    services.phpfpm.pools.privatebin = {                                                                                                                                                                                                             
+    services.phpfpm.pools.privatebin = {
       user = "privatebin";
       group = "privatebin";
       phpEnv = {

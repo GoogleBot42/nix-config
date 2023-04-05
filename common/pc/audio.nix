@@ -2,7 +2,8 @@
 
 let
   cfg = config.de;
-in {
+in
+{
   config = lib.mkIf cfg.enable {
     # enable pulseaudio support for packages
     nixpkgs.config.pulseaudio = true;
@@ -28,29 +29,29 @@ in {
             # properyty when no other driver is currently active. JACK clients need this.
             factory = "spa-node-factory";
             args = {
-              "factory.name"     = "support.node.driver";
-              "node.name"        = "Dummy-Driver";
-              "priority.driver"  = 8000;
+              "factory.name" = "support.node.driver";
+              "node.name" = "Dummy-Driver";
+              "priority.driver" = 8000;
             };
           }
           {
             factory = "adapter";
             args = {
-              "factory.name"     = "support.null-audio-sink";
-              "node.name"        = "Microphone-Proxy";
+              "factory.name" = "support.null-audio-sink";
+              "node.name" = "Microphone-Proxy";
               "node.description" = "Microphone";
-              "media.class"      = "Audio/Source/Virtual";
-              "audio.position"   = "MONO";
+              "media.class" = "Audio/Source/Virtual";
+              "audio.position" = "MONO";
             };
           }
           {
             factory = "adapter";
             args = {
-              "factory.name"     = "support.null-audio-sink";
-              "node.name"        = "Main-Output-Proxy";
+              "factory.name" = "support.null-audio-sink";
+              "node.name" = "Main-Output-Proxy";
               "node.description" = "Main Output";
-              "media.class"      = "Audio/Sink";
-              "audio.position"   = "FL,FR";
+              "media.class" = "Audio/Sink";
+              "audio.position" = "FL,FR";
             };
           }
         ];

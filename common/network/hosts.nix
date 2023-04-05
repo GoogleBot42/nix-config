@@ -22,7 +22,8 @@ let
     ponyo = "cfamr6artx75qvt7ho3rrbsc7mkucmv5aawebwflsfuorusayacffryd.onion";
     s0 = "r3zvf7f2ppaeithzswigma46pajt3hqytmkg3rshgknbl3jbni455fqd.onion";
   };
-in {
+in
+{
   programs.ssh.knownHosts = {
     ponyo = {
       hostNames = [ "ponyo" "ponyo.neet.dev" "git.neet.dev" ];
@@ -56,7 +57,7 @@ in {
 
   # prebuilt cmds for easy ssh LUKS unlock
   environment.shellAliases =
-    concatMapAttrs (host: addr: {"unlock-over-tor_${host}" = "torsocks ssh root@${addr}";}) unlock-onion-hosts
-      //
-    concatMapAttrs (host: addr: {"unlock_${host}" = "ssh root@${addr}";}) unlock-clearnet-hosts;
+    concatMapAttrs (host: addr: { "unlock-over-tor_${host}" = "torsocks ssh root@${addr}"; }) unlock-onion-hosts
+    //
+    concatMapAttrs (host: addr: { "unlock_${host}" = "ssh root@${addr}"; }) unlock-clearnet-hosts;
 }

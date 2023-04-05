@@ -10,7 +10,8 @@
 
   # Enable serial output
   boot.kernelParams = [
-    "panic=30" "boot.panic_on_fail" # reboot the machine upon fatal boot issues
+    "panic=30"
+    "boot.panic_on_fail" # reboot the machine upon fatal boot issues
     "console=ttyS0,115200n8" # enable serial console
   ];
   boot.loader.grub.extraConfig = "
@@ -33,16 +34,17 @@
   remoteLuksUnlock.enable = true;
   boot.initrd.luks.devices."enc-pv".device = "/dev/disk/by-uuid/9b090551-f78e-45ca-8570-196ed6a4af0c";
   fileSystems."/" =
-    { device = "/dev/disk/by-uuid/421c82b9-d67c-4811-8824-8bb57cb10fce";
+    {
+      device = "/dev/disk/by-uuid/421c82b9-d67c-4811-8824-8bb57cb10fce";
       fsType = "btrfs";
     };
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/d97f324f-3a2e-4b84-ae2a-4b3d1209c689";
+    {
+      device = "/dev/disk/by-uuid/d97f324f-3a2e-4b84-ae2a-4b3d1209c689";
       fsType = "ext3";
     };
   swapDevices =
-    [ { device = "/dev/disk/by-uuid/45bf58dd-67eb-45e4-9a98-246e23fa7abd"; }
-    ];
+    [{ device = "/dev/disk/by-uuid/45bf58dd-67eb-45e4-9a98-246e23fa7abd"; }];
 
   nixpkgs.hostPlatform = "x86_64-linux";
 }

@@ -2,7 +2,8 @@
 
 let
   cfg = config.de.touchpad;
-in {
+in
+{
   options.de.touchpad = {
     enable = lib.mkEnableOption "enable touchpad";
   };

@@ -20,6 +20,6 @@ in
     hydraURL = "https://${domain}";
     useSubstitutes = true;
     notificationSender = notifyEmail;
-    buildMachinesFiles = [];
+    buildMachinesFiles = [ ];
   };
 }

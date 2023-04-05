@@ -7,7 +7,8 @@
 
   boot.initrd.availableKernelModules = [ "ata_piix" "uhci_hcd" "e1000" "e1000e" "virtio_pci" "r8169" ];
   boot.kernelParams = [
-    "panic=30" "boot.panic_on_fail" # reboot the machine upon fatal boot issues
+    "panic=30"
+    "boot.panic_on_fail" # reboot the machine upon fatal boot issues
     "console=ttyS0,115200" # enable serial console
     "console=tty1"
   ];
@@ -21,7 +22,8 @@
   environment.systemPackages = with pkgs; [
     cryptsetup
     btrfs-progs
-    git git-lfs
+    git
+    git-lfs
     wget
     htop
     dnsutils

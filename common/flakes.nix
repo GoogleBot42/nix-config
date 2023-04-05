@@ -2,7 +2,8 @@
 with lib;
 let
   cfg = config.nix.flakes;
-in {
+in
+{
   options.nix.flakes = {
     enable = mkEnableOption "use nix flakes";
   };

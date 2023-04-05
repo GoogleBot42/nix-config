@@ -2,7 +2,8 @@
 
 let
   cfg = config.services.gitea;
-in {
+in
+{
   options.services.gitea = {
     hostname = lib.mkOption {
       type = lib.types.str;

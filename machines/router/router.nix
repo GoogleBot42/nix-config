@@ -97,11 +97,11 @@ in
           channel = 6;
           countryCode = "US";
           wifi4 = {
-            capabilities = ["LDPC" "GF" "SHORT-GI-20" "SHORT-GI-40" "TX-STBC" "RX-STBC1" "MAX-AMSDU-7935" "HT40+"];
+            capabilities = [ "LDPC" "GF" "SHORT-GI-20" "SHORT-GI-40" "TX-STBC" "RX-STBC1" "MAX-AMSDU-7935" "HT40+" ];
           };
           wifi5 = {
             operatingChannelWidth = "20or40";
-            capabilities = ["MAX-A-MPDU-LEN-EXP0"];
+            capabilities = [ "MAX-A-MPDU-LEN-EXP0" ];
           };
           wifi6 = {
             enable = true;
@@ -137,11 +137,11 @@ in
           channel = 128;
           countryCode = "US";
           wifi4 = {
-            capabilities = ["LDPC" "GF" "SHORT-GI-20" "SHORT-GI-40" "TX-STBC" "RX-STBC1" "MAX-AMSDU-7935" "HT40-"];
+            capabilities = [ "LDPC" "GF" "SHORT-GI-20" "SHORT-GI-40" "TX-STBC" "RX-STBC1" "MAX-AMSDU-7935" "HT40-" ];
           };
           wifi5 = {
             operatingChannelWidth = "160";
-            capabilities = ["RXLDPC" "SHORT-GI-80" "SHORT-GI-160" "TX-STBC-2BY1" "SU-BEAMFORMER" "SU-BEAMFORMEE" "MU-BEAMFORMER" "MU-BEAMFORMEE" "RX-ANTENNA-PATTERN" "TX-ANTENNA-PATTERN" "RX-STBC-1" "SOUNDING-DIMENSION-3" "BF-ANTENNA-3" "VHT160" "MAX-MPDU-11454" "MAX-A-MPDU-LEN-EXP7"];
+            capabilities = [ "RXLDPC" "SHORT-GI-80" "SHORT-GI-160" "TX-STBC-2BY1" "SU-BEAMFORMER" "SU-BEAMFORMEE" "MU-BEAMFORMER" "MU-BEAMFORMEE" "RX-ANTENNA-PATTERN" "TX-ANTENNA-PATTERN" "RX-STBC-1" "SOUNDING-DIMENSION-3" "BF-ANTENNA-3" "VHT160" "MAX-MPDU-11454" "MAX-A-MPDU-LEN-EXP7" ];
           };
           wifi6 = {
             enable = true;

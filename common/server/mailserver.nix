@@ -15,7 +15,8 @@ let
     "bsd.ninja"
     "bsd.rocks"
   ];
-in {
+in
+{
   config = lib.mkIf cfg.enable {
     # kresd doesn't work with tailscale MagicDNS
     mailserver.localDnsResolver = false;
@@ -60,10 +61,12 @@ in {
       sender_dependent_relayhost_maps = "hash:/var/lib/postfix/conf/sender_relay";
       smtp_sender_dependent_authentication = "yes";
     };
-    services.postfix.mapFiles.sender_relay = let
-      relayHost = "[smtp.mailgun.org]:587";
-    in pkgs.writeText "sender_relay"
-      (concatStringsSep "\n" (map (domain: "@${domain} ${relayHost}") domains));
+    services.postfix.mapFiles.sender_relay =
+      let
+        relayHost = "[smtp.mailgun.org]:587";
+      in
+      pkgs.writeText "sender_relay"
+        (concatStringsSep "\n" (map (domain: "@${domain} ${relayHost}") domains));
     services.postfix.mapFiles.sasl_relay_passwd = "/run/agenix/sasl_relay_passwd";
     age.secrets.sasl_relay_passwd.file = ../../secrets/sasl_relay_passwd.age;
 

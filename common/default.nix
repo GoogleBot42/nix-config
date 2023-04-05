@@ -40,7 +40,8 @@ in
     wget
     kakoune
     htop
-    git git-lfs
+    git
+    git-lfs
     dnsutils
     tmux
     nethogs

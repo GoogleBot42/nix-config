@@ -2,19 +2,20 @@
 
 let
   cfg = config.services.searx;
-in {
+in
+{
   config = lib.mkIf cfg.enable {
     services.searx = {
       environmentFile = "/run/agenix/searx";
       settings = {
         server.port = 43254;
         server.secret_key = "@SEARX_SECRET_KEY@";
-        engines = [ {
+        engines = [{
           name = "wolframalpha";
           shortcut = "wa";
           api_key = "@WOLFRAM_API_KEY@";
           engine = "wolframalpha_api";
-        } ];
+        }];
       };
     };
     services.nginx.virtualHosts."search.neet.space" = {

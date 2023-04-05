@@ -3,7 +3,8 @@
 let
   cfg = config.services.radio;
   radioPackage = config.inputs.radio.packages.${config.currentSystem}.radio;
-in {
+in
+{
   options.services.radio = {
     enable = lib.mkEnableOption "enable radio";
     user = lib.mkOption {
@@ -56,11 +57,11 @@ in {
       home = cfg.dataDir;
       createHome = true;
     };
-    users.groups.${cfg.group} = {};
+    users.groups.${cfg.group} = { };
     systemd.services.radio = {
       enable = true;
-      after = ["network.target"];
-      wantedBy = ["multi-user.target"];
+      after = [ "network.target" ];
+      wantedBy = [ "multi-user.target" ];
       serviceConfig.ExecStart = "${radioPackage}/bin/radio ${config.services.icecast.listen.address}:${toString config.services.icecast.listen.port} ${config.services.icecast.mount} 5500";
       serviceConfig.User = cfg.user;
       serviceConfig.Group = cfg.group;

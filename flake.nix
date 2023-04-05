@@ -47,75 +47,78 @@
   outputs = { self, nixpkgs, ... }@inputs: {
 
     nixosConfigurations =
-    let
-      modules = system: with inputs; [
-        ./common
-        simple-nixos-mailserver.nixosModule
-        agenix.nixosModules.default
-        dailybuild_modules.nixosModule
-        archivebox.nixosModule
-        nix-index-database.nixosModules.nix-index
-        ({ lib, ... }: {
-          config.environment.systemPackages = [
-            agenix.packages.${system}.agenix
-          ];
-
-          # because nixos specialArgs doesn't work for containers... need to pass in inputs a different way
-          options.inputs = lib.mkOption { default = inputs; };
-          options.currentSystem = lib.mkOption { default = system; };
-        })
-      ];
-
-      mkSystem = system: nixpkgs: path:
-        let
-          allModules = modules system;
-
-          # allow patching nixpkgs, remove this hack once this is solved: https://github.com/NixOS/nix/issues/3920
-          patchedNixpkgsSrc = nixpkgs.legacyPackages.${system}.applyPatches {
-            name = "nixpkgs-patched";
-            src = nixpkgs;
-            patches = [
-              inputs.nixpkgs-hostapd-pr
+      let
+        modules = system: with inputs; [
+          ./common
+          simple-nixos-mailserver.nixosModule
+          agenix.nixosModules.default
+          dailybuild_modules.nixosModule
+          archivebox.nixosModule
+          nix-index-database.nixosModules.nix-index
+          ({ lib, ... }: {
+            config.environment.systemPackages = [
+              agenix.packages.${system}.agenix
             ];
+
+            # because nixos specialArgs doesn't work for containers... need to pass in inputs a different way
+            options.inputs = lib.mkOption { default = inputs; };
+            options.currentSystem = lib.mkOption { default = system; };
+          })
+        ];
+
+        mkSystem = system: nixpkgs: path:
+          let
+            allModules = modules system;
+
+            # allow patching nixpkgs, remove this hack once this is solved: https://github.com/NixOS/nix/issues/3920
+            patchedNixpkgsSrc = nixpkgs.legacyPackages.${system}.applyPatches {
+              name = "nixpkgs-patched";
+              src = nixpkgs;
+              patches = [
+                inputs.nixpkgs-hostapd-pr
+              ];
+            };
+            patchedNixpkgs = nixpkgs.lib.fix (self: (import "${patchedNixpkgsSrc}/flake.nix").outputs { self = nixpkgs; });
+
+          in
+          patchedNixpkgs.lib.nixosSystem {
+            inherit system;
+            modules = allModules ++ [ path ];
+
+            specialArgs = {
+              inherit allModules;
+            };
           };
-          patchedNixpkgs = nixpkgs.lib.fix (self: (import "${patchedNixpkgsSrc}/flake.nix").outputs { self=nixpkgs; });
+      in
+      {
+        "ray" = mkSystem "x86_64-linux" nixpkgs ./machines/ray/configuration.nix;
+        # "nat" = mkSystem "aarch64-linux" nixpkgs ./machines/nat/configuration.nix;
+        "ponyo" = mkSystem "x86_64-linux" nixpkgs ./machines/ponyo/configuration.nix;
+        "router" = mkSystem "x86_64-linux" nixpkgs ./machines/router/configuration.nix;
+        "s0" = mkSystem "x86_64-linux" nixpkgs ./machines/storage/s0/configuration.nix;
+      };
 
-        in patchedNixpkgs.lib.nixosSystem {
-          inherit system;
-          modules = allModules ++ [path];
+    packages =
+      let
+        mkKexec = system:
+          (nixpkgs.lib.nixosSystem {
+            inherit system;
+            modules = [ ./machines/ephemeral/kexec.nix ];
+          }).config.system.build.kexec_tarball;
+        mkIso = system:
+          (nixpkgs.lib.nixosSystem {
+            inherit system;
+            modules = [ ./machines/ephemeral/iso.nix ];
+          }).config.system.build.isoImage;
+      in
+      {
+        "x86_64-linux"."kexec" = mkKexec "x86_64-linux";
+        "x86_64-linux"."iso" = mkIso "x86_64-linux";
+        "aarch64-linux"."kexec" = mkKexec "aarch64-linux";
+        "aarch64-linux"."iso" = mkIso "aarch64-linux";
+      };
 
-          specialArgs = {
-            inherit allModules;
-          };
-        };
-    in
-    {
-      "ray" = mkSystem "x86_64-linux" nixpkgs ./machines/ray/configuration.nix;
-      # "nat" = mkSystem "aarch64-linux" nixpkgs ./machines/nat/configuration.nix;
-      "ponyo" = mkSystem "x86_64-linux" nixpkgs ./machines/ponyo/configuration.nix;
-      "router" = mkSystem "x86_64-linux" nixpkgs ./machines/router/configuration.nix;
-      "s0" = mkSystem "x86_64-linux" nixpkgs ./machines/storage/s0/configuration.nix;
-    };
-
-    packages = let
-      mkKexec = system:
-        (nixpkgs.lib.nixosSystem {
-          inherit system;
-          modules = [ ./machines/ephemeral/kexec.nix ];
-        }).config.system.build.kexec_tarball;
-      mkIso = system:
-        (nixpkgs.lib.nixosSystem {
-          inherit system;
-          modules = [ ./machines/ephemeral/iso.nix ];
-        }).config.system.build.isoImage;
-    in {
-      "x86_64-linux"."kexec" = mkKexec "x86_64-linux";
-      "x86_64-linux"."iso" = mkIso "x86_64-linux";
-      "aarch64-linux"."kexec" = mkKexec "aarch64-linux";
-      "aarch64-linux"."iso" = mkIso "aarch64-linux";
-    };
-
-    deploy.nodes = 
+    deploy.nodes =
       let
         mkDeploy = configName: hostname: {
           inherit hostname;
@@ -124,7 +127,8 @@
           profiles.system.path = inputs.deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.${configName};
         };
 
-      in {
+      in
+      {
         s0 = mkDeploy "s0" "s0";
         router = mkDeploy "router" "router";
         ponyo = mkDeploy "ponyo" "ponyo.neet.dev";

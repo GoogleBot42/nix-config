@@ -2,15 +2,16 @@
 
 let
   cfg = config.de;
-in {
+in
+{
   imports = [
     ./kde.nix
     ./xfce.nix
     ./yubikey.nix
     ./chromium.nix
-#    ./firefox.nix
+    #    ./firefox.nix
     ./audio.nix
-#    ./torbrowser.nix
+    #    ./torbrowser.nix
     ./pithos.nix
     ./spotify.nix
     ./vscodium.nix
@@ -52,6 +53,10 @@ in {
       jellyfin-media-player
       joplin-desktop
       config.inputs.deploy-rs.packages.${config.currentSystem}.deploy-rs
+
+      # For Nix IDE
+      nixpkgs-fmt
+      rnix-lsp
     ];
 
     # Networking

@@ -2,7 +2,8 @@
 
 let
   cfg = config.services.zerobin;
-in {
+in
+{
   options.services.zerobin = {
     host = lib.mkOption {
       type = lib.types.str;

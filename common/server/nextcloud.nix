@@ -3,7 +3,8 @@
 
 let
   cfg = config.services.nextcloud;
-in {
+in
+{
   config = lib.mkIf cfg.enable {
     services.nextcloud = {
       https = true;

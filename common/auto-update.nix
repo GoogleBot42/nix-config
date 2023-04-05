@@ -4,7 +4,8 @@
 
 let
   cfg = config.system.autoUpgrade;
-in {
+in
+{
   config = lib.mkIf cfg.enable {
     system.autoUpgrade = {
       flake = "git+https://git.neet.dev/zuckerberg/nix-config.git";

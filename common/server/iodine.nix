@@ -2,7 +2,8 @@
 
 let
   cfg = config.services.iodine.server;
-in {
+in
+{
   config = lib.mkIf cfg.enable {
     # iodine DNS-based vpn
     services.iodine.server = {

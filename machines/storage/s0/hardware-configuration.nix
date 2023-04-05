@@ -2,7 +2,8 @@
 
 {
   imports =
-    [ (modulesPath + "/installer/scan/not-detected.nix")
+    [
+      (modulesPath + "/installer/scan/not-detected.nix")
     ];
 
   # boot
@@ -31,28 +32,39 @@
 
   # mounts
   fileSystems."/" =
-    { device = "rpool/nixos/root";
-      fsType = "zfs"; options = [ "zfsutil" "X-mount.mkdir" ];
+    {
+      device = "rpool/nixos/root";
+      fsType = "zfs";
+      options = [ "zfsutil" "X-mount.mkdir" ];
     };
   fileSystems."/home" =
-    { device = "rpool/nixos/home";
-      fsType = "zfs"; options = [ "zfsutil" "X-mount.mkdir" ];
+    {
+      device = "rpool/nixos/home";
+      fsType = "zfs";
+      options = [ "zfsutil" "X-mount.mkdir" ];
     };
   fileSystems."/var/lib" =
-    { device = "rpool/nixos/var/lib";
-      fsType = "zfs"; options = [ "zfsutil" "X-mount.mkdir" ];
+    {
+      device = "rpool/nixos/var/lib";
+      fsType = "zfs";
+      options = [ "zfsutil" "X-mount.mkdir" ];
     };
   fileSystems."/var/log" =
-    { device = "rpool/nixos/var/log";
-      fsType = "zfs"; options = [ "zfsutil" "X-mount.mkdir" ];
+    {
+      device = "rpool/nixos/var/log";
+      fsType = "zfs";
+      options = [ "zfsutil" "X-mount.mkdir" ];
     };
 
   fileSystems."/data" =
-    { device = "rpool/nixos/data";
-      fsType = "zfs"; options = [ "zfsutil" "X-mount.mkdir" ];
+    {
+      device = "rpool/nixos/data";
+      fsType = "zfs";
+      options = [ "zfsutil" "X-mount.mkdir" ];
     };
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/4FB4-738E";
+    {
+      device = "/dev/disk/by-uuid/4FB4-738E";
       fsType = "vfat";
     };
   swapDevices = [ ];

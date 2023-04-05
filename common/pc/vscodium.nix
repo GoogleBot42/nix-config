@@ -4,8 +4,8 @@ let
   cfg = config.de;
 
   extensions = with pkgs.vscode-extensions; [
-#    bbenoist.Nix # nix syntax support
-#    arrterian.nix-env-selector  # nix dev envs
+    #    bbenoist.Nix # nix syntax support
+    #    arrterian.nix-env-selector  # nix dev envs
   ];
 
   vscodium-with-extensions = pkgs.vscode-with-extensions.override {

@@ -110,6 +110,6 @@
     # samba user for share
     users.users.cris.isSystemUser = true;
     users.users.cris.group = "cris";
-    users.groups.cris = {};
+    users.groups.cris = { };
   };
 }

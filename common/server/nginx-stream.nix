@@ -5,7 +5,8 @@ let
   nginxWithRTMP = pkgs.nginx.override {
     modules = [ pkgs.nginxModules.rtmp ];
   };
-in {
+in
+{
   options.services.nginx.stream = {
     enable = lib.mkEnableOption "enable nginx rtmp/hls/dash video streaming";
     port = lib.mkOption {

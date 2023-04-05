@@ -20,7 +20,7 @@ let
   };
 
   firefox = pkgs.wrapFirefox somewhatPrivateFF {
-   desktopName = "Sneed Browser";
+    desktopName = "Sneed Browser";
 
     nixExtensions = [
       (pkgs.fetchFirefoxAddon {
@@ -71,8 +71,8 @@ let
         TopSites = false;
       };
       UserMessaging = {
-         ExtensionRecommendations = false;
-         SkipOnboarding = true;
+        ExtensionRecommendations = false;
+        SkipOnboarding = true;
       };
       WebsiteFilter = {
         Block = [

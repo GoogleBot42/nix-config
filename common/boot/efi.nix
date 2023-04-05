@@ -3,7 +3,8 @@
 with lib;
 let
   cfg = config.efi;
-in {
+in
+{
   options.efi = {
     enable = mkEnableOption "enable efi boot";
   };
@@ -19,7 +20,7 @@ in {
         version = 2;
         efiSupport = true;
         useOSProber = true;
-#       memtest86.enable = true;
+        #       memtest86.enable = true;
         configurationLimit = 20;
         theme = pkgs.nixos-grub2-theme;
       };

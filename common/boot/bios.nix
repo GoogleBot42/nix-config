@@ -3,7 +3,8 @@
 with lib;
 let
   cfg = config.bios;
-in {
+in
+{
   options.bios = {
     enable = mkEnableOption "enable bios boot";
     device = mkOption {

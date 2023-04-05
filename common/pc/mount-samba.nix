@@ -14,22 +14,23 @@ let
   version_opts = "vers=3.1.1";
 
   opts = "${systemd_opts},${network_opts},${user_opts},${version_opts},${auth_opts}";
-in {
+in
+{
   options.services.mount-samba = {
     enable = lib.mkEnableOption "enable mounting samba shares";
   };
 
   config = lib.mkIf (cfg.enable && config.services.tailscale.enable) {
     fileSystems."/mnt/public" = {
-        device = "//s0.koi-bebop.ts.net/public";
-        fsType = "cifs";
-        options = [ opts ];
+      device = "//s0.koi-bebop.ts.net/public";
+      fsType = "cifs";
+      options = [ opts ];
     };
 
     fileSystems."/mnt/private" = {
-        device = "//s0.koi-bebop.ts.net/googlebot";
-        fsType = "cifs";
-        options = [ opts ];
+      device = "//s0.koi-bebop.ts.net/googlebot";
+      fsType = "cifs";
+      options = [ opts ];
     };
 
     age.secrets.smb-secrets.file = ../../secrets/smb-secrets.age;

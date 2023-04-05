@@ -4,7 +4,7 @@ with lib;
 
 let
   cfg = config.services.spotifyd;
-  toml = pkgs.formats.toml {};
+  toml = pkgs.formats.toml { };
   spotifydConf = toml.generate "spotify.conf" cfg.settings;
 in
 {
@@ -17,7 +17,7 @@ in
       enable = mkEnableOption "spotifyd, a Spotify playing daemon";
 
       settings = mkOption {
-        default = {};
+        default = { };
         type = toml.type;
         example = { global.bitrate = 320; };
         description = ''
@@ -28,7 +28,7 @@ in
 
       users = mkOption {
         type = with types; listOf str;
-        default = [];
+        default = [ ];
         description = ''
           Usernames to be added to the "spotifyd" group, so that they
           can start and interact with the userspace daemon.

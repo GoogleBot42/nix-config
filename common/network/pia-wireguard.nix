@@ -72,7 +72,8 @@ let
   portForwarding = cfg.forwardPortForTransmission || cfg.forwardedPort != null;
 
   containerServiceName = "container@${config.vpn-container.containerName}.service";
-in {
+in
+{
   options.pia.wireguard = {
     enable = mkEnableOption "Enable private internet access";
     badPortForwardPorts = mkOption {
@@ -157,7 +158,7 @@ in {
 
         # restart once a month; PIA forwarded port expires after two months
         # because the container is "PartOf" this unit, it gets restarted too
-        RuntimeMaxSec="30d";
+        RuntimeMaxSec = "30d";
       };
 
       script = ''

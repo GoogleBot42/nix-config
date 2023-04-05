@@ -2,7 +2,8 @@
 
 let
   cfg = config.de;
-in {
+in
+{
   config = lib.mkIf cfg.enable {
     services.xserver = {
       enable = true;

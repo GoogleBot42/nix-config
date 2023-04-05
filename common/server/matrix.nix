@@ -3,7 +3,8 @@
 let
   cfg = config.services.matrix;
   certs = config.security.acme.certs;
-in {
+in
+{
   options.services.matrix = {
     enable = lib.mkEnableOption "enable matrix";
     element-web = {
@@ -62,15 +63,15 @@ in {
       settings = {
         server_name = cfg.host;
         enable_registration = cfg.enable_registration;
-        listeners = [ {
-          bind_addresses = ["127.0.0.1"];
+        listeners = [{
+          bind_addresses = [ "127.0.0.1" ];
           port = cfg.port;
           tls = false;
-          resources = [ {
+          resources = [{
             compress = true;
             names = [ "client" "federation" ];
-          } ];
-        } ];
+          }];
+        }];
         turn_uris = [
           "turn:${cfg.turn.host}:${toString cfg.turn.port}?transport=udp"
           "turn:${cfg.turn.host}:${toString cfg.turn.port}?transport=tcp"
@@ -120,7 +121,7 @@ in {
     services.nginx = {
       enable = true;
 
-      virtualHosts.${cfg.host} =  {
+      virtualHosts.${cfg.host} = {
         enableACME = true;
         forceSSL = true;
         listen = [
@@ -137,7 +138,8 @@ in {
         ];
         locations."/".proxyPass = "http://localhost:${toString cfg.port}";
       };
-      virtualHosts.${cfg.turn.host} =  { # get TLS cert for TURN server
+      virtualHosts.${cfg.turn.host} = {
+        # get TLS cert for TURN server
         enableACME = true;
         forceSSL = true;
       };

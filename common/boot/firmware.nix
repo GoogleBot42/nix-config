@@ -3,7 +3,8 @@
 with lib;
 let
   cfg = config.firmware;
-in {
+in
+{
   options.firmware.x86_64 = {
     enable = mkEnableOption "enable x86_64 firmware";
   };

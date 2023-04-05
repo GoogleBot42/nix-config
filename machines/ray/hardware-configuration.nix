@@ -5,7 +5,8 @@
 
 {
   imports =
-    [ (modulesPath + "/installer/scan/not-detected.nix")
+    [
+      (modulesPath + "/installer/scan/not-detected.nix")
     ];
 
   # boot
@@ -40,22 +41,24 @@
     allowDiscards = true;
   };
   fileSystems."/" =
-    { device = "/dev/vg/root";
+    {
+      device = "/dev/vg/root";
       fsType = "btrfs";
       options = [ "subvol=root" ];
     };
   fileSystems."/home" =
-    { device = "/dev/vg/root";
+    {
+      device = "/dev/vg/root";
       fsType = "btrfs";
       options = [ "subvol=home" ];
     };
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/2C85-2B59";
+    {
+      device = "/dev/disk/by-uuid/2C85-2B59";
       fsType = "vfat";
     };
   swapDevices =
-    [ { device = "/dev/vg/swap"; }
-    ];
+    [{ device = "/dev/vg/swap"; }];
 
   # high-resolution display
   hardware.video.hidpi.enable = lib.mkDefault true;

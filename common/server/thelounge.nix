@@ -2,7 +2,8 @@
 
 let
   cfg = config.services.thelounge;
-in {
+in
+{
   options.services.thelounge = {
     fileUploadBaseUrl = lib.mkOption {
       type = lib.types.str;
@@ -28,7 +29,7 @@ in {
         reverseProxy = true;
         maxHistory = -1;
         https.enable = false;
-  #      theme = "thelounge-theme-solarized";
+        #      theme = "thelounge-theme-solarized";
         prefetch = false;
         prefetchStorage = false;
         fileUpload = {
