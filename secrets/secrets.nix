@@ -1,8 +1,13 @@
 let
   keys = import ../common/ssh.nix;
+  system = keys.system;
   systems = keys.systems;
   users = keys.users;
   all = users ++ systems;
+
+  wireless = [
+    system.router
+  ] ++ users;
 in
 {
   # TODO: Minimum necessary access to keys
@@ -17,5 +22,6 @@ in
   "wolframalpha.age".publicKeys = all;
 
   # hostapd
-  "hostapd-pw-experimental-tower.age".publicKeys = all;
+  "hostapd-pw-experimental-tower.age".publicKeys = wireless;
+  "hostapd-pw-CXNK00BF9176.age".publicKeys = wireless;
 }

@@ -126,7 +126,7 @@
 
       in {
         s0 = mkDeploy "s0" "s0";
-        router = mkDeploy "router" "192.168.1.228";
+        router = mkDeploy "router" "router";
         ponyo = mkDeploy "ponyo" "ponyo.neet.dev";
       };
 

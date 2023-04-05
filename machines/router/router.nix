@@ -50,7 +50,17 @@ in
       };
     };
 
-    networking.networkmanager.enable = false;
+    networking.firewall = {
+      enable = true;
+      trustedInterfaces = [ "br0" "tailscale0" ];
+
+      interfaces = {
+        enp1s0 = {
+          allowedTCPPorts = [ ];
+          allowedUDPPorts = [ ];
+        };
+      };
+    };
 
     services.dnsmasq = {
       enable = true;
@@ -77,8 +87,6 @@ in
       '';
     };
 
-    networking.firewall.enable = lib.mkForce false; # TODO
-
     services.hostapd = {
       enable = true;
       radios = {
@@ -102,9 +110,19 @@ in
             multiUserBeamformer = true;
             operatingChannelWidth = "20or40";
           };
-          networks.wlp4s0 = {
-            ssid = "- Experimental 5G Tower by AT&T";
-            authentication.saePasswordsFile = "/run/agenix/hostapd-pw-experimental-tower";
+          networks = {
+            wlp4s0 = {
+              ssid = "CXNK00BF9176";
+              authentication.saePasswordsFile = "/run/agenix/hostapd-pw-CXNK00BF9176";
+            };
+            # wlp4s0-1 = {
+            #   ssid = "- Experimental 5G Tower by AT&T";
+            #   authentication.saePasswordsFile = "/run/agenix/hostapd-pw-experimental-tower";
+            # };
+            # wlp4s0-2 = {
+            #   ssid = "FBI Surveillance Van 2";
+            #   authentication.saePasswordsFile = "/run/agenix/hostapd-pw-experimental-tower";
+            # };
           };
           extraConfig = ''
             he_oper_centr_freq_seg0_idx=8
@@ -132,9 +150,19 @@ in
             multiUserBeamformer = true;
             operatingChannelWidth = "160";
           };
-          networks.wlan1 = {
-            ssid = "- Experimental 5G Tower by AT&T";
-            authentication.saePasswordsFile = "/run/agenix/hostapd-pw-experimental-tower";
+          networks = {
+            wlan1 = {
+              ssid = "CXNK00BF9176";
+              authentication.saePasswordsFile = "/run/agenix/hostapd-pw-CXNK00BF9176";
+            };
+            # wlan1-1 = {
+            #   ssid = "- Experimental 5G Tower by AT&T";
+            #   authentication.saePasswordsFile = "/run/agenix/hostapd-pw-experimental-tower";
+            # };
+            # wlan1-2 = {
+            #   ssid = "FBI Surveillance Van 5";
+            #   authentication.saePasswordsFile = "/run/agenix/hostapd-pw-experimental-tower";
+            # };
           };
           extraConfig = ''
             vht_oper_centr_freq_seg0_idx=114
@@ -144,6 +172,7 @@ in
       };
     };
     age.secrets.hostapd-pw-experimental-tower.file = ../../secrets/hostapd-pw-experimental-tower.age;
+    age.secrets.hostapd-pw-CXNK00BF9176.file = ../../secrets/hostapd-pw-CXNK00BF9176.age;
 
     hardware.firmware = [
       pkgs.mt7916-firmware
