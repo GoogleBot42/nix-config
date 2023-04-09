@@ -25,9 +25,7 @@
         printing = cups
         printcap name = cups
 
-        # horrible files
-        veto files = /._*/.DS_Store/ /._*/._.DS_Store/
-        delete veto files = yes
+        hide files = /.nobackup/.DS_Store/._.DS_Store/
       '';
 
       shares = {
@@ -81,7 +79,7 @@
     backup.group."samba".paths = [
       config.services.samba.shares.googlebot.path
       config.services.samba.shares.cris.path
-      "${config.services.samba.shares.public.path}/Regularly_Backed_Up"
+      config.services.samba.shares.public.path
     ];
 
     # Windows discovery of samba server

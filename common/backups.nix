@@ -15,6 +15,10 @@ let
       RandomizedDelaySec = "1h";
     };
 
+    extraBackupArgs = [
+      ''--exclude-if-present ".nobackup"''
+    ];
+
     pruneOpts = [
       "--keep-daily 7" # one backup for each of the last n days
       "--keep-weekly 5" # one backup for each of the last n weeks
