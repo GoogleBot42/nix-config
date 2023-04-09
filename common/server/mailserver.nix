@@ -82,5 +82,10 @@ in
         $config['smtp_pass'] = "%p";
       '';
     };
+
+    # backups
+    backup.group."email".paths = [
+      config.mailserver.mailDirectory
+    ];
   };
 }

@@ -20,6 +20,12 @@ in
       file = ../../secrets/nextcloud-pw.age;
       owner = "nextcloud";
     };
+
+    # backups
+    backup.group."nextcloud".paths = [
+      config.services.nextcloud.home
+    ];
+
     services.nginx.virtualHosts.${config.services.nextcloud.hostName} = {
       enableACME = true;
       forceSSL = true;

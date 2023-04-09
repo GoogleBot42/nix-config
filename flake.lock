@@ -215,7 +215,7 @@
     "nixpkgs-hostapd-pr": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-XwZgYqlPmqNU2vWl/xgeg6X15U2b3ln2KOVPY2yPwlI=",
+        "narHash": "sha256-1rGQKcB1jeRPc1n021ulyOVkA6L6xmNYKmeqQ94+iRc=",
         "type": "file",
         "url": "https://github.com/NixOS/nixpkgs/pull/222536.patch"
       },

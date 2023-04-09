@@ -43,6 +43,10 @@ in
       };
     };
 
+    backup.group."thelounge".paths = [
+      "/var/lib/thelounge/"
+    ];
+
     # the lounge client
     services.nginx.virtualHosts.${cfg.host} = {
       enableACME = true;

@@ -7,6 +7,7 @@ let
 in
 {
   imports = [
+    ./backups.nix
     ./flakes.nix
     ./auto-update.nix
     ./shell.nix

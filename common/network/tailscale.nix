@@ -11,7 +11,7 @@ in
   config.services.tailscale.enable = mkDefault (!config.boot.isContainer);
 
   # MagicDNS
-  config.networking.nameservers = mkIf cfg.enable [ "1.1.1.1" "8.8.8.8" "100.100.100.100" ];
+  config.networking.nameservers = mkIf cfg.enable [ "1.1.1.1" "8.8.8.8" ];
   config.networking.search = mkIf cfg.enable [ "koi-bebop.ts.net" ];
 
   # exit node

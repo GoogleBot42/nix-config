@@ -1,12 +1,6 @@
 { config, lib, ... }:
 
-with builtins;
-
 let
-  # TODO: remove when all systems are updated to new enough nixpkgs
-  concatMapAttrs =
-    f: with lib; flip pipe [ (mapAttrs f) attrValues (foldl' mergeAttrs { }) ];
-
   system = (import ../ssh.nix).system;
 
   # hostnames that resolve on clearnet for LUKS unlocking
@@ -57,7 +51,7 @@ in
 
   # prebuilt cmds for easy ssh LUKS unlock
   environment.shellAliases =
-    concatMapAttrs (host: addr: { "unlock-over-tor_${host}" = "torsocks ssh root@${addr}"; }) unlock-onion-hosts
+    lib.concatMapAttrs (host: addr: { "unlock-over-tor_${host}" = "torsocks ssh root@${addr}"; }) unlock-onion-hosts
     //
-    concatMapAttrs (host: addr: { "unlock_${host}" = "ssh root@${addr}"; }) unlock-clearnet-hosts;
+    lib.concatMapAttrs (host: addr: { "unlock_${host}" = "ssh root@${addr}"; }) unlock-clearnet-hosts;
 }

@@ -52,6 +52,9 @@
     file = ../../secrets/wolframalpha.age;
     owner = config.services.drastikbot.user;
   };
+  backup.group."dailybot".paths = [
+    config.services.drastikbot.dataDir
+  ];
 
   # music radio
   vpn-container.enable = true;

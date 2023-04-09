@@ -77,6 +77,13 @@
       };
     };
 
+    # backups
+    backup.group."samba".paths = [
+      config.services.samba.shares.googlebot.path
+      config.services.samba.shares.cris.path
+      "${config.services.samba.shares.public.path}/Regularly_Backed_Up"
+    ];
+
     # Windows discovery of samba server
     services.samba-wsdd = {
       enable = true;

@@ -1,4 +1,4 @@
-{ lib, config, ... }:
+{ lib, pkgs, config, ... }:
 
 let
   cfg = config.services.gitea;
@@ -16,7 +16,7 @@ in
       rootUrl = "https://${cfg.hostname}/";
       appName = cfg.hostname;
       # lfs.enable = true;
-      dump.enable = true;
+      # dump.enable = true;
       settings = {
         other = {
           SHOW_FOOTER_VERSION = false;
@@ -30,8 +30,21 @@ in
         session = {
           COOKIE_SECURE = true;
         };
+        mailer = {
+          ENABLED = true;
+          MAILER_TYPE = "sendmail";
+          FROM = "do-not-reply@neet.dev";
+          SENDMAIL_PATH = "/run/wrappers/bin/sendmail";
+          SENDMAIL_ARGS = "--";
+        };
       };
     };
+
+    # backups
+    backup.group."gitea".paths = [
+      config.services.gitea.stateDir
+    ];
+
     services.nginx.enable = true;
     services.nginx.virtualHosts.${cfg.hostname} = {
       enableACME = true;
