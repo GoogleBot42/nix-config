@@ -1,11 +1,13 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   cfg = config.backup;
   hostname = config.networking.hostName;
 
+  mkRespository = group: "s3:s3.us-west-004.backblazeb2.com/D22TgIt0-main-backup/${group}";
+
   mkBackup = group: paths: {
-    repository = "s3:s3.us-west-004.backblazeb2.com/D22TgIt0-main-backup/${group}";
+    repository = mkRespository group;
     inherit paths;
 
     initialize = true;
@@ -29,6 +31,20 @@ let
     environmentFile = "/run/agenix/backblaze-s3-backups";
     passwordFile = "/run/agenix/restic-password";
   };
+
+  # example usage: "sudo restic_samba unlock" (removes lockfile)
+  mkResticGroupCmd = group: pkgs.writeShellScriptBin "restic_${group}" ''
+    if [ "$EUID" -ne 0 ]
+      then echo "Run as root"
+      exit
+    fi
+    . /run/agenix/backblaze-s3-backups
+    export AWS_SECRET_ACCESS_KEY
+    export AWS_ACCESS_KEY_ID
+    export RESTIC_PASSWORD_FILE=/run/agenix/restic-password
+    export RESTIC_REPOSITORY="${mkRespository group}"
+    exec ${pkgs.restic}/bin/restic "$@"
+  '';
 in
 {
   options.backup = {
@@ -56,5 +72,7 @@ in
 
     age.secrets.backblaze-s3-backups.file = ../secrets/backblaze-s3-backups.age;
     age.secrets.restic-password.file = ../secrets/restic-password.age;
+
+    environment.systemPackages = map mkResticGroupCmd (builtins.attrNames cfg.group);
   };
 }
