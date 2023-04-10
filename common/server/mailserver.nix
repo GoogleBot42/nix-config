@@ -43,7 +43,7 @@ in
             "robot@neet.dev"
           ];
           sendOnly = true;
-          hashedPassword = "$2b$05$hkmwXGJSKuG/1.SmLecWSuzlq1F5pjp2ScoipQoVLR0ssSN5MgRs.";
+          hashedPasswordFile = "/run/agenix/hashed-robots-email-pw";
         };
       };
       rejectRecipients = [
@@ -55,6 +55,7 @@ in
       certificateScheme = 3; # use let's encrypt for certs
     };
     age.secrets.email-pw.file = ../../secrets/email-pw.age;
+    age.secrets.hashed-robots-email-pw.file = ../../secrets/hashed-robots-email-pw.age;
 
     # sendmail to use xxx@domain instead of xxx@mail.domain
     services.postfix.origin = "$mydomain";
