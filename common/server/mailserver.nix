@@ -37,6 +37,14 @@ in
           # catchall for all domains
           aliases = map (domain: "@${domain}") domains;
         };
+        "robot@runyan.org" = {
+          aliases = [
+            "no-reply@neet.dev"
+            "robot@neet.dev"
+          ];
+          sendOnly = true;
+          hashedPassword = "$2b$05$hkmwXGJSKuG/1.SmLecWSuzlq1F5pjp2ScoipQoVLR0ssSN5MgRs.";
+        };
       };
       rejectRecipients = [
         "george@runyan.org"

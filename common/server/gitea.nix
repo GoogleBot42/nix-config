@@ -32,12 +32,19 @@ in
         };
         mailer = {
           ENABLED = true;
-          MAILER_TYPE = "sendmail";
-          FROM = "do-not-reply@neet.dev";
-          SENDMAIL_PATH = "/run/wrappers/bin/sendmail";
-          SENDMAIL_ARGS = "--";
+          MAILER_TYPE = "smtp";
+          SMTP_ADDR = "mail.neet.dev";
+          SMTP_PORT = "465";
+          IS_TLS_ENABLED = true;
+          USER = "robot@runyan.org";
+          FROM = "no-reply@neet.dev";
         };
       };
+      mailerPasswordFile = "/run/agenix/robots-email-pw";
+    };
+    age.secrets.robots-email-pw = {
+      file = ../../secrets/robots-email-pw.age;
+      owner = config.services.gitea.user;
     };
 
     # backups

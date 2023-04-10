@@ -15,6 +15,7 @@ in
   # email
   "email-pw.age".publicKeys = all;
   "sasl_relay_passwd.age".publicKeys = all;
+  "robots-email-pw.age".publicKeys = all;
 
   # vpn
   "iodine.age".publicKeys = all;
