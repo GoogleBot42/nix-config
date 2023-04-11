@@ -79,6 +79,14 @@ in
     trusted-users = [ "root" "googlebot" ];
   };
 
+  # don't use sudo
+  security.doas.enable = true;
+  security.sudo.enable = false;
+  security.doas.extraRules = [
+    # don't ask for password every time
+    { groups = [ "wheel" ]; persist = true; }
+  ];
+
   nix.gc.automatic = true;
 
   security.acme.acceptTerms = true;

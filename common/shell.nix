@@ -21,6 +21,8 @@
     shellInit = ''
       # disable annoying fish shell greeting
       set fish_greeting
+
+      alias sudo="doas"
     '';
   };
 
