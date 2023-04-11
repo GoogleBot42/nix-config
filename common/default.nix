@@ -55,6 +55,7 @@ in
     helix
     lm_sensors
     picocom
+    lf
   ];
 
   nixpkgs.config.allowUnfree = true;
