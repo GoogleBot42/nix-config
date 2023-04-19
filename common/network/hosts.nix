@@ -6,6 +6,7 @@ let
   # hostnames that resolve on clearnet for LUKS unlocking
   unlock-clearnet-hosts = {
     ponyo = "unlock.ponyo.neet.dev";
+    phil = "unlock.phil.neet.dev";
     s0 = "s0";
   };
 
@@ -26,6 +27,14 @@ in
     ponyo-unlock = {
       hostNames = [ unlock-clearnet-hosts.ponyo unlock-onion-hosts.ponyo ];
       publicKey = system.ponyo-unlock;
+    };
+    phil = {
+      hostNames = [ "phil" "phil.neet.dev" ];
+      publicKey = system.phil;
+    };
+    phil-unlock = {
+      hostNames = [ unlock-clearnet-hosts.phil ];
+      publicKey = system.phil-unlock;
     };
     router = {
       hostNames = [ "router" "192.168.1.228" ];

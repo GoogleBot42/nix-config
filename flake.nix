@@ -94,6 +94,7 @@
         "ray" = mkSystem "x86_64-linux" nixpkgs ./machines/ray/configuration.nix;
         # "nat" = mkSystem "aarch64-linux" nixpkgs ./machines/nat/configuration.nix;
         "ponyo" = mkSystem "x86_64-linux" nixpkgs ./machines/ponyo/configuration.nix;
+        "phil" = mkSystem "aarch64-linux" nixpkgs ./machines/phil/configuration.nix;
         "router" = mkSystem "x86_64-linux" nixpkgs ./machines/router/configuration.nix;
         "s0" = mkSystem "x86_64-linux" nixpkgs ./machines/storage/s0/configuration.nix;
       };

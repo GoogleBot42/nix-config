@@ -9,6 +9,8 @@ rec {
     ponyo = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMBBlTAIp38RhErU1wNNV5MBeb+WGH0mhF/dxh5RsAXN";
     ponyo-unlock = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC9LQuuImgWlkjDhEEIbM1wOd+HqRv1RxvYZuLXPSdRi";
     ray = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDQM8hwKRgl8cZj7UVYATSLYu4LhG7I0WFJ9m2iWowiB";
+    phil = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBlOs6mTZCSJL/XM6NysHN0ZNQAyj2GEwBV2Ze6NxRmr";
+    phil-unlock = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAqy9X/m67oXJBX+OMdIqpiLONYc5aQ2nHeEPAaj/vgN";
     router = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFr2IHmWFlaLaLp5dGoSmFEYKA/eg2SwGXAogaOmLsHL";
     router-unlock = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJOw5dTPmtKqiPBH6VKyz5MYBubn8leAh5Eaw7s/O85c";
     s0 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAwiXcUFtAvZCayhu4+AIcF+Ktrdgv9ee/mXSIhJbp4q";
@@ -22,6 +24,7 @@ rec {
   # groups
   systems = with system; [
     ponyo
+    phil
     ray
     router
     s0
@@ -31,6 +34,7 @@ rec {
   ];
   servers = with system; [
     ponyo
+    phil
     router
     s0
   ];
