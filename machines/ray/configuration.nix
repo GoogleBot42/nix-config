@@ -47,6 +47,9 @@
 
   virtualisation.docker.enable = true;
 
+  virtualisation.appvm.enable = true;
+  virtualisation.appvm.user = "googlebot";
+
   services.mount-samba.enable = true;
 
   de.enable = true;
