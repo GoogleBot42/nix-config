@@ -11,7 +11,6 @@
 
 ### Housekeeping
 - Cleanup the line between hardware-configuration.nix and configuration.nix in machine config
-- CI https://gvolpe.com/blog/nixos-binary-cache-ci/
 - remove `options.currentSystem`
 - allow `hostname` option for webservices to be null to disable configuring nginx
 
@@ -49,6 +48,29 @@
 ### Paranoia
 - https://christine.website/blog/paranoid-nixos-2021-07-18
 - https://nixos.wiki/wiki/Impermanence
+
+# Setup CI
+- CI
+    - hydra
+    - https://docs.cachix.org/continuous-integration-setup/
+- Binary Cache
+    - Maybe use cachix https://gvolpe.com/blog/nixos-binary-cache-ci/
+    - Self hosted binary cache? https://www.tweag.io/blog/2019-11-21-untrusted-ci/
+    - https://github.com/edolstra/nix-serve
+    - https://nixos.wiki/wiki/Binary_Cache
+    - https://discourse.nixos.org/t/introducing-attic-a-self-hostable-nix-binary-cache-server/24343
+- Both
+    - https://garnix.io/
+    - https://nixbuild.net
+
+
+# Secrets
+- consider using headscale
+- Replace luks over tor for remote unlock with luks over tailscale using ephemeral keys
+- Rollover luks FDE passwords
+- /secrets on personal computers should only be readable using a trusted ssh key, preferably requiring a yubikey
+- Rollover shared yubikey secrets
+- offsite backup yubikey, pw db, and ssh key with /secrets access
 
 ### Misc
 - https://github.com/pop-os/system76-scheduler
