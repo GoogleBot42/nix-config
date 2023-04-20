@@ -44,10 +44,14 @@ ssh-keygen -q -N "" -t ed25519 -f /mnt/secret/ssh_host_ed25519_key
 ```
 
 # Generate Hardware Config
+```sh
 nixos-generate-config --root /mnt
+```
 
 # Install
+```sh
 nixos-install --flake "git+https://git.neet.dev/zuckerberg/nix-config.git#MACHINE_NAME"
+```
 
 # Post Install Tasks
 - Add to DNS
