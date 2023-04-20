@@ -6,7 +6,7 @@
 nix-shell -p nixFlakes git
 ```
 
-# disk setup
+### Disk Setup
 ```sh
 cfdisk
 cryptsetup luksFormat /dev/vda2
@@ -23,7 +23,7 @@ mkfs.ext3 boot
 mount /dev/vda1 /mnt/boot
 ```
 
-# Generate Secrets
+### Generate Secrets
 ```sh
 mkdir /mnt/secret
 ```
@@ -43,17 +43,17 @@ ssh-keygen -q -N "" -t rsa -b 4096 -f /mnt/secret/ssh_host_rsa_key
 ssh-keygen -q -N "" -t ed25519 -f /mnt/secret/ssh_host_ed25519_key
 ```
 
-# Generate Hardware Config
+### Generate Hardware Config
 ```sh
 nixos-generate-config --root /mnt
 ```
 
-# Install
+### Install
 ```sh
 nixos-install --flake "git+https://git.neet.dev/zuckerberg/nix-config.git#MACHINE_NAME"
 ```
 
-# Post Install Tasks
+### Post Install Tasks
 - Add to DNS
 - Add ssh host keys (unlock key + host key)
 - Add to tailnet
