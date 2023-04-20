@@ -1,27 +1,34 @@
+# New Machine Setup
+
+### Prepare Shell If Needed
+
+```sh
 nix-shell -p nixFlakes git
+```
+
+# disk setup
+```sh
 cfdisk
-mkfs.ext3 boot
 cryptsetup luksFormat /dev/vda2
 cryptsetup luksOpen /dev/vda2 enc-pv
 pvcreate /dev/mapper/enc-pv
+vgcreate vg /dev/mapper/enc-pv
 lvcreate -L 4G -n swap vg
 lvcreate -l '100%FREE' -n root vg
 mkswap -L swap /dev/vg/swap
 swapon /dev/vg/swap
 mkfs.btrfs /dev/vg/root
 mount /dev/vg/root /mnt
-cd /mnt
-btrfs subvolume create root
-btrfs subvolume create home
-cd
-mount -o subvol=root /dev/vg/root /mnt
-mkdir /mnt/home
-mount -o subvol=home /dev/vg/root /mnt/home
-mkdir /mnt/boot
+mkfs.ext3 boot
 mount /dev/vda1 /mnt/boot
-mkdir /mnt/secret
+```
 
-/tmp/tor.rc
+# Generate Secrets
+```sh
+mkdir /mnt/secret
+```
+
+In `/tmp/tor.rc`
 ```
 DataDirectory /tmp/my-dummy.tor/
 SOCKSPort 127.0.0.1:10050 IsolateDestAddr
@@ -30,8 +37,19 @@ HiddenServiceDir /mnt/secret/onion
 HiddenServicePort 1234 127.0.0.1:1234
 ```
 
+```sh
 nix-shell -p tor --run "tor -f /tmp/tor.rc"
 ssh-keygen -q -N "" -t rsa -b 4096 -f /mnt/secret/ssh_host_rsa_key
 ssh-keygen -q -N "" -t ed25519 -f /mnt/secret/ssh_host_ed25519_key
-nixos-generate-config --root /mnt # copy hardware config
+```
+
+# Generate Hardware Config
+nixos-generate-config --root /mnt
+
+# Install
 nixos-install --flake "git+https://git.neet.dev/zuckerberg/nix-config.git#MACHINE_NAME"
+
+# Post Install Tasks
+- Add to DNS
+- Add ssh host keys (unlock key + host key)
+- Add to tailnet
