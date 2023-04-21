@@ -352,6 +352,6 @@ in
       };
     };
 
-    age.secrets."pia-login.conf".file = ../../secrets/pia-login.conf;
+    age.secrets."pia-login.conf".file = ../../secrets/pia-login.age;
   };
 }

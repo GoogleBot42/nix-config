@@ -1,8 +1,10 @@
-{ pkgs, modulesPath, ... }:
+{ config, pkgs, modulesPath, ... }:
 
 {
   imports = [
     (modulesPath + "/installer/cd-dvd/channel.nix")
+    ../../common/machine-info
+    ../../common/ssh.nix
   ];
 
   boot.initrd.availableKernelModules = [ "ata_piix" "uhci_hcd" "e1000" "e1000e" "virtio_pci" "r8169" ];
@@ -15,6 +17,8 @@
   boot.kernel.sysctl."vm.overcommit_memory" = "1";
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
+
+  system.stateVersion = "21.11";
 
   # hardware.enableAllFirmware = true;
   # nixpkgs.config.allowUnfree = true;
@@ -38,10 +42,12 @@
 
   services.openssh = {
     enable = true;
-    challengeResponseAuthentication = false;
-    passwordAuthentication = false;
+    settings = {
+      KbdInteractiveAuthentication = false;
+      PasswordAuthentication = false;
+    };
   };
 
   services.getty.autologinUser = "root";
-  users.users.root.openssh.authorizedKeys.keys = (import ../../common/ssh.nix).users;
+  users.users.root.openssh.authorizedKeys.keys = config.machines.ssh.userKeys;
 }

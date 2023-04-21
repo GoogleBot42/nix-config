@@ -7,7 +7,6 @@ let
 in
 {
   imports = [
-    ./hosts.nix
     ./pia-openvpn.nix
     ./pia-wireguard.nix
     ./ping.nix

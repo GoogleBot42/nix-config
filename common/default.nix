@@ -1,10 +1,5 @@
 { config, pkgs, ... }:
 
-let
-  ssh = import ./ssh.nix;
-  sshUserKeys = ssh.users;
-  sshHigherTrustKeys = ssh.higherTrustUserKeys;
-in
 {
   imports = [
     ./backups.nix
@@ -15,6 +10,8 @@ in
     ./boot
     ./server
     ./pc
+    ./machine-info
+    ./ssh.nix
   ];
 
   nix.flakes.enable = true;
@@ -68,12 +65,12 @@ in
       "dialout" # serial
     ];
     shell = pkgs.fish;
-    openssh.authorizedKeys.keys = sshUserKeys;
+    openssh.authorizedKeys.keys = config.machines.ssh.userKeys;
     hashedPassword = "$6$TuDO46rILr$gkPUuLKZe3psexhs8WFZMpzgEBGksE.c3Tjh1f8sD0KMC4oV89K2pqAABfl.Lpxu2jVdr5bgvR5cWnZRnji/r/";
     uid = 1000;
   };
   users.users.root = {
-    openssh.authorizedKeys.keys = sshHigherTrustKeys;
+    openssh.authorizedKeys.keys = config.machines.ssh.deployKeys;
   };
   nix.settings = {
     trusted-users = [ "root" "googlebot" ];

@@ -33,7 +33,7 @@ in
       inherit domains;
       loginAccounts = {
         "jeremy@runyan.org" = {
-          hashedPasswordFile = "/run/agenix/email-pw";
+          hashedPasswordFile = "/run/agenix/hashed-email-pw";
           # catchall for all domains
           aliases = map (domain: "@${domain}") domains;
         };
@@ -54,7 +54,7 @@ in
       ];
       certificateScheme = 3; # use let's encrypt for certs
     };
-    age.secrets.email-pw.file = ../../secrets/email-pw.age;
+    age.secrets.hashed-email-pw.file = ../../secrets/hashed-email-pw.age;
     age.secrets.hashed-robots-email-pw.file = ../../secrets/hashed-robots-email-pw.age;
 
     # sendmail to use xxx@domain instead of xxx@mail.domain

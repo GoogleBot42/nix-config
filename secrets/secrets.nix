@@ -1,41 +1,41 @@
 let
-  keys = import ../common/ssh.nix;
-  system = keys.system;
-  systemsList = keys.systems;
-  usersList = keys.users;
-  all = usersList ++ systemsList;
+  lib = (import <nixpkgs> { }).lib;
+  sshKeys = (import ../common/machine-info/moduleless.nix { }).machines.ssh;
 
-  wireless = [
-    system.router
-  ] ++ usersList;
+  # add userkeys to all roles so that I can r/w the secrets from my personal computers
+  roles = lib.mapAttrs (role: hosts: hosts ++ sshKeys.userKeys) sshKeys.hostKeysByRole;
+
+  # nobody is using this secret but I still need to be able to r/w it
+  nobody = sshKeys.userKeys;
 in
-{
-  # TODO: Minimum necessary access to keys
 
+with roles;
+
+{
   # email
-  "email-pw.age".publicKeys = all;
-  "sasl_relay_passwd.age".publicKeys = all;
-  "hashed-robots-email-pw.age".publicKeys = all;
-  "robots-email-pw.age".publicKeys = all;
+  "hashed-email-pw.age".publicKeys = email-server;
+  "sasl_relay_passwd.age".publicKeys = email-server;
+  "hashed-robots-email-pw.age".publicKeys = email-server;
+  "robots-email-pw.age".publicKeys = gitea;
 
   # vpn
-  "iodine.age".publicKeys = all;
-  "pia-login.conf".publicKeys = all;
+  "iodine.age".publicKeys = iodine;
+  "pia-login.age".publicKeys = pia;
 
   # cloud
-  "nextcloud-pw.age".publicKeys = all;
-  "smb-secrets.age".publicKeys = all;
+  "nextcloud-pw.age".publicKeys = nextcloud;
+  "smb-secrets.age".publicKeys = personal;
 
   # services
-  "searx.age".publicKeys = all;
-  "spotifyd.age".publicKeys = all;
-  "wolframalpha.age".publicKeys = all;
+  "searx.age".publicKeys = nobody;
+  "spotifyd.age".publicKeys = personal;
+  "wolframalpha.age".publicKeys = dailybot;
 
   # hostapd
   "hostapd-pw-experimental-tower.age".publicKeys = wireless;
   "hostapd-pw-CXNK00BF9176.age".publicKeys = wireless;
 
   # backups
-  "backblaze-s3-backups.age".publicKeys = all;
-  "restic-password.age".publicKeys = all;
+  "backblaze-s3-backups.age".publicKeys = personal ++ server;
+  "restic-password.age".publicKeys = personal ++ server;
 }
