@@ -9,7 +9,7 @@ in
   config = lib.mkIf cfg.enable {
     system.autoUpgrade = {
       flake = "git+https://git.neet.dev/zuckerberg/nix-config.git";
-      flags = [ "--recreate-lock-file" ]; # ignore lock file, just pull the latest
+      flags = [ "--recreate-lock-file" "--no-write-lock-file" ]; # ignore lock file, just pull the latest
     };
   };
 }
