@@ -2,7 +2,6 @@
 
 { nixpkgs ? import <nixpkgs> { }
 , assertionsModule ? <nixpkgs/nixos/modules/misc/assertions.nix>
-, machinesPath ? null
 }:
 
 {
@@ -11,11 +10,6 @@
       modules = [
         ./default.nix
         assertionsModule
-        {
-          config = nixpkgs.lib.mkIf (machinesPath != null) {
-            machines.machinesPath = machinesPath;
-          };
-        }
       ];
     }).config.machines;
 }

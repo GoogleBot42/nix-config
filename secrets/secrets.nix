@@ -1,8 +1,6 @@
 let
   lib = (import <nixpkgs> { }).lib;
-  sshKeys = (import ../common/machine-info/moduleless.nix {
-    machinesPath = ../machines;
-  }).machines.ssh;
+  sshKeys = (import ../common/machine-info/moduleless.nix { }).machines.ssh;
 
   # add userkeys to all roles so that I can r/w the secrets from my personal computers
   roles = lib.mapAttrs (role: hosts: hosts ++ sshKeys.userKeys) sshKeys.hostKeysByRole;

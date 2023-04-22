@@ -13,13 +13,6 @@ in
   ];
 
   options.machines = {
-    # For some reason (presumably a bug), using the best value of "../../machines"
-    # as the path causes nix to search for invalid paths for flake imports but *not*
-    # secrets.nix for agenix.
-    machinesPath = lib.mkOption {
-      type = lib.types.path;
-      default = ../..;
-    };
 
     hosts = lib.mkOption {
       type = lib.types.attrsOf
@@ -194,15 +187,14 @@ in
           })
           (propertiesFiles dir);
         propertiesFiles = dir:
-          lib.foldl (lib.mergeAttrs) { } (propertiesFiles' dir "");
-        propertiesFiles' = dir: dirName:
+          lib.foldl (lib.mergeAttrs) { } (propertiesFiles' dir);
+        propertiesFiles' = dir:
           let
-            dirContents = builtins.readDir dir;
-            dirPaths = lib.filter (path: dirContents.${path} == "directory") (lib.attrNames dirContents);
-            propFiles = builtins.map (p: "${dir}/${p}") (lib.filter (path: path == "properties.nix") (lib.attrNames dirContents));
+            propFiles = lib.filter (p: baseNameOf p == "properties.nix") (lib.filesystem.listFilesRecursive dir);
+            dirName = path: builtins.baseNameOf (builtins.dirOf path);
           in
-          lib.concatMap (d: propertiesFiles' "${dir}/${d}" d) dirPaths ++ builtins.map (p: { "${dirName}" = p; }) propFiles;
+          builtins.map (p: { "${dirName p}" = p; }) propFiles;
       in
-      properties config.machines.machinesPath;
+      properties ../../machines;
   };
 }
