@@ -12,100 +12,110 @@ in
     ./roles.nix
   ];
 
-  options.machines.hosts = lib.mkOption {
-    type = lib.types.attrsOf
-      (lib.types.submodule {
-        options = {
+  options.machines = {
+    # For some reason (presumably a bug), using the best value of "../../machines"
+    # as the path causes nix to search for invalid paths for flake imports but *not*
+    # secrets.nix for agenix.
+    machinesPath = lib.mkOption {
+      type = lib.types.path;
+      default = ../..;
+    };
 
-          hostNames = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
-            description = ''
-              List of hostnames for this machine. The first one is the default so it is the target of deployments.
-              Used for automatically trusting hosts for ssh connections.
-            '';
-          };
+    hosts = lib.mkOption {
+      type = lib.types.attrsOf
+        (lib.types.submodule {
+          options = {
 
-          arch = lib.mkOption {
-            type = lib.types.enum [ "x86_64-linux" "aarch64-linux" ];
-            description = ''
-              The architecture of this machine.
-            '';
-          };
+            hostNames = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              description = ''
+                List of hostnames for this machine. The first one is the default so it is the target of deployments.
+                Used for automatically trusting hosts for ssh connections.
+              '';
+            };
 
-          systemRoles = lib.mkOption {
-            type = lib.types.listOf lib.types.str; # TODO: maybe use an enum?
-            description = ''
-              The set of roles this machine holds. Affects secrets available. (TODO add service config as well using this info)
-            '';
-          };
+            arch = lib.mkOption {
+              type = lib.types.enum [ "x86_64-linux" "aarch64-linux" ];
+              description = ''
+                The architecture of this machine.
+              '';
+            };
 
-          hostKey = lib.mkOption {
-            type = lib.types.str;
-            description = ''
-              The system ssh host key of this machine. Used for automatically trusting hosts for ssh connections
-              and for decrypting secrets with agenix.
-            '';
-          };
+            systemRoles = lib.mkOption {
+              type = lib.types.listOf lib.types.str; # TODO: maybe use an enum?
+              description = ''
+                The set of roles this machine holds. Affects secrets available. (TODO add service config as well using this info)
+              '';
+            };
 
-          remoteUnlock = lib.mkOption {
-            default = null;
-            type = lib.types.nullOr (lib.types.submodule {
-              options = {
+            hostKey = lib.mkOption {
+              type = lib.types.str;
+              description = ''
+                The system ssh host key of this machine. Used for automatically trusting hosts for ssh connections
+                and for decrypting secrets with agenix.
+              '';
+            };
 
-                hostKey = lib.mkOption {
-                  type = lib.types.str;
-                  description = ''
-                    The system ssh host key of this machine used for luks boot unlocking only.
-                  '';
+            remoteUnlock = lib.mkOption {
+              default = null;
+              type = lib.types.nullOr (lib.types.submodule {
+                options = {
+
+                  hostKey = lib.mkOption {
+                    type = lib.types.str;
+                    description = ''
+                      The system ssh host key of this machine used for luks boot unlocking only.
+                    '';
+                  };
+
+                  clearnetHost = lib.mkOption {
+                    default = null;
+                    type = lib.types.nullOr lib.types.str;
+                    description = ''
+                      The hostname resolvable over clearnet used to luks boot unlock this machine
+                    '';
+                  };
+
+                  onionHost = lib.mkOption {
+                    default = null;
+                    type = lib.types.nullOr lib.types.str;
+                    description = ''
+                      The hostname resolvable over tor used to luks boot unlock this machine
+                    '';
+                  };
+
                 };
+              });
+            };
 
-                clearnetHost = lib.mkOption {
-                  default = null;
-                  type = lib.types.nullOr lib.types.str;
-                  description = ''
-                    The hostname resolvable over clearnet used to luks boot unlock this machine
-                  '';
-                };
+            userKeys = lib.mkOption {
+              default = [ ];
+              type = lib.types.listOf lib.types.str;
+              description = ''
+                The list of user keys. Each key here can be used to log into all other systems as `googlebot`.
 
-                onionHost = lib.mkOption {
-                  default = null;
-                  type = lib.types.nullOr lib.types.str;
-                  description = ''
-                    The hostname resolvable over tor used to luks boot unlock this machine
-                  '';
-                };
+                TODO: consider auto populating other programs that use ssh keys such as gitea
+              '';
+            };
 
-              };
-            });
+            deployKeys = lib.mkOption {
+              default = [ ];
+              type = lib.types.listOf lib.types.str;
+              description = ''
+                The list of deployment keys. Each key here can be used to log into all other systems as `root`.
+              '';
+            };
+
+            configurationPath = lib.mkOption {
+              type = lib.types.path;
+              description = ''
+                The path to this machine's configuration directory.
+              '';
+            };
+
           };
-
-          userKeys = lib.mkOption {
-            default = [ ];
-            type = lib.types.listOf lib.types.str;
-            description = ''
-              The list of user keys. Each key here can be used to log into all other systems as `googlebot`.
-
-              TODO: consider auto populating other programs that use ssh keys such as gitea
-            '';
-          };
-
-          deployKeys = lib.mkOption {
-            default = [ ];
-            type = lib.types.listOf lib.types.str;
-            description = ''
-              The list of deployment keys. Each key here can be used to log into all other systems as `root`.
-            '';
-          };
-
-          configurationPath = lib.mkOption {
-            type = lib.types.path;
-            description = ''
-              The path to this machine's configuration directory.
-            '';
-          };
-
-        };
-      });
+        });
+    };
   };
 
   config = {
@@ -193,6 +203,6 @@ in
           in
           lib.concatMap (d: propertiesFiles' "${dir}/${d}" d) dirPaths ++ builtins.map (p: { "${dirName}" = p; }) propFiles;
       in
-      properties ../../machines;
+      properties config.machines.machinesPath;
   };
 }
