@@ -73,6 +73,8 @@
 - offsite backup yubikey, pw db, and ssh key with /secrets access
 
 ### Misc
+- for automated kernel upgrades on luks systems, need to kexec with initrd that contains luks key
+  - https://github.com/flowztul/keyexec/blob/master/etc/default/kexec-cryptroot
 - https://github.com/pop-os/system76-scheduler
 - improve email a little bit https://helloinbox.email
 - remap razer keys https://github.com/sezanzeb/input-remapper
