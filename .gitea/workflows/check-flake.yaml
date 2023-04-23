@@ -1,0 +1,38 @@
+name: Check Flake
+
+on: [push]
+
+env:
+  DEBIAN_FRONTEND: noninteractive
+  PATH: /run/current-system/sw/bin/:/nix/var/nix/profiles/per-user/gitea-runner/profile/bin
+
+# defaults:
+#   run:
+#     shell: nix shell nixpkgs#nodejs-18_x
+
+jobs:
+  check-flake:
+    runs-on: nixos
+    steps:
+      # - run: node --version
+      # - name: Install basic dependencies
+      #   run: apt-get update && apt-get install -y --no-install-recommends sudo curl ca-certificates xz-utils
+
+      # - name: Install Nix
+      #   uses: https://github.com/cachix/install-nix-action@v20
+      #   with:
+      #     github_access_token: ${{ secrets.__GITHUB_TOKEN }}
+
+      - name: Install dependencies
+        run: nix profile install nixpkgs#nodejs-18_x
+
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # - name: Get ENV var names
+      #   run: printenv | cut -d'=' -f1
+
+      - name: Check Flake
+        run: nix flake check --show-trace

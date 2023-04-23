@@ -5,7 +5,14 @@
     ./hardware-configuration.nix
   ];
 
-  system.autoUpgrade.enable = true;
+  networking.hostName = "s0";
+
+  # system.autoUpgrade.enable = true;
+
+  # gitea runner and allow it to build ARM derivations
+  services.gitea-runner.enable = true;
+  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+  nix.gc.automatic = lib.mkForce false; # allow the nix store to serve as a build cache
 
   services.iperf3.enable = true;
   services.iperf3.openFirewall = true;

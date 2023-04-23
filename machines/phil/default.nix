@@ -5,8 +5,6 @@
     ./hardware-configuration.nix
   ];
 
-  services.gitea-runner = {
-    enable = true;
-    instanceUrl = "https://git.neet.dev";
-  };
+  networking.hostName = "phil";
+  services.gitea-runner.enable = true;
 }
