@@ -39,6 +39,9 @@ in
           USER = "robot@runyan.org";
           FROM = "no-reply@neet.dev";
         };
+        actions = {
+          ENABLED = true;
+        };
       };
       mailerPasswordFile = "/run/agenix/robots-email-pw";
     };

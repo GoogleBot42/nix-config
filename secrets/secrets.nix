@@ -18,6 +18,9 @@ with roles;
   "hashed-robots-email-pw.age".publicKeys = email-server;
   "robots-email-pw.age".publicKeys = gitea;
 
+  # gitea
+  "gitea-runner-registration-token.age".publicKeys = gitea-runner;
+
   # vpn
   "iodine.age".publicKeys = iodine;
   "pia-login.age".publicKeys = pia;
