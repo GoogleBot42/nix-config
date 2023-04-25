@@ -11,8 +11,6 @@
   # https://github.com/skogsbrus/os/blob/master/sys/router.nix
   # http://trac.gateworks.com/wiki/wireless/wifi 
 
-  networking.hostName = "router";
-
   system.autoUpgrade.enable = true;
 
   services.tailscale.exitNode = true;

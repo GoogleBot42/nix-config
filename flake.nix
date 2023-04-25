@@ -55,7 +55,7 @@
     {
       nixosConfigurations =
         let
-          modules = system: with inputs; [
+          modules = system: hostname: with inputs; [
             ./common
             simple-nixos-mailserver.nixosModule
             agenix.nixosModules.default
@@ -63,9 +63,13 @@
             archivebox.nixosModule
             nix-index-database.nixosModules.nix-index
             ({ lib, ... }: {
-              config.environment.systemPackages = [
-                agenix.packages.${system}.agenix
-              ];
+              config = {
+                environment.systemPackages = [
+                  agenix.packages.${system}.agenix
+                ];
+
+                networking.hostName = hostname;
+              };
 
               # because nixos specialArgs doesn't work for containers... need to pass in inputs a different way
               options.inputs = lib.mkOption { default = inputs; };
@@ -73,9 +77,9 @@
             })
           ];
 
-          mkSystem = system: nixpkgs: path:
+          mkSystem = system: nixpkgs: path: hostname:
             let
-              allModules = modules system;
+              allModules = modules system hostname;
 
               # allow patching nixpkgs, remove this hack once this is solved: https://github.com/NixOS/nix/issues/3920
               patchedNixpkgsSrc = nixpkgs.legacyPackages.${system}.applyPatches {
@@ -99,7 +103,7 @@
         in
         nixpkgs.lib.mapAttrs
           (hostname: cfg:
-            mkSystem cfg.arch nixpkgs cfg.configurationPath)
+            mkSystem cfg.arch nixpkgs cfg.configurationPath hostname)
           machines;
 
       packages =

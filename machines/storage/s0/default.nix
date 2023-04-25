@@ -5,8 +5,6 @@
     ./hardware-configuration.nix
   ];
 
-  networking.hostName = "s0";
-
   system.autoUpgrade.enable = true;
 
   services.iperf3.enable = true;

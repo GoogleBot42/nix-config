@@ -5,8 +5,6 @@
     ./hardware-configuration.nix
   ];
 
-  networking.hostName = "ponyo";
-
   system.autoUpgrade.enable = true;
 
   # p2p mesh network

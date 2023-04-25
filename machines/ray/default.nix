@@ -5,8 +5,6 @@
     ./hardware-configuration.nix
   ];
 
-  networking.hostName = "ray";
-
   # for luks onlock over tor
   services.tor.enable = true;
   services.tor.client.enable = true;
