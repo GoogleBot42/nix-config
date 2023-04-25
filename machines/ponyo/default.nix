@@ -6,6 +6,9 @@
   ];
 
   system.autoUpgrade.enable = true;
+  # I want to manually trigger kexec updates for now on ponyo
+  system.autoUpgrade.allowKexec = false;
+  luks.enableKexec = true;
 
   # p2p mesh network
   services.tailscale.exitNode = true;

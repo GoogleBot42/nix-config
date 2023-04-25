@@ -33,11 +33,6 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    # boot.initrd.luks.devices.${cfg.device.name} = {
-    #   device = cfg.device.path;
-    #   allowDiscards = cfg.device.allowDiscards;
-    # };
-
     # Unlock LUKS disk over ssh
     boot.initrd.network.enable = true;
     boot.initrd.kernelModules = cfg.kernelModules;

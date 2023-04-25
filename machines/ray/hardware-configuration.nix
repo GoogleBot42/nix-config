@@ -36,10 +36,7 @@
 
   # disks
   remoteLuksUnlock.enable = true;
-  boot.initrd.luks.devices."enc-pv" = {
-    device = "/dev/disk/by-uuid/c1822e5f-4137-44e1-885f-954e926583ce";
-    allowDiscards = true;
-  };
+  luks.devices = [ "/dev/disk/by-uuid/c1822e5f-4137-44e1-885f-954e926583ce" ];
   fileSystems."/" =
     {
       device = "/dev/vg/root";

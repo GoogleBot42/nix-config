@@ -87,6 +87,7 @@
                 src = nixpkgs;
                 patches = [
                   inputs.nixpkgs-hostapd-pr
+                  ./patches/kexec-luks.patch
                 ];
               };
               patchedNixpkgs = nixpkgs.lib.fix (self: (import "${patchedNixpkgsSrc}/flake.nix").outputs { self = nixpkgs; });

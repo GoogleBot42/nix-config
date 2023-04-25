@@ -25,10 +25,12 @@
 
   # luks
   remoteLuksUnlock.enable = true;
-  boot.initrd.luks.devices."enc-pv1".device = "/dev/disk/by-uuid/d52e99a9-8825-4d0a-afc1-8edbef7e0a86";
-  boot.initrd.luks.devices."enc-pv2".device = "/dev/disk/by-uuid/f7275585-7760-4230-97de-36704b9a2aa3";
-  boot.initrd.luks.devices."enc-pv3".device = "/dev/disk/by-uuid/5d1002b8-a0ed-4a1c-99f5-24b8816d9e38";
-  boot.initrd.luks.devices."enc-pv4".device = "/dev/disk/by-uuid/e2c7402a-e72c-4c4a-998f-82e4c10187bc";
+  luks.devices = [
+    "/dev/disk/by-uuid/d52e99a9-8825-4d0a-afc1-8edbef7e0a86"
+    "/dev/disk/by-uuid/f7275585-7760-4230-97de-36704b9a2aa3"
+    "/dev/disk/by-uuid/5d1002b8-a0ed-4a1c-99f5-24b8816d9e38"
+    "/dev/disk/by-uuid/e2c7402a-e72c-4c4a-998f-82e4c10187bc"
+  ];
 
   # mounts
   fileSystems."/" =

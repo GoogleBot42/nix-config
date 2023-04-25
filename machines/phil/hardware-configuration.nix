@@ -20,10 +20,7 @@
   boot.kernelModules = [ ];
   boot.extraModulePackages = [ ];
 
-  boot.initrd.luks.devices."enc-pv" = {
-    device = "/dev/disk/by-uuid/d26c1820-4c39-4615-98c2-51442504e194";
-    allowDiscards = true;
-  };
+  luks.devices = [ "/dev/disk/by-uuid/d26c1820-4c39-4615-98c2-51442504e194" ];
 
   fileSystems."/" =
     {

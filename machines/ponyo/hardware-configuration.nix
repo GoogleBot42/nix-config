@@ -19,12 +19,15 @@
   };
 
   remoteLuksUnlock.enable = true;
-  boot.initrd.luks.devices."enc-pv".device = "/dev/disk/by-uuid/4cc36be4-dbff-4afe-927d-69bf4637bae2";
-  boot.initrd.luks.devices."enc-pv2".device = "/dev/disk/by-uuid/e52b01b3-81c8-4bb2-ae7e-a3d9c793cb00"; # expanded disk
+
+  luks.devices = [
+    "/dev/disk/by-uuid/4cc36be4-dbff-4afe-927d-69bf4637bae2"
+    "/dev/disk/by-uuid/e52b01b3-81c8-4bb2-ae7e-a3d9c793cb00"
+  ];
 
   fileSystems."/" =
     {
-      device = "/dev/mapper/enc-pv";
+      device = "/dev/mapper/enc-pv1";
       fsType = "btrfs";
     };
 
