@@ -7,7 +7,7 @@
     ];
 
   # boot
-  efi.enable = true;
+  boot.loader.systemd-boot.enable = true;
   boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "nvme" "usb_storage" "uas" "sd_mod" "rtsx_pci_sdmmc" ];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-intel" ];
