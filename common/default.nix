@@ -3,6 +3,7 @@
 {
   imports = [
     ./backups.nix
+    ./binary-cache.nix
     ./flakes.nix
     ./auto-update.nix
     ./shell.nix

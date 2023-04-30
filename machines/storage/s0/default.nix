@@ -14,6 +14,14 @@
   boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
   nix.gc.automatic = lib.mkForce false; # allow the nix store to serve as a build cache
 
+  # binary cache
+  services.nix-serve = {
+    enable = true;
+    openFirewall = true;
+    secretKeyFile = "/run/agenix/binary-cache-private-key";
+  };
+  age.secrets.binary-cache-private-key.file = ../../../secrets/binary-cache-private-key.age;
+
   services.iperf3.enable = true;
   services.iperf3.openFirewall = true;
 

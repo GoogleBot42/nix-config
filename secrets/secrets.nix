@@ -19,6 +19,10 @@ with roles;
   "hashed-robots-email-pw.age".publicKeys = email-server;
   "robots-email-pw.age".publicKeys = gitea;
 
+  # nix binary cache
+  # public key: s0.koi-bebop.ts.net:OjbzD86YjyJZpCp9RWaQKANaflcpKhtzBMNP8I2aPUU=
+  "binary-cache-private-key.age".publicKeys = binary-cache;
+
   # vpn
   "iodine.age".publicKeys = iodine;
   "pia-login.age".publicKeys = pia;
