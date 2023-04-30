@@ -37,6 +37,10 @@ in
           # catchall for all domains
           aliases = map (domain: "@${domain}") domains;
         };
+        "cris@runyan.org" = {
+          hashedPasswordFile = "/run/agenix/cris-hashed-email-pw";
+          aliases = [ "chris@runyan.org" ];
+        };
         "robot@runyan.org" = {
           aliases = [
             "no-reply@neet.dev"
@@ -55,6 +59,7 @@ in
       certificateScheme = 3; # use let's encrypt for certs
     };
     age.secrets.hashed-email-pw.file = ../../secrets/hashed-email-pw.age;
+    age.secrets.cris-hashed-email-pw.file = ../../secrets/cris-hashed-email-pw.age;
     age.secrets.hashed-robots-email-pw.file = ../../secrets/hashed-robots-email-pw.age;
 
     # sendmail to use xxx@domain instead of xxx@mail.domain

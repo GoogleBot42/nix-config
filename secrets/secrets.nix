@@ -14,6 +14,7 @@ with roles;
 {
   # email
   "hashed-email-pw.age".publicKeys = email-server;
+  "cris-hashed-email-pw.age".publicKeys = email-server;
   "sasl_relay_passwd.age".publicKeys = email-server;
   "hashed-robots-email-pw.age".publicKeys = email-server;
   "robots-email-pw.age".publicKeys = gitea;
