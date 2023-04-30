@@ -12,6 +12,7 @@
     ./server
     ./pc
     ./machine-info
+    ./nix-builder.nix
     ./ssh.nix
   ];
 
