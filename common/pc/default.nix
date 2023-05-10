@@ -37,7 +37,6 @@ in
       mumble
       tigervnc
       bluez-tools
-      vscodium
       element-desktop
       mpv
       nextcloud-client
