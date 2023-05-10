@@ -56,6 +56,12 @@ in
         "damon@runyan.org"
         "jonas@runyan.org"
       ];
+      forwards = {
+        "amazon@runyan.org" = [
+          "jeremy@runyan.org"
+          "cris@runyan.org"
+        ];
+      };
       certificateScheme = 3; # use let's encrypt for certs
     };
     age.secrets.hashed-email-pw.file = ../../secrets/hashed-email-pw.age;
