@@ -9,7 +9,7 @@
 
   # services.mount-samba.enable = true;
 
-  boot.loader.timeout = 15;
+  boot.loader.timeout = lib.mkForce 15;
 
   de.enable = true;
   services.xserver.desktopManager.kodi.enable = true;
