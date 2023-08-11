@@ -17,38 +17,6 @@ let
       "PREFIX=$(out)"
     ];
   };
-
-  nvidia-vaapi-driver = pkgs.stdenv.mkDerivation rec {
-    pname = "nvidia-vaapi-driver";
-    version = "0.0.5";
-
-    src = pkgs.fetchFromGitHub {
-      owner = "elFarto";
-      repo = pname;
-      rev = "v${version}";
-      sha256 = "2bycqKolVoaHK64XYcReteuaON9TjzrFhaG5kty28YY=";
-    };
-
-    patches = [
-      ./use-meson-v57.patch
-    ];
-
-    nativeBuildInputs = with pkgs; [
-      meson
-      cmake
-      ninja
-      pkg-config
-    ];
-
-    buildInputs = with pkgs; [
-      nv-codec-headers-11-1-5-1
-      libva
-      gst_all_1.gstreamer
-      gst_all_1.gst-plugins-bad
-      libglvnd
-    ];
-  };
-
 in
 {
   config = lib.mkIf cfg.enable {
