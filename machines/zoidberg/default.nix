@@ -7,7 +7,7 @@
 
   # services.spotifyd.enable = true;
 
-  # services.mount-samba.enable = true;
+  services.mount-samba.enable = true;
 
   boot.loader.timeout = lib.mkForce 15;
 
