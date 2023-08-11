@@ -10,6 +10,7 @@ let
     dart-code.flutter
     golang.go
     jnoortheen.nix-ide
+    ms-vscode.cpptools
   ] ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
     {
       name = "platformio-ide";

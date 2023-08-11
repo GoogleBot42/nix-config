@@ -9,6 +9,9 @@
   services.tor.enable = true;
   services.tor.client.enable = true;
 
+  # don't use remote builders
+  nix.distributedBuilds = lib.mkForce false;
+
   # services.howdy.enable = true;
 
   hardware.openrazer.enable = true;
@@ -27,6 +30,7 @@
     # Wally Flashing rules for the Moonlander and Planck EZ
     SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", MODE:="0666", SYMLINK+="stm32_dfu"
   '';
+  services.udev.packages = [ pkgs.platformio ];
   users.groups.plugdev = {
     members = [ "googlebot" ];
   };
