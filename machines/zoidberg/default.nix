@@ -7,6 +7,9 @@
 
   # services.spotifyd.enable = true;
 
+  # wireless xbox controller support
+  hardware.xpadneo.enable = true;
+
   services.mount-samba.enable = true;
 
   boot.loader.timeout = lib.mkForce 15;
