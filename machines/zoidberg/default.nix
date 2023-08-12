@@ -28,5 +28,6 @@
     isNormalUser = true;
     hashedPassword = "$y$j9T$LMGwHVauFWAcAyWSSmcuS/$BQpDyjDHZZbvj54.ijvNb03tr7IgX9wcjYCuCxjSqf6";
     uid = 1001;
+    packages = users.users.googlebot.packages;
   };
 }
