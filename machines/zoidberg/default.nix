@@ -12,15 +12,21 @@
 
   services.mount-samba.enable = true;
 
-  boot.loader.timeout = lib.mkForce 15;
-
   de.enable = true;
-  services.xserver.desktopManager.kodi.enable = true;
 
-  # virt-manager
-  virtualisation.libvirtd.enable = true;
-  programs.dconf.enable = true;
-  virtualisation.spiceUSBRedirection.enable = true;
-  environment.systemPackages = with pkgs; [ virt-manager ];
-  users.users.googlebot.extraGroups = [ "libvirtd" ];
+  # kodi
+  services.xserver.desktopManager.kodi.enable = true;
+  services.xserver.desktopManager.kodi.package =
+    (
+      pkgs.kodi.passthru.withPackages (kodiPackages: with kodiPackages; [
+        jellyfin
+        joystick
+      ])
+    );
+
+  users.users.cris = {
+    isNormalUser = true;
+    hashedPassword = "$y$j9T$LMGwHVauFWAcAyWSSmcuS/$BQpDyjDHZZbvj54.ijvNb03tr7IgX9wcjYCuCxjSqf6";
+    uid = 1001;
+  };
 }
