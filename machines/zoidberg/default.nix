@@ -33,4 +33,11 @@
       maestral-gui
     ] ++ config.users.users.googlebot.packages;
   };
+
+  # Dr. John A. Zoidberg
+  users.users.john = {
+    isNormalUser = true;
+    hashedPassword = "";
+    uid = 1002;
+  };
 }
