@@ -15,6 +15,7 @@
   # kernel
   boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # disks
   remoteLuksUnlock.enable = true;
