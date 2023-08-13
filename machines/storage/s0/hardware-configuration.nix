@@ -31,6 +31,8 @@
   boot.initrd.luks.devices."enc-pv4".device = "/dev/disk/by-uuid/e2c7402a-e72c-4c4a-998f-82e4c10187bc";
 
   # mounts
+  services.zfs.autoScrub.enable = true;
+  services.zfs.trim.enable = true;
   fileSystems."/" =
     {
       device = "rpool/nixos/root";
