@@ -24,11 +24,6 @@
     dailybuild_modules.inputs.nixpkgs.follows = "nixpkgs";
     dailybuild_modules.inputs.flake-utils.follows = "flake-utils";
 
-    # archivebox
-    archivebox.url = "git+https://git.neet.dev/zuckerberg/archivebox.git";
-    archivebox.inputs.nixpkgs.follows = "nixpkgs";
-    archivebox.inputs.flake-utils.follows = "flake-utils";
-
     # nixos config deployment
     deploy-rs.url = "github:serokell/deploy-rs";
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
@@ -55,7 +50,6 @@
             simple-nixos-mailserver.nixosModule
             agenix.nixosModules.default
             dailybuild_modules.nixosModule
-            archivebox.nixosModule
             nix-index-database.nixosModules.nix-index
             ({ lib, ... }: {
               config = {

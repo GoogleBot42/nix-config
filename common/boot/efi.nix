@@ -10,14 +10,12 @@ in
   };
 
   config = mkIf cfg.enable {
-    # Use GRUB2 for EFI
     boot.loader = {
       efi.canTouchEfiVariables = true;
       timeout = 2;
       grub = {
         enable = true;
         device = "nodev";
-        version = 2;
         efiSupport = true;
         useOSProber = true;
         #       memtest86.enable = true;

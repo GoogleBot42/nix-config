@@ -22,29 +22,6 @@
         "type": "github"
       }
     },
-    "archivebox": {
-      "inputs": {
-        "flake-utils": [
-          "flake-utils"
-        ],
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1648612759,
-        "narHash": "sha256-SJwlpD2Wz3zFoX2mIYCQfwIOYHaOdeiWGFeDXsLGM84=",
-        "ref": "refs/heads/master",
-        "rev": "39d338b9b24159d8ef3309eecc0d32a2a9f102b5",
-        "revCount": 2,
-        "type": "git",
-        "url": "https://git.neet.dev/zuckerberg/archivebox.git"
-      },
-      "original": {
-        "type": "git",
-        "url": "https://git.neet.dev/zuckerberg/archivebox.git"
-      }
-    },
     "blobs": {
       "flake": false,
       "locked": {
@@ -281,7 +258,6 @@
     "root": {
       "inputs": {
         "agenix": "agenix",
-        "archivebox": "archivebox",
         "dailybuild_modules": "dailybuild_modules",
         "deploy-rs": "deploy-rs",
         "flake-utils": "flake-utils",

@@ -92,7 +92,7 @@ in
       radios = {
         # 2.4GHz
         wlp4s0 = {
-          hwMode = "g";
+          band = "2g";
           noScan = true;
           channel = 6;
           countryCode = "US";
@@ -124,15 +124,15 @@ in
             #   authentication.saePasswordsFile = "/run/agenix/hostapd-pw-experimental-tower";
             # };
           };
-          extraConfig = ''
-            he_oper_centr_freq_seg0_idx=8
-            vht_oper_centr_freq_seg0_idx=8
-          '';
+          settings = {
+            he_oper_centr_freq_seg0_idx = 8;
+            vht_oper_centr_freq_seg0_idx = 8;
+          };
         };
 
         # 5GHz
         wlan1 = {
-          hwMode = "a";
+          band = "5g";
           noScan = true;
           channel = 128;
           countryCode = "US";
@@ -164,10 +164,10 @@ in
             #   authentication.saePasswordsFile = "/run/agenix/hostapd-pw-experimental-tower";
             # };
           };
-          extraConfig = ''
-            vht_oper_centr_freq_seg0_idx=114
-            he_oper_centr_freq_seg0_idx=114
-          '';
+          settings = {
+            vht_oper_centr_freq_seg0_idx = 114;
+            he_oper_centr_freq_seg0_idx = 114;
+          };
         };
       };
     };

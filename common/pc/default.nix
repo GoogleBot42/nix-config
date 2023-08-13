@@ -52,7 +52,7 @@ in
       jellyfin-media-player
       joplin-desktop
       config.inputs.deploy-rs.packages.${config.currentSystem}.deploy-rs
-      pavucontrol-qt
+      lxqt.pavucontrol-qt
 
       # For Nix IDE
       nixpkgs-fmt
