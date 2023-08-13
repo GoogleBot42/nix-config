@@ -20,5 +20,7 @@ in
       # plasma5Packages.kmail-account-wizard
       kate
     ];
+
+    services.xserver.desktopManager.plasma5.useQtScaling = true;
   };
 }
