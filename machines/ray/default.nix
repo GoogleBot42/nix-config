@@ -56,4 +56,9 @@
 
   de.enable = true;
   de.touchpad.enable = true;
+
+  networking.firewall.allowedTCPPorts = [
+    # barrier
+    24800
+  ];
 }

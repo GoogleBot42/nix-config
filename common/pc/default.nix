@@ -53,6 +53,7 @@ in
       joplin-desktop
       config.inputs.deploy-rs.packages.${config.currentSystem}.deploy-rs
       lxqt.pavucontrol-qt
+      barrier
 
       # For Nix IDE
       nixpkgs-fmt
