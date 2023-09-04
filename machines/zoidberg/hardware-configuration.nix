@@ -25,7 +25,7 @@
 
     # Fetch key from USB drive
     keyFileSize = 4096;
-    keyFile = "/dev/disk/by-id/usb-USB_Flash_Disk_10622352-0:0";
+    keyFile = "/dev/disk/by-id/usb-Mass_Storage_Device_121220160204-0:0";
     fallbackToPassword = true;
   };
   fileSystems."/" =
