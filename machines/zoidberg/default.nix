@@ -40,6 +40,26 @@
     "L+    /opt/rocm/hip   -    -    -     -    ${pkgs.hip}"
   ];
 
+  systemd.services.barrier-sddm = {
+    description = "Barrier mouse/keyboard share";
+    requires = [ "display-manager.service" ];
+    after = [ "network.target" "display-manager.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Restart = "always";
+      RestartSec = 10;
+      # todo use user/group
+    };
+    path = with pkgs; [ barrier doas ];
+    script = ''
+      # Wait for file to show up. "display-manager.service" finishes a bit too soon
+      while ! [ -e /run/sddm/xauth_* ]; do sleep 1; done;
+      export XAUTHORITY=$(ls /run/sddm/xauth_*)
+      # Disable crypto is fine because tailscale is E2E encrypting better than barrier could anyway
+      barrierc -f --disable-crypto --name zoidberg ray.koi-bebop.ts.net
+    '';
+  };
+
   users.users.cris = {
     isNormalUser = true;
     hashedPassword = "$y$j9T$LMGwHVauFWAcAyWSSmcuS/$BQpDyjDHZZbvj54.ijvNb03tr7IgX9wcjYCuCxjSqf6";
