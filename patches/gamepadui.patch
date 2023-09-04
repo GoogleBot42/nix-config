@@ -1,0 +1,13 @@
+diff --git a/nixos/modules/programs/steam.nix b/nixos/modules/programs/steam.nix
+index 29c449c16946..f6c728eb7f0c 100644
+--- a/nixos/modules/programs/steam.nix
++++ b/nixos/modules/programs/steam.nix
+@@ -11,7 +11,7 @@ let
+   in
+     pkgs.writeShellScriptBin "steam-gamescope" ''
+       ${builtins.concatStringsSep "\n" exports}
+-      gamescope --steam ${toString cfg.gamescopeSession.args} -- steam -tenfoot -pipewire-dmabuf
++      gamescope --steam ${toString cfg.gamescopeSession.args} -- steam -gamepadui -steamdeck -pipewire-dmabuf &> /tmp/steamlog
+     '';
+ 
+   gamescopeSessionFile =

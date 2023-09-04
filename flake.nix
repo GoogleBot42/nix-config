@@ -75,7 +75,7 @@
                 name = "nixpkgs-patched";
                 src = nixpkgs;
                 patches = [
-                  # no patches to nixpkgs at this time
+                  ./patches/gamepadui.patch
                 ];
               };
               patchedNixpkgs = nixpkgs.lib.fix (self: (import "${patchedNixpkgsSrc}/flake.nix").outputs { self = nixpkgs; });
