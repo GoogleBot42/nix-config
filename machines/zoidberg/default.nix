@@ -20,7 +20,9 @@
         joystick
       ])
     );
+  services.mount-samba.enable = true;
 
+  # Login DE Option: RetroArch
   services.xserver.desktopManager.retroarch.enable = true;
   services.xserver.desktopManager.retroarch.package = pkgs.retroarchFull;
 
