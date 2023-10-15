@@ -9,9 +9,20 @@
 
   # system.autoUpgrade.enable = true;
 
-  # gitea runner and allow it to build ARM derivations
-  services.gitea-runner.enable = true;
-  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+  # gitea runner and allow it to build ARM derivationsFV
+  services.gitea-actions-runner.instances.inst = {
+    enable = true;
+    name = config.networking.hostName;
+    url = "https://git.neet.dev/";
+    tokenFile = "/run/agenix/gitea-actions-runner-token";
+    labels = [
+      "debian-latest:docker://catthehacker/ubuntu:act-latest"
+      "ubuntu-latest:docker://catthehacker/ubuntu:act-latest"
+    ];
+  };
+  virtualisation.podman.enable = true;
+  age.secrets.gitea-actions-runner-token.file = ../../../secrets/gitea-actions-runner-token.age;
+  boot.binfmt.emulatedSystems = [ "aarch64-linux" ]; # todo: still needed?
   nix.gc.automatic = lib.mkForce false; # allow the nix store to serve as a build cache
 
   # binary cache

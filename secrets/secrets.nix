@@ -43,4 +43,7 @@ with roles;
   # backups
   "backblaze-s3-backups.age".publicKeys = personal ++ server;
   "restic-password.age".publicKeys = personal ++ server;
+
+  # gitea actions runner
+  "gitea-actions-runner-token.age".publicKeys = gitea-actions-runner;
 }
