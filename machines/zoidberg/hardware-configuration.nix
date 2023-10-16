@@ -25,7 +25,7 @@
 
     # Fetch key from USB drive
     keyFileSize = 4096;
-    keyFile = "/dev/disk/by-id/usb-Mass_Storage_Device_121220160204-0:0";
+    keyFile = "/dev/disk/by-id/usb-Mass_Storage_Device_121220160204-0:0-part2";
     fallbackToPassword = true;
   };
   fileSystems."/" =
@@ -35,7 +35,7 @@
     };
   fileSystems."/boot" =
     {
-      device = "/dev/disk/by-uuid/954B-AB3E";
+      device = "/dev/disk/by-uuid/8074-B04D";
       fsType = "vfat";
     };
   swapDevices =
