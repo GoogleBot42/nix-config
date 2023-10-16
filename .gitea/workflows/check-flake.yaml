@@ -24,7 +24,14 @@ jobs:
           fetch-depth: 0
 
       - name: Check Flake
-        run: nix flake check --show-trace
+        run: |
+          # Can only build x84_64 for now, so pick out those specifically
+          # nix flake check --show-trace
+
+          nix build .#nixosConfigurations."ray".config.system.build.toplevel
+          nix build .#nixosConfigurations."s0".config.system.build.toplevel
+          nix build .#nixosConfigurations."ponyo".config.system.build.toplevel
+          nix build .#nixosConfigurations."zoidberg".config.system.build.toplevel
 
       - name: Setup SSH For Pushing to Binary Cache
         run: |
