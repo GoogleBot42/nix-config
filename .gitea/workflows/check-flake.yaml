@@ -4,35 +4,38 @@ on: [push]
 
 env:
   DEBIAN_FRONTEND: noninteractive
-  PATH: /run/current-system/sw/bin/:/nix/var/nix/profiles/per-user/gitea-runner/profile/bin
-
-# defaults:
-#   run:
-#     shell: nix shell nixpkgs#nodejs-18_x
+  SSH_AUTH_SOCK: /tmp/ssh_agent.sock
 
 jobs:
   check-flake:
-    runs-on: nixos
+    runs-on: ubuntu-latest
     steps:
-      # - run: node --version
-      # - name: Install basic dependencies
-      #   run: apt-get update && apt-get install -y --no-install-recommends sudo curl ca-certificates xz-utils
-
-      # - name: Install Nix
-      #   uses: https://github.com/cachix/install-nix-action@v20
-      #   with:
-      #     github_access_token: ${{ secrets.__GITHUB_TOKEN }}
-
-      - name: Install dependencies
-        run: nix profile install nixpkgs#nodejs-18_x
+      - name: Install Nix
+        uses: https://github.com/cachix/install-nix-action@v23
+        with:
+          github_access_token: ${{ secrets.__GITHUB_TOKEN }}
+          extra_nix_config: |
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= s0.koi-bebop.ts.net:OjbzD86YjyJZpCp9RWaQKANaflcpKhtzBMNP8I2aPUU=
+            substituters = https://cache.nixos.org/ http://s0.koi-bebop.ts.net:5000
 
       - name: Checkout the repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      # - name: Get ENV var names
-      #   run: printenv | cut -d'=' -f1
-
       - name: Check Flake
         run: nix flake check --show-trace
+
+      - name: Setup SSH For Pushing to Binary Cache
+        run: |
+          # Set up push key with ssh-agent
+          echo "${{ secrets.BINARY_CACHE_PUSH_SSH_KEY }}" | base64 -d > ./.id_ed25519
+          chmod 600 ./.id_ed25519
+          eval $(ssh-agent -a $SSH_AUTH_SOCK)
+          ssh-add ./.id_ed25519
+          # Add Binary Cache as known host
+          mkdir -p ~/.ssh
+          echo "s0.koi-bebop.ts.net ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAwiXcUFtAvZCayhu4+AIcF+Ktrdgv9ee/mXSIhJbp4q" | tee -a ~/.ssh/known_hosts
+
+      - name: Copy all built derivations to remote cache
+        run: nix copy --to ssh://cache-push@s0.koi-bebop.ts.net /nix/store/*

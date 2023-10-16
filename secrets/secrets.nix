@@ -22,6 +22,8 @@ with roles;
   # nix binary cache
   # public key: s0.koi-bebop.ts.net:OjbzD86YjyJZpCp9RWaQKANaflcpKhtzBMNP8I2aPUU=
   "binary-cache-private-key.age".publicKeys = binary-cache;
+  # public key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINpUZFFL9BpBVqeeU63sFPhR9ewuhEZerTCDIGW1NPSB
+  "binary-cache-push-sshkey.age".publicKeys = nobody; # this value is directly given to gitea
 
   # vpn
   "iodine.age".publicKeys = iodine;
