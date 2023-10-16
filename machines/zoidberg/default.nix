@@ -32,6 +32,7 @@
   hardware.enableRedistributableFirmware = true;
   hardware.enableAllFirmware = true;
 
+  # ROCm
   hardware.opengl.extraPackages = with pkgs; [
     rocm-opencl-icd
     rocm-opencl-runtime
@@ -40,6 +41,7 @@
     "L+    /opt/rocm/hip   -    -    -     -    ${pkgs.hip}"
   ];
 
+  # System wide barrier instance
   systemd.services.barrier-sddm = {
     description = "Barrier mouse/keyboard share";
     requires = [ "display-manager.service" ];
@@ -60,6 +62,9 @@
     '';
   };
 
+  # Login into X11 plasma so barrier works well
+  services.xserver.displayManager.defaultSession = "Plasma (X11)";
+
   users.users.cris = {
     isNormalUser = true;
     hashedPassword = "$y$j9T$LMGwHVauFWAcAyWSSmcuS/$BQpDyjDHZZbvj54.ijvNb03tr7IgX9wcjYCuCxjSqf6";
@@ -73,7 +78,20 @@
   # Dr. John A. Zoidberg
   users.users.john = {
     isNormalUser = true;
-    hashedPassword = "";
+    inherit (config.users.users.googlebot) hashedPassword packages;
     uid = 1002;
   };
+
+  # Auto login into Plasma in john zoidberg account
+  # services.xserver.displayManager.sddm.settings = {
+  #   Autologin = {
+  #     Session = "Plasma (X11)";
+  #     User = "john";
+  #   };
+  # };
+
+  environment.systemPackages = with pkgs; [
+    jellyfin-media-player
+    config.services.xserver.desktopManager.kodi.package
+  ];
 }
