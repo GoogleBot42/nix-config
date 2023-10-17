@@ -39,12 +39,6 @@
       fsType = "zfs";
       options = [ "zfsutil" "X-mount.mkdir" ];
     };
-  fileSystems."/home" =
-    {
-      device = "rpool/nixos/home";
-      fsType = "zfs";
-      options = [ "zfsutil" "X-mount.mkdir" ];
-    };
   fileSystems."/var/lib" =
     {
       device = "rpool/nixos/var/lib";
@@ -54,13 +48,6 @@
   fileSystems."/var/log" =
     {
       device = "rpool/nixos/var/log";
-      fsType = "zfs";
-      options = [ "zfsutil" "X-mount.mkdir" ];
-    };
-
-  fileSystems."/data" =
-    {
-      device = "rpool/nixos/data";
       fsType = "zfs";
       options = [ "zfsutil" "X-mount.mkdir" ];
     };
