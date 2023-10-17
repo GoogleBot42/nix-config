@@ -59,6 +59,7 @@
   swapDevices = [ ];
 
   networking.interfaces.eth0.useDHCP = true;
+  networking.interfaces.eth1.useDHCP = true;
 
   powerManagement.cpuFreqGovernor = "powersave";
 }
