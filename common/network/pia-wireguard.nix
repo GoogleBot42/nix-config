@@ -11,6 +11,7 @@
 # TODO implement this module such that the wireguard VPN doesn't have to live in a container
 # TODO don't add forward rules if the PIA port is the same as cfg.forwardedPort
 # TODO verify signatures of PIA responses
+# TODO `RuntimeMaxSec = "30d";` for pia-vpn-wireguard-init isn't allowed per the systemd logs. Find alternative.
 
 with builtins;
 with lib;
@@ -143,14 +144,14 @@ in
     systemd.services.pia-vpn-wireguard-init = {
       description = "Creates PIA VPN Wireguard Interface";
 
-      requires = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
       after = [ "network.target" "network-online.target" ];
       before = [ containerServiceName ];
       requiredBy = [ containerServiceName ];
       partOf = [ containerServiceName ];
       wantedBy = [ "multi-user.target" ];
 
-      path = with pkgs; [ wireguard-tools jq curl iproute ];
+      path = with pkgs; [ wireguard-tools jq curl iproute iputils ];
 
       serviceConfig = {
         Type = "oneshot";
@@ -162,6 +163,11 @@ in
       };
 
       script = ''
+        echo Waiting for internet...
+        while ! ping -c 1 -W 1 1.1.1.1; do
+            sleep 1
+        done
+
         # Prepare to connect by generating wg secrets and auth'ing with PIA since the container
         # cannot do without internet to start with. NAT'ing the host's internet would address this
         # issue but is not ideal because then leaking network outside of the VPN is more likely.
@@ -214,7 +220,7 @@ in
     vpn-container.config.systemd.services.pia-vpn-wireguard = {
       description = "Initializes the PIA VPN WireGuard Tunnel";
 
-      requires = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
       after = [ "network.target" "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
 
