@@ -4,45 +4,21 @@ on: [push]
 
 env:
   DEBIAN_FRONTEND: noninteractive
-  SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+  PATH: /run/current-system/sw/bin/
 
 jobs:
   check-flake:
-    runs-on: ubuntu-latest
+    runs-on: nixos
     steps:
-      - name: Install Nix
-        uses: https://github.com/cachix/install-nix-action@v23
-        with:
-          github_access_token: ${{ secrets.__GITHUB_TOKEN }}
-          extra_nix_config: |
-            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= s0.koi-bebop.ts.net:OjbzD86YjyJZpCp9RWaQKANaflcpKhtzBMNP8I2aPUU=
-            substituters = https://cache.nixos.org/ http://s0.koi-bebop.ts.net:5000
-
       - name: Checkout the repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
+      - run: |
+          pwd
+          ls -lah .
+          whoami
+
       - name: Check Flake
-        run: |
-          # Can only build x84_64 for now, so pick out those specifically
-          # nix flake check --show-trace
-
-          nix build .#nixosConfigurations."ray".config.system.build.toplevel
-          nix build .#nixosConfigurations."s0".config.system.build.toplevel
-          nix build .#nixosConfigurations."ponyo".config.system.build.toplevel
-          nix build .#nixosConfigurations."zoidberg".config.system.build.toplevel
-
-      - name: Setup SSH For Pushing to Binary Cache
-        run: |
-          # Set up push key with ssh-agent
-          echo "${{ secrets.BINARY_CACHE_PUSH_SSH_KEY }}" | base64 -d > ./.id_ed25519
-          chmod 600 ./.id_ed25519
-          eval $(ssh-agent -a $SSH_AUTH_SOCK)
-          ssh-add ./.id_ed25519
-          # Add Binary Cache as known host
-          mkdir -p ~/.ssh
-          echo "s0.koi-bebop.ts.net ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAwiXcUFtAvZCayhu4+AIcF+Ktrdgv9ee/mXSIhJbp4q" | tee -a ~/.ssh/known_hosts
-
-      - name: Copy all built derivations to remote cache
-        run: nix copy --to ssh://cache-push@s0.koi-bebop.ts.net /nix/store/*
+        run: nix flake check --show-trace

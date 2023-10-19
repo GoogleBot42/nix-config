@@ -18,5 +18,6 @@
     ./nextcloud.nix
     ./iodine.nix
     ./searx.nix
+    ./gitea-actions-runner.nix
   ];
 }

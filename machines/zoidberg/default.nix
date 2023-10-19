@@ -63,7 +63,7 @@
   };
 
   # Login into X11 plasma so barrier works well
-  services.xserver.displayManager.defaultSession = "Plasma (X11)";
+  services.xserver.displayManager.defaultSession = "plasma";
 
   users.users.cris = {
     isNormalUser = true;
@@ -85,7 +85,7 @@
   # Auto login into Plasma in john zoidberg account
   # services.xserver.displayManager.sddm.settings = {
   #   Autologin = {
-  #     Session = "Plasma (X11)";
+  #     Session = "plasma";
   #     User = "john";
   #   };
   # };
