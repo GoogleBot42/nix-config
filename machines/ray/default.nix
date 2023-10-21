@@ -47,7 +47,8 @@
 
   services.spotifyd.enable = true;
 
-  virtualisation.docker.enable = true;
+  virtualisation.podman.enable = true;
+  virtualisation.podman.dockerCompat = true;
 
   virtualisation.appvm.enable = true;
   virtualisation.appvm.user = "googlebot";
