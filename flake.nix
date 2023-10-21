@@ -87,6 +87,7 @@
 
               specialArgs = {
                 inherit allModules;
+                lib = self.lib;
               };
             };
         in
@@ -130,5 +131,7 @@
           machines;
 
       checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) inputs.deploy-rs.lib;
+
+      lib = nixpkgs.lib.extend (final: prev: import ./lib { lib = nixpkgs.lib; });
     };
 }
