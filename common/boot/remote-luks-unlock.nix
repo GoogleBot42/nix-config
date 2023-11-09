@@ -1,5 +1,7 @@
 { config, pkgs, lib, ... }:
 
+# TODO: use tailscale instead of tor https://gist.github.com/antifuchs/e30d58a64988907f282c82231dde2cbc
+
 let
   cfg = config.remoteLuksUnlock;
 in
