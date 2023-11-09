@@ -83,15 +83,17 @@
   };
 
   # Auto login into Plasma in john zoidberg account
-  # services.xserver.displayManager.sddm.settings = {
-  #   Autologin = {
-  #     Session = "plasma";
-  #     User = "john";
-  #   };
-  # };
+  services.xserver.displayManager.sddm.settings = {
+    Autologin = {
+      Session = "plasma";
+      User = "john";
+    };
+  };
 
   environment.systemPackages = with pkgs; [
     jellyfin-media-player
     config.services.xserver.desktopManager.kodi.package
+    spotify
+    retroarchFull
   ];
 }
