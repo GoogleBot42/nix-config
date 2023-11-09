@@ -19,5 +19,6 @@
     ./iodine.nix
     ./searx.nix
     ./gitea-actions-runner.nix
+    ./dashy.nix
   ];
 }

@@ -1,0 +1,249 @@
+appConfig:
+  theme: vaporware
+  customColors:
+    material-dark-original:
+      primary: '#f36558'
+      background: '#39434C'
+      background-darker: '#eb615c'
+      material-light: '#f36558'
+      item-text-color: '#ff948a'
+      curve-factor: 5px
+  enableErrorReporting: false
+  layout: auto
+  iconSize: large
+  language: en
+  startingView: default
+  defaultOpeningMethod: sametab
+  statusCheck: true
+  statusCheckInterval: 20
+  faviconApi: faviconkit
+  routingMode: history
+  enableMultiTasking: false
+  webSearch:
+    disableWebSearch: false
+    searchEngine: duckduckgo
+    openingMethod: sametab
+    searchBangs: {}
+  enableFontAwesome: true
+  cssThemes: []
+  externalStyleSheet: []
+  hideComponents:
+    hideHeading: false
+    hideNav: false
+    hideSearch: false
+    hideSettings: false
+    hideFooter: false
+    hideSplashScreen: false
+  auth:
+    enableGuestAccess: false
+    users: []
+    enableKeycloak: false
+    keycloak: {}
+  allowConfigEdit: true
+  enableServiceWorker: false
+  disableContextMenu: false
+  disableUpdateChecks: false
+  disableSmartSort: false
+pageInfo:
+  title: s0
+  description: s0
+sections:
+  - name: Media & Entertainment
+    icon: fas fa-photo-video
+    displayData:
+      sortBy: most-used
+      cols: 1
+      rows: 1
+      collapsed: false
+      hideForGuests: false
+    items:
+      - &ref_0
+        title: Jellyfin
+        icon: hl-jellyfin
+        url: http://s0:8097
+        target: sametab
+        statusCheck: true
+        statusCheckUrl: http://jellyfin.s0
+        id: 0_1956_jellyfin
+      - &ref_1
+        title: Sonarr
+        description: Manage TV
+        icon: hl-sonarr
+        url: http://s0:8989
+        target: sametab
+        statusCheck: true
+        statusCheckUrl: http://sonarr.s0
+        id: 1_1956_sonarr
+      - &ref_2
+        title: Radarr
+        description: Manage Movies
+        icon: hl-radarr
+        url: http://s0:7878
+        target: sametab
+        statusCheck: true
+        statusCheckUrl: http://radarr.s0
+        id: 2_1956_radarr
+      - &ref_3
+        title: Lidarr
+        description: Manage Music
+        icon: hl-lidarr
+        url: http://s0:8686
+        target: sametab
+        statusCheck: true
+        statusCheckUrl: http://lidarr.s0
+        id: 3_1956_lidarr
+      - &ref_4
+        title: Prowlarr
+        description: Indexers
+        icon: hl-prowlarr
+        url: http://prowlarr.s0
+        target: sametab
+        statusCheck: true
+        statusCheckUrl: http://prowlarr.s0
+        id: 4_1956_prowlarr
+      - &ref_5
+        title: Bazarr
+        description: Subtitles
+        icon: hl-bazarr
+        url: http://s0:6767
+        target: sametab
+        statusCheck: true
+        statusCheckUrl: http://bazarr.s0
+        id: 5_1956_bazarr
+      - &ref_6
+        title: Navidrome
+        description: Play Music
+        icon: hl-navidrome
+        url: http://s0:4534
+        target: sametab
+        statusCheck: true
+        statusCheckUrl: http://music.s0
+        id: 6_1956_navidrome
+      - &ref_7
+        title: Transmission
+        description: Torrenting
+        icon: hl-transmission
+        url: http://s0:9091
+        target: sametab
+        statusCheck: true
+        statusCheckUrl: http://transmission.s0
+        id: 7_1956_transmission
+    filteredItems:
+      - *ref_0
+      - *ref_1
+      - *ref_2
+      - *ref_3
+      - *ref_4
+      - *ref_5
+      - *ref_6
+      - *ref_7
+  - name: Network
+    icon: fas fa-network-wired
+    items:
+      - &ref_8
+        title: Gateway
+        description: openwrt
+        icon: hl-openwrt
+        url: http://openwrt.lan/
+        target: sametab
+        statusCheck: true
+        id: 0_746_gateway
+      - &ref_9
+        title: Wireless
+        description: openwrt (ish)
+        icon: hl-openwrt
+        url: http://PacketProvocateur.lan
+        target: sametab
+        statusCheck: true
+        id: 1_746_wireless
+    filteredItems:
+      - *ref_8
+      - *ref_9
+    displayData:
+      sortBy: default
+      rows: 1
+      cols: 1
+      collapsed: false
+      hideForGuests: false
+  - name: Services
+    icon: fas fa-monitor-heart-rate
+    items:
+      - &ref_10
+        title: Matrix
+        description: ''
+        icon: hl-matrix
+        url: https://chat.neet.space
+        target: sametab
+        statusCheck: true
+        id: 0_836_matrix
+      - &ref_11
+        title: Radio
+        description: Radio service
+        icon: generative
+        url: https://radio.runyan.org
+        target: sametab
+        statusCheck: true
+        id: 1_836_radio
+      - &ref_12
+        title: Mumble
+        description: voice.neet.space
+        icon: hl-mumble
+        url: https://voice.neet.space
+        target: sametab
+        statusCheck: false
+        id: 2_836_mumble
+      - &ref_13
+        title: IRC
+        description: irc.neet.dev
+        icon: hl-thelounge
+        url: https://irc.neet.dev
+        target: sametab
+        statusCheck: true
+        id: 3_836_irc
+      - &ref_14
+        title: Git
+        description: git.neet.dev
+        icon: hl-gitea
+        url: https://git.neet.dev
+        target: sametab
+        statusCheck: true
+        id: 4_836_git
+      - &ref_15
+        title: Nextcloud
+        description: neet.cloud
+        icon: hl-nextcloud
+        url: https://neet.cloud
+        target: sametab
+        statusCheck: true
+        id: 5_836_nextcloud
+      - &ref_16
+        title: Roundcube
+        description: mail.neet.dev
+        icon: hl-roundcube
+        url: https://mail.neet.dev
+        target: sametab
+        statusCheck: true
+        id: 6_836_roundcube
+      - &ref_17
+        title: Jitsi Meet
+        description: meet.neet.space
+        icon: hl-jitsimeet
+        url: https://meet.neet.space
+        target: sametab
+        statusCheck: true
+        id: 7_836_jitsimeet
+    filteredItems:
+      - *ref_10
+      - *ref_11
+      - *ref_12
+      - *ref_13
+      - *ref_14
+      - *ref_15
+      - *ref_16
+      - *ref_17
+    displayData:
+      sortBy: default
+      rows: 1
+      cols: 1
+      collapsed: false
+      hideForGuests: false

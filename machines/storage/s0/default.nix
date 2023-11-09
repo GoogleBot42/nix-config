@@ -39,9 +39,6 @@
   # samba
   services.samba.enable = true;
 
-  # disable suspend on lid close
-  services.logind.lidSwitch = "ignore";
-
   # navidrome
   services.navidrome = {
     enable = true;
@@ -51,7 +48,6 @@
       MusicFolder = "/data/samba/Public/Media/Music";
     };
   };
-  networking.firewall.allowedTCPPorts = [ config.services.navidrome.settings.Port ];
 
   # allow access to transmisson data
   users.users.googlebot.extraGroups = [ "transmission" ];
@@ -163,22 +159,64 @@
 
   # nginx
   services.nginx.enable = true;
-  services.nginx.virtualHosts."bazarr.s0".locations."/".proxyPass = "http://vpn.containers:6767";
-  services.nginx.virtualHosts."radarr.s0".locations."/".proxyPass = "http://vpn.containers:7878";
-  services.nginx.virtualHosts."lidarr.s0".locations."/".proxyPass = "http://vpn.containers:8686";
-  services.nginx.virtualHosts."sonarr.s0".locations."/".proxyPass = "http://vpn.containers:8989";
-  services.nginx.virtualHosts."prowlarr.s0".locations."/".proxyPass = "http://vpn.containers:9696";
-  services.nginx.virtualHosts."music.s0".locations."/".proxyPass = "http://localhost:4533";
-  services.nginx.virtualHosts."jellyfin.s0".locations."/" = {
-    proxyPass = "http://localhost:8096";
-    proxyWebsockets = true;
+  services.nginx.virtualHosts."bazarr.s0" = {
+    listen = [{ addr = "0.0.0.0"; port = 6767; } { addr = "0.0.0.0"; port = 80; }];
+    locations."/".proxyPass = "http://vpn.containers:6767";
+  };
+  services.nginx.virtualHosts."radarr.s0" = {
+    listen = [{ addr = "0.0.0.0"; port = 7878; } { addr = "0.0.0.0"; port = 80; }];
+    locations."/".proxyPass = "http://vpn.containers:7878";
+  };
+  services.nginx.virtualHosts."lidarr.s0" = {
+    listen = [{ addr = "0.0.0.0"; port = 8686; } { addr = "0.0.0.0"; port = 80; }];
+    locations."/".proxyPass = "http://vpn.containers:8686";
+  };
+  services.nginx.virtualHosts."sonarr.s0" = {
+    listen = [{ addr = "0.0.0.0"; port = 8989; } { addr = "0.0.0.0"; port = 80; }];
+    locations."/".proxyPass = "http://vpn.containers:8989";
+  };
+  services.nginx.virtualHosts."prowlarr.s0" = {
+    listen = [{ addr = "0.0.0.0"; port = 9696; } { addr = "0.0.0.0"; port = 80; }];
+    locations."/".proxyPass = "http://vpn.containers:9696";
+  };
+  services.nginx.virtualHosts."music.s0" = {
+    listen = [{ addr = "0.0.0.0"; port = 4534; } { addr = "0.0.0.0"; port = 80; }];
+    locations."/".proxyPass = "http://localhost:4533";
+  };
+  services.nginx.virtualHosts."jellyfin.s0" = {
+    listen = [{ addr = "0.0.0.0"; port = 8097; } { addr = "0.0.0.0"; port = 80; }];
+    locations."/" = {
+      proxyPass = "http://localhost:8096";
+      proxyWebsockets = true;
+    };
   };
   services.nginx.virtualHosts."jellyfin.neet.cloud".locations."/" = {
     proxyPass = "http://localhost:8096";
     proxyWebsockets = true;
   };
-  services.nginx.virtualHosts."transmission.s0".locations."/" = {
-    proxyPass = "http://vpn.containers:9091";
-    proxyWebsockets = true;
+  services.nginx.virtualHosts."transmission.s0" = {
+    listen = [{ addr = "0.0.0.0"; port = 9091; } { addr = "0.0.0.0"; port = 80; }];
+    locations."/" = {
+      proxyPass = "http://vpn.containers:9091";
+      proxyWebsockets = true;
+    };
+  };
+
+  networking.firewall.allowedTCPPorts = [
+    6767
+    7878
+    8686
+    8989
+    9696
+    4534
+    8097
+    9091
+  ];
+
+  virtualisation.oci-containers.backend = "podman";
+  virtualisation.podman.dockerSocket.enable = true; # TODO needed?
+  services.dashy = {
+    enable = true;
+    configFile = ./dashy.yaml;
   };
 }
