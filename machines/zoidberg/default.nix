@@ -55,8 +55,8 @@
     path = with pkgs; [ barrier doas ];
     script = ''
       # Wait for file to show up. "display-manager.service" finishes a bit too soon
-      while ! [ -e /run/sddm/xauth_* ]; do sleep 1; done;
-      export XAUTHORITY=$(ls /run/sddm/xauth_*)
+      while ! [ -e /run/sddm/* ]; do sleep 1; done;
+      export XAUTHORITY=$(ls /run/sddm/*)
       # Disable crypto is fine because tailscale is E2E encrypting better than barrier could anyway
       barrierc -f --disable-crypto --name zoidberg ray.koi-bebop.ts.net
     '';
