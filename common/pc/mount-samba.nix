@@ -13,6 +13,8 @@ let
   auth_opts = "sec=ntlmv2i,credentials=/run/agenix/smb-secrets";
   version_opts = "vers=3.1.1";
 
+  public_user_opts = "gid=${toString config.users.groups.users.gid}";
+
   opts = "${systemd_opts},${network_opts},${user_opts},${version_opts},${auth_opts}";
 in
 {
@@ -24,7 +26,7 @@ in
     fileSystems."/mnt/public" = {
       device = "//s0.koi-bebop.ts.net/public";
       fsType = "cifs";
-      options = [ opts ];
+      options = [ "${opts},${public_user_opts}" ];
     };
 
     fileSystems."/mnt/private" = {
