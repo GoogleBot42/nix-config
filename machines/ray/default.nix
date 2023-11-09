@@ -40,7 +40,7 @@
   programs.dconf.enable = true;
   virtualisation.spiceUSBRedirection.enable = true;
   environment.systemPackages = with pkgs; [ virt-manager ];
-  users.users.googlebot.extraGroups = [ "libvirtd" ];
+  users.users.googlebot.extraGroups = [ "libvirtd" "adbusers" ];
 
   # allow building ARM derivations
   boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
@@ -62,4 +62,6 @@
     # barrier
     24800
   ];
+
+  programs.adb.enable = true;
 }
