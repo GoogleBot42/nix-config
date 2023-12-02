@@ -39,8 +39,8 @@ with roles;
   "wolframalpha.age".publicKeys = dailybot;
 
   # hostapd
-  "hostapd-pw-experimental-tower.age".publicKeys = wireless;
-  "hostapd-pw-CXNK00BF9176.age".publicKeys = wireless;
+  "hostapd-pw-experimental-tower.age".publicKeys = nobody;
+  "hostapd-pw-CXNK00BF9176.age".publicKeys = nobody;
 
   # backups
   "backblaze-s3-backups.age".publicKeys = personal ++ server;
