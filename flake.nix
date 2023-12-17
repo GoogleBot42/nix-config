@@ -51,8 +51,11 @@
             agenix.nixosModules.default
             dailybuild_modules.nixosModule
             nix-index-database.nixosModules.nix-index
+            self.nixosModules.kernel-modules
             ({ lib, ... }: {
               config = {
+                nixpkgs.overlays = [ self.overlays.default ];
+
                 environment.systemPackages = [
                   agenix.packages.${system}.agenix
                 ];
@@ -115,6 +118,9 @@
           "aarch64-linux"."kexec" = mkKexec "aarch64-linux";
           "aarch64-linux"."iso" = mkIso "aarch64-linux";
         };
+
+      overlays.default = import ./overlays;
+      nixosModules.kernel-modules = import ./overlays/kernel-modules;
 
       deploy.nodes =
         let

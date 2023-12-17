@@ -3,6 +3,7 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ./home-automation.nix
   ];
 
   networking.hostName = "s0";
