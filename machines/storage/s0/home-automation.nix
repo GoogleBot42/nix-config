@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   networking.firewall.allowedTCPPorts = [
@@ -78,6 +78,7 @@
     address = "0.0.0.0";
     openFirewall = true;
   };
+  # TODO remove after upgrading nixos version
   systemd.services.esphome.serviceConfig.ProcSubset = lib.mkForce "all";
   systemd.services.esphome.serviceConfig.ProtectHostname = lib.mkForce false;
   systemd.services.esphome.serviceConfig.ProtectKernelLogs = lib.mkForce false;
