@@ -32,6 +32,7 @@ with roles;
   # cloud
   "nextcloud-pw.age".publicKeys = nextcloud;
   "smb-secrets.age".publicKeys = personal ++ media-center;
+  "oauth2-proxy-env.age".publicKeys = server;
 
   # services
   "searx.age".publicKeys = nobody;

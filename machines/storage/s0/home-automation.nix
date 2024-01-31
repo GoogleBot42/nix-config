@@ -1,14 +1,20 @@
 { config, lib, pkgs, ... }:
 
+let
+  frigateHostname = "frigate.s0";
+  frigatePort = 61617;
+in
 {
   networking.firewall.allowedTCPPorts = [
     # 1883 # mqtt
     55834 # mqtt zigbee frontend
+    frigatePort
+    4180 # oauth proxy
   ];
 
   services.frigate = {
     enable = true;
-    hostname = "frigate.s0";
+    hostname = frigateHostname;
     settings = {
       mqtt = {
         enabled = true;
@@ -73,6 +79,11 @@
   # Coral PCIe driver
   kernel.enableGasketKernelModule = true;
 
+  # Allow accessing frigate UI on a specific port in addition to by hostname
+  services.nginx.virtualHosts.${frigateHostname} = {
+    listen = [{ addr = "0.0.0.0"; port = frigatePort; } { addr = "0.0.0.0"; port = 80; }];
+  };
+
   services.esphome = {
     enable = true;
     address = "0.0.0.0";
@@ -133,4 +144,42 @@
       default_config = { };
     };
   };
+
+  services.oauth2_proxy =
+    let
+      nextcloudServer = "https://neet.cloud/";
+    in
+    {
+      enable = true;
+
+      httpAddress = "http://0.0.0.0:4180";
+
+      nginx.virtualHosts = [
+        frigateHostname
+      ];
+
+      email.domains = [ "*" ];
+
+      cookie.secure = false;
+
+      provider = "nextcloud";
+
+      # redirectURL = "http://s0:4180/oauth2/callback"; # todo forward with nginx?
+      clientID = "4FfhEB2DNzUh6wWhXTjqQQKu3Ibm6TeYpS8TqcHe55PJC1DorE7vBZBELMKDjJ0X";
+      keyFile = "/run/agenix/oauth2-proxy-env";
+
+      loginURL = "${nextcloudServer}/index.php/apps/oauth2/authorize";
+      redeemURL = "${nextcloudServer}/index.php/apps/oauth2/api/v1/token";
+      validateURL = "${nextcloudServer}/ocs/v2.php/cloud/user?format=json";
+
+      # todo --cookie-refresh
+
+      extraConfig = {
+        # cookie-csrf-per-request = true;
+        # cookie-csrf-expire = "5m";
+        # user-id-claim = "preferred_username";
+      };
+    };
+
+  age.secrets.oauth2-proxy-env.file = ../../../secrets/oauth2-proxy-env.age;
 }
