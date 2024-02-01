@@ -72,9 +72,6 @@ in
       config = {
         imports = allModules ++ [ cfg.config ];
 
-        # speeds up evaluation
-        nixpkgs.pkgs = pkgs;
-
         # networking.firewall.enable = mkForce false;
         networking.firewall.trustedInterfaces = [
           # completely trust internal interface to host

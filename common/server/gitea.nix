@@ -12,12 +12,14 @@ in
   };
   config = lib.mkIf cfg.enable {
     services.gitea = {
-      domain = cfg.hostname;
-      rootUrl = "https://${cfg.hostname}/";
       appName = cfg.hostname;
       # lfs.enable = true;
       # dump.enable = true;
       settings = {
+        server = {
+          ROOT_URL = "https://${cfg.hostname}/";
+          DOMAIN = cfg.hostname;
+        };
         other = {
           SHOW_FOOTER_VERSION = false;
         };

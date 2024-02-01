@@ -96,7 +96,7 @@
     };
   };
   # pin postgresql for matrix (will need to migrate eventually)
-  services.postgresql.package = pkgs.postgresql_11;
+  services.postgresql.package = pkgs.postgresql_15;
 
   # iodine DNS-based vpn
   services.iodine.server.enable = true;
