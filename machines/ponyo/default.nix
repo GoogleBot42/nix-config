@@ -63,17 +63,32 @@
     };
   };
   pia.wireguard.badPortForwardPorts = [ ];
-  services.nginx.virtualHosts."radio.runyan.org" = {
-    enableACME = true;
-    forceSSL = true;
-    locations = {
-      "/stream.mp3" = {
-        proxyPass = "http://vpn.containers:8001/stream.mp3";
-        extraConfig = ''
-          add_header Access-Control-Allow-Origin *;
-        '';
+  services.nginx.virtualHosts = {
+    "radio.runyan.org" = {
+      enableACME = true;
+      forceSSL = true;
+      locations = {
+        "/stream.mp3" = {
+          proxyPass = "http://vpn.containers:8001/stream.mp3";
+          extraConfig = ''
+            add_header Access-Control-Allow-Origin *;
+          '';
+        };
+        "/".root = config.inputs.radio-web;
       };
-      "/".root = config.inputs.radio-web;
+    };
+    "radio.neet.space" = {
+      enableACME = true;
+      forceSSL = true;
+      locations = {
+        "/stream.mp3" = {
+          proxyPass = "http://vpn.containers:8001/stream.mp3";
+          extraConfig = ''
+            add_header Access-Control-Allow-Origin *;
+          '';
+        };
+        "/".root = config.inputs.radio-web;
+      };
     };
   };
 
