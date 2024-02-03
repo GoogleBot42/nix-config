@@ -26,7 +26,13 @@
   networking.firewall.allowPing = true;
 
   time.timeZone = "America/Denver";
-  i18n.defaultLocale = "en_US.UTF-8";
+  i18n = {
+    defaultLocale = "en_US.UTF-8";
+    extraLocaleSettings = {
+      LANGUAGE = "en_US.UTF-8";
+      LC_ALL = "en_US.UTF-8";
+    };
+  };
 
   services.openssh = {
     enable = true;
