@@ -116,7 +116,7 @@
         # "speed-limit-up-enabled" = true;
 
         /* seeding limit */
-        "ratio-limit" = 2;
+        "ratio-limit" = 3;
         "ratio-limit-enabled" = true;
 
         "download-queue-enabled" = true;
