@@ -123,6 +123,12 @@
         "download-queue-size" = 20; # gotta go fast
       };
     };
+    # https://github.com/NixOS/nixpkgs/issues/258793
+    systemd.services.transmission.serviceConfig = {
+      RootDirectoryStartOnly = lib.mkForce (lib.mkForce false);
+      RootDirectory = lib.mkForce (lib.mkForce "");
+    };
+
     users.groups.public_data.gid = 994;
     users.users.public_data = {
       isSystemUser = true;

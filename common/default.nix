@@ -18,7 +18,7 @@
 
   nix.flakes.enable = true;
 
-  system.stateVersion = "21.11";
+  system.stateVersion = "23.11";
 
   networking.useDHCP = false;
 
