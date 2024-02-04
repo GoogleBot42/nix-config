@@ -31,6 +31,9 @@ in
         };
         session = {
           COOKIE_SECURE = true;
+          PROVIDER = "db";
+          SESSION_LIFE_TIME = 259200; # 3 days
+          GC_INTERVAL_TIME = 259200; # 3 days
         };
         mailer = {
           ENABLED = true;
