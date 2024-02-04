@@ -13,7 +13,7 @@ in
   config = lib.mkIf cfg.enable {
     services.gitea = {
       appName = cfg.hostname;
-      # lfs.enable = true;
+      lfs.enable = true;
       # dump.enable = true;
       settings = {
         server = {
@@ -44,6 +44,9 @@ in
         actions = {
           ENABLED = true;
         };
+        indexer = {
+          REPO_INDEXER_ENABLED = true;
+        };
       };
       mailerPasswordFile = "/run/agenix/robots-email-pw";
     };
@@ -62,7 +65,7 @@ in
       enableACME = true;
       forceSSL = true;
       locations."/" = {
-        proxyPass = "http://localhost:${toString cfg.httpPort}";
+        proxyPass = "http://localhost:${toString cfg.settings.server.HTTP_PORT}";
       };
     };
   };
