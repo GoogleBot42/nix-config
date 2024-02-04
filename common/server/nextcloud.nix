@@ -8,7 +8,7 @@ in
   config = lib.mkIf cfg.enable {
     services.nextcloud = {
       https = true;
-      package = pkgs.nextcloud26;
+      package = pkgs.nextcloud28;
       hostName = "neet.cloud";
       config.dbtype = "sqlite";
       config.adminuser = "jeremy";
