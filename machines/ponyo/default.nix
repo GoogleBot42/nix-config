@@ -5,7 +5,7 @@
     ./hardware-configuration.nix
   ];
 
-  system.autoUpgrade.enable = true;
+  # system.autoUpgrade.enable = true;
 
   # p2p mesh network
   services.tailscale.exitNode = true;
