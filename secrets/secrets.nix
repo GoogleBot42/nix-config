@@ -49,4 +49,7 @@ with roles;
 
   # gitea actions runner
   "gitea-actions-runner-token.age".publicKeys = gitea-actions-runner;
+
+  # Librechat
+  "librechat-env-file.age".publicKeys = librechat;
 }

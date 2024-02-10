@@ -15,6 +15,7 @@
     "nextcloud"
     "dailybot"
     "gitea"
+    "librechat"
   ];
 
   hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMBBlTAIp38RhErU1wNNV5MBeb+WGH0mhF/dxh5RsAXN";

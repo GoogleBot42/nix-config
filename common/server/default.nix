@@ -20,5 +20,6 @@
     ./searx.nix
     ./gitea-actions-runner.nix
     ./dashy.nix
+    ./librechat.nix
   ];
 }
