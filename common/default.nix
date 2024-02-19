@@ -61,6 +61,7 @@
     lm_sensors
     picocom
     lf
+    gnumake
   ];
 
   nixpkgs.config.allowUnfree = true;
