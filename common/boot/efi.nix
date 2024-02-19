@@ -7,6 +7,10 @@ in
 {
   options.efi = {
     enable = mkEnableOption "enable efi boot";
+    configurationLimit = mkOption {
+      default = 20;
+      type = types.int;
+    };
   };
 
   config = mkIf cfg.enable {
@@ -19,7 +23,7 @@ in
         efiSupport = true;
         useOSProber = true;
         #       memtest86.enable = true;
-        configurationLimit = 20;
+        configurationLimit = cfg.configurationLimit;
         theme = pkgs.nixos-grub2-theme;
       };
     };

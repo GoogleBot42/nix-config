@@ -10,6 +10,10 @@ in
     device = mkOption {
       type = types.str;
     };
+    configurationLimit = mkOption {
+      default = 20;
+      type = types.int;
+    };
   };
 
   config = mkIf cfg.enable {
@@ -19,7 +23,7 @@ in
         enable = true;
         device = cfg.device;
         useOSProber = true;
-        configurationLimit = 20;
+        configurationLimit = cfg.configurationLimit;
         theme = pkgs.nixos-grub2-theme;
       };
     };

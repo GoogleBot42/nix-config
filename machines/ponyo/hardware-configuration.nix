@@ -16,6 +16,7 @@
   bios = {
     enable = true;
     device = "/dev/sda";
+    configurationLimit = 3; # Save room in /nix/store
   };
 
   remoteLuksUnlock.enable = true;
