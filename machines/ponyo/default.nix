@@ -155,4 +155,7 @@
   # librechat
   services.librechat.enable = true;
   services.librechat.host = "chat.neet.dev";
+
+  services.actual-server.enable = true;
+  services.actual-server.hostname = "actual.runyan.org";
 }
