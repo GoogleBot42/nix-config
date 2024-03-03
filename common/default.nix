@@ -62,6 +62,7 @@
     picocom
     lf
     gnumake
+    tree
   ];
 
   nixpkgs.config.allowUnfree = true;
