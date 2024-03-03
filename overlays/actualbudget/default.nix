@@ -7,16 +7,16 @@
 }:
 buildNpmPackage rec {
   pname = "actual-server";
-  version = "24.2.0";
+  version = "24.3.0";
 
   src = fetchFromGitHub {
     owner = "actualbudget";
     repo = pname;
     rev = "refs/tags/v${version}";
-    hash = "sha256-9Dx6FxWZvGAgJfYYuEgkLr5dhpe5P+bdiSQWhPVeUu8=";
+    hash = "sha256-y51Dhdn84AWR/gM4LnAzvBIBpvKwUiclnPnwzkRoJ0I=";
   };
 
-  npmDepsHash = "sha256-j9i+Z6ZlywwCgs198bt9jOwVxe1Rhh7EQVH3ZJ+YNI4=";
+  npmDepsHash = "sha256-/UM2Tz8t4hi621HtXSu0LTDIzZ9SWMqKXqKfPwkdpE8=";
 
   patches = [
     ./migrations-should-use-pkg-path.patch
