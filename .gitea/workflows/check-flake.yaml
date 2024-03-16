@@ -15,10 +15,5 @@ jobs:
         with:
           fetch-depth: 0
 
-      - run: |
-          pwd
-          ls -lah .
-          whoami
-
       - name: Check Flake
-        run: nix flake check --show-trace
+        run: nix flake check --print-build-logs --log-format raw --show-trace

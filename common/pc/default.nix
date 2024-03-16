@@ -57,7 +57,6 @@ in
 
       # For Nix IDE
       nixpkgs-fmt
-      rnix-lsp
     ];
 
     # Networking

@@ -33,9 +33,8 @@
     nix-index-database.url = "github:Mic92/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
 
-    # https://github.com/NixOS/nixpkgs/issues/286313
-    fix-nvidia-x11-latest.url = "https://github.com/NixOS/nixpkgs/pull/286084.diff";
-    fix-nvidia-x11-latest.flake = false;
+    nixpkgs-xone-fix.url = "https://github.com/NixOS/nixpkgs/pull/296470.diff";
+    nixpkgs-xone-fix.flake = false;
   };
 
   outputs = { self, nixpkgs, ... }@inputs:
@@ -83,7 +82,7 @@
                 src = nixpkgs;
                 patches = [
                   ./patches/gamepadui.patch
-                  inputs.fix-nvidia-x11-latest
+                  inputs.nixpkgs-xone-fix
                 ];
               };
               patchedNixpkgs = nixpkgs.lib.fix (self: (import "${patchedNixpkgsSrc}/flake.nix").outputs { self = nixpkgs; });
