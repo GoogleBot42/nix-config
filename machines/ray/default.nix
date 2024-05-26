@@ -5,6 +5,8 @@
     ./hardware-configuration.nix
   ];
 
+  nixpkgs.config.cudaSupport = true;
+
   # for luks onlock over tor
   services.tor.enable = true;
   services.tor.client.enable = true;
