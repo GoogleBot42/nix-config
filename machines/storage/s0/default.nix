@@ -218,6 +218,7 @@
     4534
     8097
     9091
+    8443 # unifi
   ];
 
   virtualisation.oci-containers.backend = "podman";
@@ -225,6 +226,12 @@
   services.dashy = {
     enable = true;
     configFile = ./dashy.yaml;
+  };
+
+  services.unifi = {
+    enable = true;
+    openFirewall = true;
+    unifiPackage = pkgs.unifi8;
   };
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv7l-linux" ];
