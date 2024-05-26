@@ -83,6 +83,7 @@
                 src = nixpkgs;
                 patches = [
                   ./patches/gamepadui.patch
+                  ./patches/esphome.patch
                   inputs.nixpkgs-xone-fix
                 ];
               };
