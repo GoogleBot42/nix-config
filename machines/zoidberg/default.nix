@@ -96,4 +96,8 @@
     spotify
     retroarchFull
   ];
+
+  # Command and Conquer Ports
+  networking.firewall.allowedUDPPorts = [ 4321 27900 ];
+  networking.firewall.allowedTCPPorts = [ 6667 28910 29900 29920 ];
 }
