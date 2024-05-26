@@ -3,6 +3,40 @@
 let
   frigateHostname = "frigate.s0";
   frigatePort = 61617;
+
+  mkEsp32Cam = address: {
+    ffmpeg = {
+      input_args = "";
+      inputs = [{
+        path = address;
+        roles = [ "detect" "record" ];
+      }];
+
+      output_args.record = "-f segment -pix_fmt yuv420p -segment_time 10 -segment_format mp4 -reset_timestamps 1 -strftime 1 -c:v libx264 -preset ultrafast -an ";
+    };
+    rtmp.enabled = false;
+    snapshots = {
+      enabled = true;
+      bounding_box = true;
+    };
+    record = {
+      enabled = true;
+      retain.days = 10; # Keep video for 10 days
+      events.retain = {
+        default = 30; # Keep video with detections for 30 days
+        mode = "active_objects";
+      };
+    };
+    detect = {
+      enabled = true;
+      width = 800;
+      height = 600;
+      fps = 10;
+    };
+    objects = {
+      track = [ "person" ];
+    };
+  };
 in
 {
   networking.firewall.allowedTCPPorts = [
@@ -21,40 +55,7 @@ in
         host = "localhost:1883";
       };
       cameras = {
-        dahlia-cam = {
-          ffmpeg = {
-            input_args = "";
-            inputs = [{
-              path = "http://dahlia-cam.lan:8080";
-              roles = [ "detect" "record" ];
-            }];
-
-            output_args.record = "-f segment -pix_fmt yuv420p -segment_time 10 -segment_format mp4 -reset_timestamps 1 -strftime 1 -c:v libx264 -preset ultrafast -an ";
-          };
-          rtmp.enabled = false;
-          snapshots = {
-            enabled = true;
-            bounding_box = true;
-          };
-          record = {
-            enabled = false;
-            retain.days = 0; # To not retain any recording if there is no detection of any events 
-            events.retain = {
-              default = 3; # To retain recording for 3 days of only the events that happened
-              mode = "active_objects";
-            };
-          };
-          detect = {
-            enabled = true;
-            width = 800;
-            height = 600;
-            fps = 20;
-          };
-          objects = {
-            track = [ "dog" ];
-            filters.dog.threshold = 0.4;
-          };
-        };
+        dahlia-cam = mkEsp32Cam "http://dahlia-cam.lan:8080";
       };
       # ffmpeg = {
       #   hwaccel_args = "preset-vaapi";

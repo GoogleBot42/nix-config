@@ -1,6 +1,7 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
+    nixpkgs-frigate.url = "github:NixOS/nixpkgs/5cfafa12d57374f48bcc36fda3274ada276cf69e";
 
     flake-utils.url = "github:numtide/flake-utils";
 
@@ -123,7 +124,7 @@
           "aarch64-linux"."iso" = mkIso "aarch64-linux";
         };
 
-      overlays.default = import ./overlays;
+      overlays.default = import ./overlays { inherit inputs; };
       nixosModules.kernel-modules = import ./overlays/kernel-modules;
 
       deploy.nodes =
