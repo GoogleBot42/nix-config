@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
     nixpkgs-frigate.url = "github:NixOS/nixpkgs/5cfafa12d57374f48bcc36fda3274ada276cf69e";
 
     flake-utils.url = "github:numtide/flake-utils";
@@ -8,7 +8,7 @@
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
     # mail server
-    simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver/nixos-22.05";
+    simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver/master";
     simple-nixos-mailserver.inputs.nixpkgs.follows = "nixpkgs";
 
     # agenix
@@ -35,9 +35,6 @@
     # prebuilt nix-index database
     nix-index-database.url = "github:Mic92/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
-
-    nixpkgs-xone-fix.url = "https://github.com/NixOS/nixpkgs/pull/296470.diff";
-    nixpkgs-xone-fix.flake = false;
   };
 
   outputs = { self, nixpkgs, ... }@inputs:
@@ -85,8 +82,6 @@
                 src = nixpkgs;
                 patches = [
                   ./patches/gamepadui.patch
-                  ./patches/esphome.patch
-                  inputs.nixpkgs-xone-fix
                 ];
               };
               patchedNixpkgs = nixpkgs.lib.fix (self: (import "${patchedNixpkgsSrc}/flake.nix").outputs { self = nixpkgs; });

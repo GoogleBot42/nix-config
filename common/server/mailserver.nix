@@ -63,7 +63,7 @@ in
           "cris@runyan.org"
         ];
       };
-      certificateScheme = 3; # use let's encrypt for certs
+      certificateScheme = "acme-nginx"; # use let's encrypt for certs
     };
     age.secrets.hashed-email-pw.file = ../../secrets/hashed-email-pw.age;
     age.secrets.cris-hashed-email-pw.file = ../../secrets/cris-hashed-email-pw.age;

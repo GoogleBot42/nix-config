@@ -6,7 +6,7 @@ in
 {
   imports = [
     ./kde.nix
-    ./xfce.nix
+    # ./xfce.nix
     ./yubikey.nix
     ./chromium.nix
     #    ./firefox.nix
@@ -41,7 +41,6 @@ in
       mpv
       nextcloud-client
       signal-desktop
-      minecraft
       gparted
       libreoffice-fresh
       thunderbird
@@ -70,7 +69,7 @@ in
     ];
     # Printer discovery
     services.avahi.enable = true;
-    services.avahi.nssmdns = true;
+    services.avahi.nssmdns4 = true;
 
     programs.file-roller.enable = true;
 

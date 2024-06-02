@@ -146,7 +146,8 @@ in
     };
   };
 
-  services.oauth2_proxy =
+  # TODO need services.oauth2-proxy.cookie.domain ?
+  services.oauth2-proxy =
     let
       nextcloudServer = "https://neet.cloud/";
     in
@@ -155,9 +156,10 @@ in
 
       httpAddress = "http://0.0.0.0:4180";
 
-      nginx.virtualHosts = [
-        frigateHostname
-      ];
+      nginx.domain = frigateHostname;
+      # nginx.virtualHosts = [
+      #   frigateHostname
+      # ];
 
       email.domains = [ "*" ];
 

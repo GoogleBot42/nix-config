@@ -43,7 +43,6 @@ in
     services.spotifyd.users = [ "googlebot" ];
     users.users.googlebot.packages = with pkgs; [
       spotify
-      spotify-tui
     ];
 
     users.groups.spotifyd = {

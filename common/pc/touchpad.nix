@@ -9,7 +9,7 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    services.xserver.libinput.enable = true;
-    services.xserver.libinput.touchpad.naturalScrolling = true;
+    services.libinput.enable = true;
+    services.libinput.touchpad.naturalScrolling = true;
   };
 }

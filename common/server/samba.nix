@@ -97,7 +97,7 @@
     # Printer discovery
     # (is this needed?)
     services.avahi.enable = true;
-    services.avahi.nssmdns = true;
+    services.avahi.nssmdns4 = true;
 
     # printer sharing
     systemd.tmpfiles.rules = [

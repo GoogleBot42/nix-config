@@ -60,11 +60,6 @@
 
   programs.adb.enable = true;
 
-  # thunderbolt
-  users.users.googlebot.packages = with pkgs; [
-    kdePackages.plasma-thunderbolt
-  ];
-
   services.fwupd.enable = true;
 
   # fingerprint reader has initially shown to be more of a nuisance than a help

@@ -16,4 +16,4 @@ jobs:
           fetch-depth: 0
 
       - name: Check Flake
-        run: nix flake check --print-build-logs --log-format raw --show-trace
+        run: nix flake check --all-systems --print-build-logs --log-format raw --show-trace

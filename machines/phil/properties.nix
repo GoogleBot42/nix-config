@@ -9,7 +9,6 @@
   systemRoles = [
     "server"
     "nix-builder"
-    "gitea-actions-runner"
   ];
 
   hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBlgRPpuUkZqe8/lHugRPm/m2vcN9psYhh5tENHZt9I2";
