@@ -14,6 +14,9 @@
   boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
 
+  # thunderbolt
+  services.hardware.bolt.enable = true;
+
   # firmware
   firmware.x86_64.enable = true;
 

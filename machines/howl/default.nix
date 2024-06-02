@@ -1,8 +1,9 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, nixos-hardware, ... }:
 
 {
   imports = [
     ./hardware-configuration.nix
+    nixos-hardware.nixosModules.framework-13-7040-amd
   ];
 
 
@@ -58,4 +59,15 @@
   ];
 
   programs.adb.enable = true;
+
+  # thunderbolt
+  users.users.googlebot.packages = with pkgs; [
+    kdePackages.plasma-thunderbolt
+  ];
+
+  services.fwupd.enable = true;
+
+  # fingerprint reader has initially shown to be more of a nuisance than a help
+  # it makes sddm log in fail most of the time and take several minutes to finish
+  services.fprintd.enable = false;
 }

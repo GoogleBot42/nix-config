@@ -5,6 +5,8 @@
 
     flake-utils.url = "github:numtide/flake-utils";
 
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
+
     # mail server
     simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver/nixos-22.05";
     simple-nixos-mailserver.inputs.nixpkgs.follows = "nixpkgs";
@@ -97,6 +99,7 @@
               specialArgs = {
                 inherit allModules;
                 lib = self.lib;
+                nixos-hardware = inputs.nixos-hardware;
               };
             };
         in
