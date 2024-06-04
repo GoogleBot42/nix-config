@@ -1,11 +1,18 @@
-{ config, lib, pkgs, modulesPath, ... }:
+{ config, lib, pkgs, modulesPath, nixos-hardware, ... }:
 
 {
-  imports =
-    [ (modulesPath + "/installer/scan/not-detected.nix")
-    ];
+  imports = [
+    (modulesPath + "/installer/scan/not-detected.nix")
+    nixos-hardware.nixosModules.framework-13-7040-amd
+  ];
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
+
+  hardware.framework.amd-7040.preventWakeOnAC = true;
+  services.fwupd.enable = true;
+  # fingerprint reader has initially shown to be more of a nuisance than a help
+  # it makes sddm log in fail most of the time and take several minutes to finish
+  services.fprintd.enable = false;
 
   # boot
   boot.loader.systemd-boot.enable = true;
@@ -27,17 +34,18 @@
     allowDiscards = true;
   };
   fileSystems."/" =
-    { device = "/dev/disk/by-uuid/95db6950-a7bc-46cf-9765-3ea675ccf014";
+    {
+      device = "/dev/disk/by-uuid/95db6950-a7bc-46cf-9765-3ea675ccf014";
       fsType = "btrfs";
     };
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/B087-2C20";
+    {
+      device = "/dev/disk/by-uuid/B087-2C20";
       fsType = "vfat";
       options = [ "fmask=0022" "dmask=0022" ];
     };
   swapDevices =
-    [ { device = "/dev/disk/by-uuid/49fbdf62-eef4-421b-aac3-c93494afd23c"; }
-    ];
+    [{ device = "/dev/disk/by-uuid/49fbdf62-eef4-421b-aac3-c93494afd23c"; }];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
   # (the default) this is the recommended approach. When using systemd-networkd it's

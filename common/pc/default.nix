@@ -6,19 +6,20 @@ in
 {
   imports = [
     ./kde.nix
-    # ./xfce.nix
+    #    ./xfce.nix
     ./yubikey.nix
     ./chromium.nix
     #    ./firefox.nix
     ./audio.nix
     #    ./torbrowser.nix
     ./pithos.nix
-    ./spotify.nix
     ./vscodium.nix
     ./discord.nix
     ./steam.nix
     ./touchpad.nix
     ./mount-samba.nix
+    ./udev.nix
+    ./virtualisation.nix
   ];
 
   options.de = {
@@ -44,8 +45,7 @@ in
       gparted
       libreoffice-fresh
       thunderbird
-      spotifyd
-      spotify-qt
+      spotify
       arduino
       yt-dlp
       jellyfin-media-player
@@ -76,5 +76,18 @@ in
     # Security
     services.gnome.gnome-keyring.enable = true;
     security.pam.services.googlebot.enableGnomeKeyring = true;
+
+    # Android dev
+    programs.adb.enable = true;
+
+    # Mount personal SMB stores
+    services.mount-samba.enable = true;
+
+    # allow building ARM derivations
+    boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+
+    # for luks onlock over tor
+    services.tor.enable = true;
+    services.tor.client.enable = true;
   };
 }

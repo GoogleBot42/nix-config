@@ -36,7 +36,6 @@ with roles;
 
   # services
   "searx.age".publicKeys = nobody;
-  "spotifyd.age".publicKeys = personal;
   "wolframalpha.age".publicKeys = dailybot;
 
   # hostapd
