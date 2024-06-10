@@ -10,7 +10,6 @@ in
     services.desktopManager.plasma6.enable = true;
 
     # kde apps
-    nixpkgs.config.firefox.enablePlasmaBrowserIntegration = true;
     users.users.googlebot.packages = with pkgs; [
       # akonadi
       # kmail
