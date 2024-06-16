@@ -7,7 +7,7 @@
     ];
 
   # boot
-  efi.enable = true;
+  boot.loader.systemd-boot.enable = true;
   boot.loader.timeout = lib.mkForce 15;
   boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "nvme" "usb_storage" "usbhid" "sd_mod" ];
   boot.initrd.kernelModules = [ "dm-snapshot" ];
@@ -35,7 +35,7 @@
     };
   fileSystems."/boot" =
     {
-      device = "/dev/disk/by-uuid/8074-B04D";
+      device = "/dev/disk/by-uuid/954B-AB3E";
       fsType = "vfat";
     };
   swapDevices =

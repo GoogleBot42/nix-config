@@ -42,25 +42,25 @@
   ];
 
   # System wide barrier instance
-  systemd.services.barrier-sddm = {
-    description = "Barrier mouse/keyboard share";
-    requires = [ "display-manager.service" ];
-    after = [ "network.target" "display-manager.service" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Restart = "always";
-      RestartSec = 10;
-      # todo use user/group
-    };
-    path = with pkgs; [ barrier doas ];
-    script = ''
-      # Wait for file to show up. "display-manager.service" finishes a bit too soon
-      while ! [ -e /run/sddm/* ]; do sleep 1; done;
-      export XAUTHORITY=$(ls /run/sddm/*)
-      # Disable crypto is fine because tailscale is E2E encrypting better than barrier could anyway
-      barrierc -f --disable-crypto --name zoidberg ray.koi-bebop.ts.net
-    '';
-  };
+  # systemd.services.barrier-sddm = {
+  #   description = "Barrier mouse/keyboard share";
+  #   requires = [ "display-manager.service" ];
+  #   after = [ "network.target" "display-manager.service" ];
+  #   wantedBy = [ "multi-user.target" ];
+  #   serviceConfig = {
+  #     Restart = "always";
+  #     RestartSec = 10;
+  #     # todo use user/group
+  #   };
+  #   path = with pkgs; [ barrier doas ];
+  #   script = ''
+  #     # Wait for file to show up. "display-manager.service" finishes a bit too soon
+  #     while ! [ -e /run/sddm/* ]; do sleep 1; done;
+  #     export XAUTHORITY=$(ls /run/sddm/*)
+  #     # Disable crypto is fine because tailscale is E2E encrypting better than barrier could anyway
+  #     barrierc -f --disable-crypto --name zoidberg ray.koi-bebop.ts.net
+  #   '';
+  # };
 
   # Login into X11 plasma so barrier works well
   services.displayManager.defaultSession = "plasma";
