@@ -1,40 +1,80 @@
 {
   inputs = {
+    # nixpkgs
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
     nixpkgs-frigate.url = "github:NixOS/nixpkgs/5cfafa12d57374f48bcc36fda3274ada276cf69e";
 
-    flake-utils.url = "github:numtide/flake-utils";
+    # Common Utils Among flake inputs
+    systems.url = "github:nix-systems/default";
+    flake-utils = {
+      url = "github:numtide/flake-utils";
+      inputs.systems.follows = "systems";
+    };
+    flake-compat = {
+      url = "github:edolstra/flake-compat";
+      flake = false;
+    };
 
+    # NixOS hardware
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
-    # mail server
-    simple-nixos-mailserver.url = "gitlab:simple-nixos-mailserver/nixos-mailserver/master";
-    simple-nixos-mailserver.inputs.nixpkgs.follows = "nixpkgs";
+    # Mail Server
+    simple-nixos-mailserver = {
+      url = "gitlab:simple-nixos-mailserver/nixos-mailserver/master";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        nixpkgs-24_05.follows = "nixpkgs";
+        flake-compat.follows = "flake-compat";
+        utils.follows = "flake-utils";
+      };
+    };
 
-    # agenix
-    agenix.url = "github:ryantm/agenix";
-    agenix.inputs.nixpkgs.follows = "nixpkgs";
+    # Agenix
+    agenix = {
+      url = "github:ryantm/agenix";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        systems.follows = "systems";
+      };
+    };
 
-    # radio
-    radio.url = "git+https://git.neet.dev/zuckerberg/radio.git?ref=main&rev=5bf607fed977d41a269942a7d1e92f3e6d4f2473";
-    radio.inputs.nixpkgs.follows = "nixpkgs";
-    radio.inputs.flake-utils.follows = "flake-utils";
-    radio-web.url = "git+https://git.neet.dev/zuckerberg/radio-web.git";
-    radio-web.flake = false;
+    # Radio
+    radio = {
+      url = "git+https://git.neet.dev/zuckerberg/radio.git?ref=main&rev=5bf607fed977d41a269942a7d1e92f3e6d4f2473";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
+    };
+    radio-web = {
+      url = "git+https://git.neet.dev/zuckerberg/radio-web.git";
+      flake = false;
+    };
 
-    # drastikbot
-    dailybuild_modules.url = "git+https://git.neet.dev/zuckerberg/dailybuild_modules.git";
-    dailybuild_modules.inputs.nixpkgs.follows = "nixpkgs";
-    dailybuild_modules.inputs.flake-utils.follows = "flake-utils";
+    # Dailybot
+    dailybuild_modules = {
+      url = "git+https://git.neet.dev/zuckerberg/dailybot.git";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
+    };
 
-    # nixos config deployment
-    deploy-rs.url = "github:serokell/deploy-rs";
-    deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
-    deploy-rs.inputs.utils.follows = "simple-nixos-mailserver/utils";
+    # NixOS deployment
+    deploy-rs = {
+      url = "github:serokell/deploy-rs";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-compat.follows = "flake-compat";
+        utils.follows = "flake-utils";
+      };
+    };
 
-    # prebuilt nix-index database
-    nix-index-database.url = "github:Mic92/nix-index-database";
-    nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
+    # Prebuilt nix-index database
+    nix-index-database = {
+      url = "github:Mic92/nix-index-database";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { self, nixpkgs, ... }@inputs:

@@ -7,7 +7,9 @@
         "nixpkgs": [
           "nixpkgs"
         ],
-        "systems": "systems"
+        "systems": [
+          "systems"
+        ]
       },
       "locked": {
         "lastModified": 1716561646,
@@ -55,11 +57,11 @@
         "rev": "1290ddd9a2ff2bf2d0f702750768312b80efcd34",
         "revCount": 19,
         "type": "git",
-        "url": "https://git.neet.dev/zuckerberg/dailybuild_modules.git"
+        "url": "https://git.neet.dev/zuckerberg/dailybot.git"
       },
       "original": {
         "type": "git",
-        "url": "https://git.neet.dev/zuckerberg/dailybuild_modules.git"
+        "url": "https://git.neet.dev/zuckerberg/dailybot.git"
       }
     },
     "darwin": {
@@ -86,21 +88,22 @@
     },
     "deploy-rs": {
       "inputs": {
-        "flake-compat": "flake-compat",
+        "flake-compat": [
+          "flake-compat"
+        ],
         "nixpkgs": [
           "nixpkgs"
         ],
         "utils": [
-          "simple-nixos-mailserver",
-          "utils"
+          "flake-utils"
         ]
       },
       "locked": {
-        "lastModified": 1715699772,
-        "narHash": "sha256-sKhqIgucN5sI/7UQgBwsonzR4fONjfMr9OcHK/vPits=",
+        "lastModified": 1718194053,
+        "narHash": "sha256-FaGrf7qwZ99ehPJCAwgvNY5sLCqQ3GDiE/6uLhxxwSY=",
         "owner": "serokell",
         "repo": "deploy-rs",
-        "rev": "b3ea6f333f9057b77efd9091119ba67089399ced",
+        "rev": "3867348fa92bc892eba5d9ddb2d7a97b9e127a8a",
         "type": "github"
       },
       "original": {
@@ -125,25 +128,11 @@
         "type": "github"
       }
     },
-    "flake-compat_2": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1696426674,
-        "narHash": "sha256-kvjfFW7WAETZlt09AgDn1MrtKzP7t90Vf7vypd3OL1U=",
-        "owner": "edolstra",
-        "repo": "flake-compat",
-        "rev": "0f9255e01c2351cc7d116c072cb317785dd33b33",
-        "type": "github"
-      },
-      "original": {
-        "owner": "edolstra",
-        "repo": "flake-compat",
-        "type": "github"
-      }
-    },
     "flake-utils": {
       "inputs": {
-        "systems": "systems_2"
+        "systems": [
+          "systems"
+        ]
       },
       "locked": {
         "lastModified": 1710146030,
@@ -294,6 +283,7 @@
         "agenix": "agenix",
         "dailybuild_modules": "dailybuild_modules",
         "deploy-rs": "deploy-rs",
+        "flake-compat": "flake-compat",
         "flake-utils": "flake-utils",
         "nix-index-database": "nix-index-database",
         "nixos-hardware": "nixos-hardware",
@@ -301,24 +291,32 @@
         "nixpkgs-frigate": "nixpkgs-frigate",
         "radio": "radio",
         "radio-web": "radio-web",
-        "simple-nixos-mailserver": "simple-nixos-mailserver"
+        "simple-nixos-mailserver": "simple-nixos-mailserver",
+        "systems": "systems"
       }
     },
     "simple-nixos-mailserver": {
       "inputs": {
         "blobs": "blobs",
-        "flake-compat": "flake-compat_2",
+        "flake-compat": [
+          "flake-compat"
+        ],
         "nixpkgs": [
           "nixpkgs"
         ],
-        "utils": "utils"
+        "nixpkgs-24_05": [
+          "nixpkgs"
+        ],
+        "utils": [
+          "flake-utils"
+        ]
       },
       "locked": {
-        "lastModified": 1714720456,
-        "narHash": "sha256-e0WFe1BHqX23ADpGBc4ZRu38Mg+GICCZCqyS6EWCbHc=",
+        "lastModified": 1718084203,
+        "narHash": "sha256-Cx1xoVfSMv1XDLgKg08CUd1EoTYWB45VmB9XIQzhmzI=",
         "owner": "simple-nixos-mailserver",
         "repo": "nixos-mailserver",
-        "rev": "41059fc548088e49e3ddb3a2b4faeb5de018e60f",
+        "rev": "29916981e7b3b5782dc5085ad18490113f8ff63b",
         "type": "gitlab"
       },
       "original": {
@@ -340,36 +338,6 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
-        "type": "github"
-      }
-    },
-    "systems_2": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
-      }
-    },
-    "utils": {
-      "locked": {
-        "lastModified": 1605370193,
-        "narHash": "sha256-YyMTf3URDL/otKdKgtoMChu4vfVL3vCMkRqpGifhUn0=",
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "rev": "5021eac20303a61fafe17224c087f5519baed54d",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
         "type": "github"
       }
     }
