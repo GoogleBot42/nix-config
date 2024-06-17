@@ -18,7 +18,7 @@ jobs:
       - run: attic -V
 
       - name: Setup Attic Cache
-        uses: https://github.com/ryanccn/attic-action@v0
+        uses: zuckerberg/attic-action@latest
         with:
           endpoint: ${{ secrets.ATTIC_ENDPOINT }}
           cache: ${{ secrets.ATTIC_CACHE }}
