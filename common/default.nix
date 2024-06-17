@@ -63,6 +63,7 @@
     lf
     gnumake
     tree
+    attic
   ];
 
   nixpkgs.config.allowUnfree = true;

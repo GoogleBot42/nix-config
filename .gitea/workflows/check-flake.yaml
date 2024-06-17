@@ -15,5 +15,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Attic Cache
+        uses: https://github.com/ryanccn/attic-action@v0
+        with:
+          endpoint: ${{ secrets.ATTIC_ENDPOINT }}
+          cache: ${{ secrets.ATTIC_CACHE }}
+          token: ${{ secrets.ATTIC_TOKEN }}
+
       - name: Check Flake
         run: nix flake check --all-systems --print-build-logs --log-format raw --show-trace

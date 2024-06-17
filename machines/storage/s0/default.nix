@@ -10,23 +10,6 @@
 
   # system.autoUpgrade.enable = true;
 
-  nix.gc.automatic = lib.mkForce false; # allow the nix store to serve as a build cache
-
-  # binary cache
-  services.nix-serve = {
-    enable = true;
-    openFirewall = true;
-    secretKeyFile = "/run/agenix/binary-cache-private-key";
-  };
-  age.secrets.binary-cache-private-key.file = ../../../secrets/binary-cache-private-key.age;
-  users.users.cache-push = {
-    isNormalUser = true;
-    openssh.authorizedKeys.keys = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINpUZFFL9BpBVqeeU63sFPhR9ewuhEZerTCDIGW1NPSB" ];
-  };
-  nix.settings = {
-    trusted-users = [ "cache-push" ];
-  };
-
   services.iperf3.enable = true;
   services.iperf3.openFirewall = true;
 
@@ -235,4 +218,6 @@
   };
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv7l-linux" ];
+
+  services.atticd.enable = true;
 }

@@ -75,6 +75,17 @@
       url = "github:Mic92/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Attic
+    attic = {
+      url = "github:zhaofengli/attic";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        nixpkgs-stable.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+        flake-compat.follows = "flake-compat";
+      };
+    };
   };
 
   outputs = { self, nixpkgs, ... }@inputs:
@@ -94,6 +105,7 @@
             agenix.nixosModules.default
             dailybuild_modules.nixosModule
             nix-index-database.nixosModules.nix-index
+            attic.nixosModules.atticd
             self.nixosModules.kernel-modules
             ({ lib, ... }: {
               config = {
