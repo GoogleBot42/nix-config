@@ -116,6 +116,7 @@ in
       git
       # Gitea Actions rely heavily on node. Include it because it would be installed anyway.
       nodejs
+      attic
     ];
 
     # To allow building on the host, must override the the service's config so it doesn't use a dynamic user
