@@ -20,3 +20,8 @@ rekey-secrets:
 .PHONY: clean-old-nixos-profiles
 clean-old-nixos-profiles:
 	doas nix-collect-garbage -d
+
+# Garbage Collect
+.PHONY: gc
+gc:
+	nix store gc
