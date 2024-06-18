@@ -11,6 +11,9 @@ in
       settings = {
         listen = "[::]:28338";
 
+        # Speed things up
+        require-proof-of-possession = false;
+
         chunking = {
           # Disable chunking for performance (I have plenty of space)
           nar-size-threshold = 0;
