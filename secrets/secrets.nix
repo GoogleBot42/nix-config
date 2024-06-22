@@ -51,4 +51,7 @@ with roles;
 
   # Librechat
   "librechat-env-file.age".publicKeys = librechat;
+
+  # For ACME DNS Challenge
+  "digitalocean-dns-credentials.age".publicKeys = server;
 }

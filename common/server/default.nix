@@ -22,5 +22,6 @@
     ./dashy.nix
     ./librechat.nix
     ./actualbudget.nix
+    ./unifi.nix
   ];
 }

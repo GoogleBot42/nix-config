@@ -60,73 +60,65 @@ sections:
       - &ref_0
         title: Jellyfin
         icon: hl-jellyfin
-        url: http://s0:8097
+        url: https://jellyfin.s0.neet.dev
         target: sametab
-        statusCheck: true
-        statusCheckUrl: http://jellyfin.s0
+        statusCheck: false
         id: 0_1956_jellyfin
       - &ref_1
         title: Sonarr
         description: Manage TV
         icon: hl-sonarr
-        url: http://s0:8989
+        url: https://sonarr.s0.neet.dev
         target: sametab
-        statusCheck: true
-        statusCheckUrl: http://sonarr.s0
+        statusCheck: false
         id: 1_1956_sonarr
       - &ref_2
         title: Radarr
         description: Manage Movies
         icon: hl-radarr
-        url: http://s0:7878
+        url: https://radarr.s0.neet.dev
         target: sametab
-        statusCheck: true
-        statusCheckUrl: http://radarr.s0
+        statusCheck: false
         id: 2_1956_radarr
       - &ref_3
         title: Lidarr
         description: Manage Music
         icon: hl-lidarr
-        url: http://s0:8686
+        url: https://lidarr.s0.neet.dev
         target: sametab
-        statusCheck: true
-        statusCheckUrl: http://lidarr.s0
+        statusCheck: false
         id: 3_1956_lidarr
       - &ref_4
         title: Prowlarr
         description: Indexers
         icon: hl-prowlarr
-        url: http://prowlarr.s0
+        url: https://prowlarr.s0.neet.dev
         target: sametab
-        statusCheck: true
-        statusCheckUrl: http://prowlarr.s0
+        statusCheck: false
         id: 4_1956_prowlarr
       - &ref_5
         title: Bazarr
         description: Subtitles
         icon: hl-bazarr
-        url: http://s0:6767
+        url: https://bazarr.s0.neet.dev
         target: sametab
-        statusCheck: true
-        statusCheckUrl: http://bazarr.s0
+        statusCheck: false
         id: 5_1956_bazarr
       - &ref_6
         title: Navidrome
         description: Play Music
         icon: hl-navidrome
-        url: http://s0:4534
+        url: https://music.s0.neet.dev
         target: sametab
-        statusCheck: true
-        statusCheckUrl: http://music.s0
+        statusCheck: false
         id: 6_1956_navidrome
       - &ref_7
         title: Transmission
         description: Torrenting
         icon: hl-transmission
-        url: http://s0:9091
+        url: https://transmission.s0.neet.dev
         target: sametab
-        statusCheck: true
-        statusCheckUrl: http://transmission.s0
+        statusCheck: false
         id: 7_1956_transmission
     filteredItems:
       - *ref_0

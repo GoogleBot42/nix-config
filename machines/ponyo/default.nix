@@ -118,14 +118,6 @@
 
   # proxied web services
   services.nginx.enable = true;
-  services.nginx.virtualHosts."jellyfin.neet.cloud" = {
-    enableACME = true;
-    forceSSL = true;
-    locations."/" = {
-      proxyPass = "http://s0.koi-bebop.ts.net";
-      proxyWebsockets = true;
-    };
-  };
   services.nginx.virtualHosts."navidrome.neet.cloud" = {
     enableACME = true;
     forceSSL = true;

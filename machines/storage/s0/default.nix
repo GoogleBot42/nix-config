@@ -165,61 +165,96 @@
   };
 
   # nginx
-  services.nginx.enable = true;
-  services.nginx.virtualHosts."bazarr.s0" = {
-    listen = [{ addr = "0.0.0.0"; port = 6767; } { addr = "0.0.0.0"; port = 80; }];
-    locations."/".proxyPass = "http://vpn.containers:6767";
-  };
-  services.nginx.virtualHosts."radarr.s0" = {
-    listen = [{ addr = "0.0.0.0"; port = 7878; } { addr = "0.0.0.0"; port = 80; }];
-    locations."/".proxyPass = "http://vpn.containers:7878";
-  };
-  services.nginx.virtualHosts."lidarr.s0" = {
-    listen = [{ addr = "0.0.0.0"; port = 8686; } { addr = "0.0.0.0"; port = 80; }];
-    locations."/".proxyPass = "http://vpn.containers:8686";
-  };
-  services.nginx.virtualHosts."sonarr.s0" = {
-    listen = [{ addr = "0.0.0.0"; port = 8989; } { addr = "0.0.0.0"; port = 80; }];
-    locations."/".proxyPass = "http://vpn.containers:8989";
-  };
-  services.nginx.virtualHosts."prowlarr.s0" = {
-    listen = [{ addr = "0.0.0.0"; port = 9696; } { addr = "0.0.0.0"; port = 80; }];
-    locations."/".proxyPass = "http://vpn.containers:9696";
-  };
-  services.nginx.virtualHosts."music.s0" = {
-    listen = [{ addr = "0.0.0.0"; port = 4534; } { addr = "0.0.0.0"; port = 80; }];
-    locations."/".proxyPass = "http://localhost:4533";
-  };
-  services.nginx.virtualHosts."jellyfin.s0" = {
-    listen = [{ addr = "0.0.0.0"; port = 8097; } { addr = "0.0.0.0"; port = 80; }];
-    locations."/" = {
-      proxyPass = "http://localhost:8096";
-      proxyWebsockets = true;
-    };
-  };
-  services.nginx.virtualHosts."jellyfin.neet.cloud".locations."/" = {
-    proxyPass = "http://localhost:8096";
-    proxyWebsockets = true;
-  };
-  services.nginx.virtualHosts."transmission.s0" = {
-    listen = [{ addr = "0.0.0.0"; port = 9091; } { addr = "0.0.0.0"; port = 80; }];
-    locations."/" = {
-      proxyPass = "http://vpn.containers:9091";
-      proxyWebsockets = true;
+  services.nginx = {
+    enable = true;
+    openFirewall = false; # All nginx services are internal
+    virtualHosts =
+      let
+        mkVirtualHost = external: internal:
+          {
+            ${external} = {
+              useACMEHost = "s0.neet.dev"; # Use wildcard cert
+              forceSSL = true;
+              locations."/" = {
+                proxyPass = internal;
+                proxyWebsockets = true;
+              };
+            };
+          };
+      in
+      lib.mkMerge [
+        (mkVirtualHost "bazarr.s0.neet.dev" "http://vpn.containers:6767")
+        (mkVirtualHost "radarr.s0.neet.dev" "http://vpn.containers:7878")
+        (mkVirtualHost "lidarr.s0.neet.dev" "http://vpn.containers:8686")
+        (mkVirtualHost "sonarr.s0.neet.dev" "http://vpn.containers:8989")
+        (mkVirtualHost "prowlarr.s0.neet.dev" "http://vpn.containers:9696")
+        (mkVirtualHost "transmission.s0.neet.dev" "http://vpn.containers:9091")
+        (mkVirtualHost "unifi.s0.neet.dev" "https://localhost:8443")
+        (mkVirtualHost "music.s0.neet.dev" "http://localhost:4533")
+        (mkVirtualHost "jellyfin.s0.neet.dev" "http://localhost:8096")
+        (mkVirtualHost "s0.neet.dev" "http://localhost:56815")
+        (mkVirtualHost "ha.s0.neet.dev" "http://localhost:8123") # home assistant
+        (mkVirtualHost "esphome.s0.neet.dev" "http://localhost:6052")
+        (mkVirtualHost "zigbee.s0.neet.dev" "http://localhost:55834")
+        {
+          # Landing page LAN redirect
+          "s0" = {
+            default = true;
+            redirectCode = 302;
+            globalRedirect = "s0.neet.dev";
+          };
+          "frigate.s0.neet.dev" = {
+            # Just configure SSL, frigate module configures the rest of nginx
+            useACMEHost = "s0.neet.dev";
+            forceSSL = true;
+          };
+        }
+      ];
+
+    # Problem #1: Keeping certain programs from being accessed from certain external networks/VLANs
+    # Solution #1: Isolate that service in a container system that automatically fowards the ports to the right network interface(s)
+    # Solution #2: Don't open the firewall for these services, manually open the ports instead for the specific network interface(s) (trickier and easy to miss ports or ports can change)
+    # Untrusted network list:
+    #  - VLANs [cameras]
+
+    # Problem #2: Untrusted internal services. Prevent them from accessing certain internal services (usually key unauth'd services like frigate)
+    # Solution #1: Isolate the untrusted services into their own container
+    # Untrusted services list:
+    #  - Unifi? (it already has access to the cameras anyway?)
+    #  - torrenting, *arr (worried about vulns)
+
+
+    tailscaleAuth = {
+      enable = true;
+      virtualHosts = [
+        "bazarr.s0.neet.dev"
+        "radarr.s0.neet.dev"
+        "lidarr.s0.neet.dev"
+        "sonarr.s0.neet.dev"
+        "prowlarr.s0.neet.dev"
+        "transmission.s0.neet.dev"
+        "unifi.s0.neet.dev"
+        # "music.s0.neet.dev" # messes up navidrome
+        "jellyfin.s0.neet.dev"
+        "s0.neet.dev"
+        # "ha.s0.neet.dev" # messes up home assistant
+        "esphome.s0.neet.dev"
+        "zigbee.s0.neet.dev"
+      ];
+      expectedTailnet = "koi-bebop.ts.net";
     };
   };
 
-  networking.firewall.allowedTCPPorts = [
-    6767
-    7878
-    8686
-    8989
-    9696
-    4534
-    8097
-    9091
-    8443 # unifi
-  ];
+  # Get wildcard cert
+  security.acme.certs."s0.neet.dev" = {
+    dnsProvider = "digitalocean";
+    credentialsFile = "/run/agenix/digitalocean-dns-credentials";
+    extraDomainNames = [ "*.s0.neet.dev" ];
+    group = "nginx";
+    dnsResolver = "1.1.1.1:53";
+    dnsPropagationCheck = false; # sadly this erroneously fails
+  };
+  age.secrets.digitalocean-dns-credentials.file = ../../../secrets/digitalocean-dns-credentials.age;
 
   virtualisation.oci-containers.backend = "podman";
   virtualisation.podman.dockerSocket.enable = true; # TODO needed?
@@ -230,8 +265,7 @@
 
   services.unifi = {
     enable = true;
-    openFirewall = true;
-    unifiPackage = pkgs.unifi8;
+    openMinimalFirewall = true;
   };
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv7l-linux" ];

@@ -37,17 +37,5 @@ in
         ];
       };
     };
-
-    services.nginx.enable = true;
-    services.nginx.virtualHosts."s0.koi-bebop.ts.net" = {
-      default = true;
-      addSSL = true;
-      serverAliases = [ "s0" ];
-      sslCertificate = "/secret/ssl/s0.koi-bebop.ts.net.crt";
-      sslCertificateKey = "/secret/ssl/s0.koi-bebop.ts.net.key";
-      locations."/" = {
-        proxyPass = "http://localhost:${toString cfg.port}";
-      };
-    };
   };
 }

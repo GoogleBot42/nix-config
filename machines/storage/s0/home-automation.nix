@@ -1,8 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  frigateHostname = "frigate.s0";
-  frigatePort = 61617;
+  frigateHostname = "frigate.s0.neet.dev";
 
   mkEsp32Cam = address: {
     ffmpeg = {
@@ -41,9 +40,6 @@ in
 {
   networking.firewall.allowedTCPPorts = [
     # 1883 # mqtt
-    55834 # mqtt zigbee frontend
-    frigatePort
-    4180 # oauth proxy
   ];
 
   services.frigate = {
@@ -80,21 +76,7 @@ in
   # Coral PCIe driver
   kernel.enableGasketKernelModule = true;
 
-  # Allow accessing frigate UI on a specific port in addition to by hostname
-  services.nginx.virtualHosts.${frigateHostname} = {
-    listen = [{ addr = "0.0.0.0"; port = frigatePort; } { addr = "0.0.0.0"; port = 80; }];
-  };
-
-  services.esphome = {
-    enable = true;
-    address = "0.0.0.0";
-    openFirewall = true;
-  };
-  # TODO remove after upgrading nixos version
-  systemd.services.esphome.serviceConfig.ProcSubset = lib.mkForce "all";
-  systemd.services.esphome.serviceConfig.ProtectHostname = lib.mkForce false;
-  systemd.services.esphome.serviceConfig.ProtectKernelLogs = lib.mkForce false;
-  systemd.services.esphome.serviceConfig.ProtectKernelTunables = lib.mkForce false;
+  services.esphome.enable = true;
 
   # TODO lock down
   services.mosquitto = {
@@ -121,7 +103,7 @@ in
         # base_topic = "zigbee2mqtt";
       };
       frontend = {
-        host = "0.0.0.0";
+        host = "localhost";
         port = 55834;
       };
     };
@@ -129,7 +111,6 @@ in
 
   services.home-assistant = {
     enable = true;
-    openFirewall = true;
     configWritable = true;
     extraComponents = [
       "esphome"
@@ -143,46 +124,15 @@ in
       # Includes dependencies for a basic setup
       # https://www.home-assistant.io/integrations/default_config/
       default_config = { };
-    };
-  };
 
-  # TODO need services.oauth2-proxy.cookie.domain ?
-  services.oauth2-proxy =
-    let
-      nextcloudServer = "https://neet.cloud/";
-    in
-    {
-      enable = true;
-
-      httpAddress = "http://0.0.0.0:4180";
-
-      nginx.domain = frigateHostname;
-      # nginx.virtualHosts = [
-      #   frigateHostname
-      # ];
-
-      email.domains = [ "*" ];
-
-      cookie.secure = false;
-
-      provider = "nextcloud";
-
-      # redirectURL = "http://s0:4180/oauth2/callback"; # todo forward with nginx?
-      clientID = "4FfhEB2DNzUh6wWhXTjqQQKu3Ibm6TeYpS8TqcHe55PJC1DorE7vBZBELMKDjJ0X";
-      keyFile = "/run/agenix/oauth2-proxy-env";
-
-      loginURL = "${nextcloudServer}/index.php/apps/oauth2/authorize";
-      redeemURL = "${nextcloudServer}/index.php/apps/oauth2/api/v1/token";
-      validateURL = "${nextcloudServer}/ocs/v2.php/cloud/user?format=json";
-
-      # todo --cookie-refresh
-
-      extraConfig = {
-        # cookie-csrf-per-request = true;
-        # cookie-csrf-expire = "5m";
-        # user-id-claim = "preferred_username";
+      # Enable reverse proxy support
+      http = {
+        use_x_forwarded_for = true;
+        trusted_proxies = [
+          "127.0.0.1"
+          "::1"
+        ];
       };
     };
-
-  age.secrets.oauth2-proxy-env.file = ../../../secrets/oauth2-proxy-env.age;
+  };
 }
