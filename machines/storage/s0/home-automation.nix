@@ -111,13 +111,32 @@ in
 
   services.home-assistant = {
     enable = true;
-    configWritable = true;
     extraComponents = [
+      "default_config"
       "esphome"
       "met"
       "radio_browser"
       "wled"
       "mqtt"
+      "apple_tv" # why is this even needed? I get `ModuleNotFoundError: No module named 'pyatv'` errors otherwise for some reason.
+      "unifi"
+      "digital_ocean"
+      "downloader"
+      "mailgun"
+      "minecraft_server"
+      "mullvad"
+      "nextcloud"
+      "ollama"
+      "openweathermap"
+      "jellyfin"
+      "transmission"
+      "radarr"
+      "sonarr"
+      "syncthing"
+      "tailscale"
+      "weather"
+      "whois"
+      "youtube"
     ];
     # config = null;
     config = {
@@ -133,6 +152,11 @@ in
           "::1"
         ];
       };
+
+      "automation manual" = [
+      ];
+      # Allow using automations generated from the UI
+      "automation ui" = "!include automations.yaml";
     };
   };
 }
