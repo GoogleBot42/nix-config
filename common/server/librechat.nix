@@ -26,6 +26,7 @@ in
           HOST = "0.0.0.0";
           MONGO_URI = "mongodb://host.containers.internal:27017/LibreChat";
           ENDPOINTS = "openAI,google,bingAI,gptPlugins";
+          REFRESH_TOKEN_EXPIRY = toString (1000 * 60 * 60 * 24 * 30); # 30 days
         };
         environmentFiles = [
           "/run/agenix/librechat-env-file"
