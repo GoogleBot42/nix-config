@@ -54,4 +54,7 @@ with roles;
 
   # For ACME DNS Challenge
   "digitalocean-dns-credentials.age".publicKeys = server;
+
+  # Frigate (DVR)
+  "frigate-credentials.age".publicKeys = frigate;
 }
