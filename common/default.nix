@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   imports = [
@@ -20,7 +20,7 @@
 
   system.stateVersion = "23.11";
 
-  networking.useDHCP = false;
+  networking.useDHCP = lib.mkDefault true;
 
   networking.firewall.enable = true;
   networking.firewall.allowPing = true;

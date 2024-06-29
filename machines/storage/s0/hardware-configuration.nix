@@ -58,8 +58,16 @@
     };
   swapDevices = [ ];
 
-  networking.interfaces.eth0.useDHCP = true;
-  networking.interfaces.eth1.useDHCP = true;
+  networking.vlans = {
+    default = {
+      id = 1;
+      interface = "eth1";
+    };
+    iot = {
+      id = 2;
+      interface = "eth1";
+    };
+  };
 
   powerManagement.cpuFreqGovernor = "powersave";
 }
