@@ -166,6 +166,9 @@ in
       "weather"
       "whois"
       "youtube"
+      "homekit_controller"
+      "zha"
+      "bluetooth"
     ];
     # config = null;
     config = {
