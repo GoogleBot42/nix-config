@@ -3,6 +3,7 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ./frigate.nix
     ./home-automation.nix
   ];
 
