@@ -41,7 +41,7 @@ in
         "SpellcheckLanguage" = [ "en-US" ];
       };
       defaultSearchProviderSuggestURL = null;
-      defaultSearchProviderSearchURL = " https://duckduckgo.com/?q={searchTerms}&kp=-1&kl=us-en";
+      defaultSearchProviderSearchURL = "https://duckduckgo.com/?q={searchTerms}&kp=-1&kl=us-en";
     };
 
     # hardware accelerated video playback (on intel)
@@ -52,7 +52,7 @@ in
         # ungoogled = true;
         # --enable-native-gpu-memory-buffers # fails on AMD APU
         # --enable-webrtc-vp9-support
-        commandLineArgs = "--use-vulkan --ozone-platform-hint=auto";
+        commandLineArgs = "--use-vulkan";
       };
     };
     # todo vulkan in chrome

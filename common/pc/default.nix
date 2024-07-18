@@ -89,5 +89,8 @@ in
     # for luks onlock over tor
     services.tor.enable = true;
     services.tor.client.enable = true;
+
+    # Enable wayland support in various chromium based applications
+    environment.sessionVariables.NIXOS_OZONE_WL = "1";
   };
 }
