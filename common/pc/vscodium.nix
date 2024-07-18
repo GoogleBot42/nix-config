@@ -11,6 +11,8 @@ let
     golang.go
     jnoortheen.nix-ide
     ms-vscode.cpptools
+    rust-lang.rust-analyzer
+    vadimcn.vscode-lldb
   ] ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
     {
       name = "platformio-ide";
