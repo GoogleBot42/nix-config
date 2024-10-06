@@ -20,6 +20,12 @@ let
       version = "3.1.1";
       sha256 = "g9yTG3DjVUS2w9eHGAai5LoIfEGus+FPhqDnCi4e90Q=";
     }
+    {
+      name = "wgsl-analyzer";
+      publisher = "wgsl-analyzer";
+      version = "0.8.1";
+      sha256 = "ckclcxdUxhjWlPnDFVleLCWgWxUEENe0V328cjaZv+Y=";
+    }
   ];
 
   vscodium-with-extensions = pkgs.vscode-with-extensions.override {
