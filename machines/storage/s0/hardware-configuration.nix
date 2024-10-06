@@ -60,10 +60,6 @@
   swapDevices = [ ];
 
   networking.vlans = {
-    default = {
-      id = 1;
-      interface = "eth1";
-    };
     iot = {
       id = 2;
       interface = "eth1";
