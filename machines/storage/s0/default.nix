@@ -194,9 +194,6 @@
         (mkVirtualHost "music.s0.neet.dev" "http://localhost:4533")
         (mkVirtualHost "jellyfin.s0.neet.dev" "http://localhost:8096")
         (mkVirtualHost "s0.neet.dev" "http://localhost:56815")
-        (mkVirtualHost "ha.s0.neet.dev" "http://localhost:8123") # home assistant
-        (mkVirtualHost "esphome.s0.neet.dev" "http://localhost:6052")
-        (mkVirtualHost "zigbee.s0.neet.dev" "http://localhost:55834")
         {
           # Landing page LAN redirect
           "s0" = {
@@ -204,6 +201,11 @@
             redirectCode = 302;
             globalRedirect = "s0.neet.dev";
           };
+        }
+        (mkVirtualHost "ha.s0.neet.dev" "http://localhost:8123") # home assistant
+        (mkVirtualHost "esphome.s0.neet.dev" "http://localhost:6052")
+        (mkVirtualHost "zigbee.s0.neet.dev" "http://localhost:55834")
+        {
           "frigate.s0.neet.dev" = {
             # Just configure SSL, frigate module configures the rest of nginx
             useACMEHost = "s0.neet.dev";
@@ -211,19 +213,6 @@
           };
         }
       ];
-
-    # Problem #1: Keeping certain programs from being accessed from certain external networks/VLANs
-    # Solution #1: Isolate that service in a container system that automatically fowards the ports to the right network interface(s)
-    # Solution #2: Don't open the firewall for these services, manually open the ports instead for the specific network interface(s) (trickier and easy to miss ports or ports can change)
-    # Untrusted network list:
-    #  - VLANs [cameras]
-
-    # Problem #2: Untrusted internal services. Prevent them from accessing certain internal services (usually key unauth'd services like frigate)
-    # Solution #1: Isolate the untrusted services into their own container
-    # Untrusted services list:
-    #  - Unifi? (it already has access to the cameras anyway?)
-    #  - torrenting, *arr (worried about vulns)
-
 
     tailscaleAuth = {
       enable = true;
