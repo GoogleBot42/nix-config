@@ -25,7 +25,6 @@
         nixpkgs.follows = "nixpkgs";
         nixpkgs-24_05.follows = "nixpkgs";
         flake-compat.follows = "flake-compat";
-        utils.follows = "flake-utils";
       };
     };
 

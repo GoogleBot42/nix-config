@@ -102,7 +102,7 @@
       host = "chat.neet.space";
     };
     jitsi-meet = {
-      enable = true;
+      enable = false; # disabled until vulnerable libolm dependency is removed/fixed
       host = "meet.neet.space";
     };
     turn = {
