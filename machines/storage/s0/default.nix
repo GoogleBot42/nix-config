@@ -212,6 +212,7 @@
             forceSSL = true;
           };
         }
+        (mkVirtualHost "vacuum.s0.neet.dev" "http://192.168.1.125") # valetudo
       ];
 
     tailscaleAuth = {
@@ -230,6 +231,7 @@
         # "ha.s0.neet.dev" # messes up home assistant
         "esphome.s0.neet.dev"
         "zigbee.s0.neet.dev"
+        "vacuum.s0.neet.dev"
       ];
       expectedTailnet = "koi-bebop.ts.net";
     };
