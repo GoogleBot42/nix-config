@@ -56,6 +56,7 @@ in
         "damon@runyan.org"
         "jonas@runyan.org"
         "simon@neet.dev"
+        "ellen@runyan.org"
       ];
       forwards = {
         "amazon@runyan.org" = [
