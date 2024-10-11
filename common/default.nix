@@ -25,7 +25,7 @@
   networking.firewall.enable = true;
   networking.firewall.allowPing = true;
 
-  time.timeZone = "America/Denver";
+  time.timeZone = "America/Los_Angeles";
   i18n = {
     defaultLocale = "en_US.UTF-8";
     extraLocaleSettings = {
