@@ -14,6 +14,9 @@
       }
     ];
   };
+  networking.firewall.allowedTCPPorts = [
+    1883 # mqtt
+  ];
 
   services.zigbee2mqtt = {
     enable = true;
