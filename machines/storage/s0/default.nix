@@ -213,6 +213,7 @@
           };
         }
         (mkVirtualHost "vacuum.s0.neet.dev" "http://192.168.1.125") # valetudo
+        (mkVirtualHost "todo.s0.neet.dev" "http://localhost:${toString config.services.vikunja.port}")
       ];
 
     tailscaleAuth = {
@@ -232,6 +233,7 @@
         "esphome.s0.neet.dev"
         "zigbee.s0.neet.dev"
         "vacuum.s0.neet.dev"
+        "todo.s0.neet.dev"
       ];
       expectedTailnet = "koi-bebop.ts.net";
     };
@@ -258,6 +260,16 @@
   services.unifi = {
     enable = true;
     openMinimalFirewall = true;
+  };
+
+  services.vikunja = {
+    enable = true;
+    port = 61473;
+    frontendScheme = "https";
+    frontendHostname = "todo.s0.neet.dev";
+    settings = {
+      service.enableregistration = false;
+    };
   };
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv7l-linux" ];
