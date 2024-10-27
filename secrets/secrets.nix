@@ -57,4 +57,7 @@ with roles;
 
   # Frigate (DVR)
   "frigate-credentials.age".publicKeys = frigate;
+
+  # Phone hotspot passwords
+  "hostspot-passwords.age".publicKeys = hotspot;
 }
