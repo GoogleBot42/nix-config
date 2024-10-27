@@ -3,7 +3,6 @@
 {
   services.esphome.enable = true;
 
-  # TODO lock down
   services.mosquitto = {
     enable = true;
     listeners = [

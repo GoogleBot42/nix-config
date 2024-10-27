@@ -271,6 +271,9 @@
       service.enableregistration = false;
     };
   };
+  backup.group."vikunja".paths = [
+    "/var/lib/vikunja"
+  ];
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv7l-linux" ];
 }
