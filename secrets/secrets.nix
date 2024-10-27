@@ -57,4 +57,7 @@ with roles;
 
   # Frigate (DVR)
   "frigate-credentials.age".publicKeys = frigate;
+
+  # zigbee2mqtt secrets
+  "zigbee2mqtt.yaml.age".publicKeys = zigbee;
 }

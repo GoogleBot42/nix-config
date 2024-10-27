@@ -8,9 +8,10 @@
     enable = true;
     listeners = [
       {
-        acl = [ "pattern readwrite #" ];
-        omitPasswordAuth = true;
-        settings.allow_anonymous = true;
+        users.root = {
+          acl = [ "readwrite #" ];
+          hashedPassword = "$7$101$8+QnkTzCdGizaKqq$lpU4o84n6D/1uwfA9pZDVExr1NDm1D/8tNla2tE9J9HdUqkvu192yYfiySY1MFqVNgUKgWEFu5P1bUKqRnzbUw==";
+        };
       }
     ];
   };
@@ -28,7 +29,8 @@
       };
       mqtt = {
         server = "mqtt://localhost:1883";
-        # base_topic = "zigbee2mqtt";
+        user = "root";
+        password = "'!/run/agenix/zigbee2mqtt.yaml mqtt_password'";
       };
       frontend = {
         host = "localhost";
@@ -36,6 +38,7 @@
       };
     };
   };
+  age.secrets."zigbee2mqtt.yaml".file = ../../../secrets/zigbee2mqtt.yaml.age;
 
   services.home-assistant = {
     enable = true;
