@@ -262,6 +262,7 @@
     openMinimalFirewall = true;
   };
 
+  # TODO: setup backup
   services.vikunja = {
     enable = true;
     port = 61473;

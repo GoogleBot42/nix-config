@@ -37,7 +37,10 @@
       };
     };
   };
-  age.secrets."zigbee2mqtt.yaml".file = ../../../secrets/zigbee2mqtt.yaml.age;
+  age.secrets."zigbee2mqtt.yaml" = {
+    file = ../../../secrets/zigbee2mqtt.yaml.age;
+    owner = "zigbee2mqtt";
+  };
 
   services.home-assistant = {
     enable = true;
