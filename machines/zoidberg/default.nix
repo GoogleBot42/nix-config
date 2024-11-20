@@ -33,9 +33,9 @@
   hardware.enableAllFirmware = true;
 
   # ROCm
-  hardware.opengl.extraPackages = with pkgs; [
-    rocm-opencl-icd
-    rocm-opencl-runtime
+  hardware.graphics.extraPackages = with pkgs; [
+    rocmPackages.clr.icd
+    rocmPackages.clr
   ];
   systemd.tmpfiles.rules = [
     "L+    /opt/rocm/hip   -    -    -     -    ${pkgs.rocmPackages.clr}"

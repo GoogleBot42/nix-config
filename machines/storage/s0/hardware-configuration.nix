@@ -22,7 +22,6 @@
   # zfs
   networking.hostId = "5e6791f0";
   boot.supportedFilesystems = [ "zfs" ];
-  boot.kernelPackages = config.boot.zfs.package.latestCompatibleLinuxPackages;
 
   # luks
   remoteLuksUnlock.enable = true;

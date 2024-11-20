@@ -57,7 +57,7 @@ in
     };
     # todo vulkan in chrome
     # todo video encoding in chrome
-    hardware.opengl = {
+    hardware.graphics = {
       enable = true;
       extraPackages = with pkgs; [
         intel-media-driver # LIBVA_DRIVER_NAME=iHD

@@ -24,12 +24,13 @@
       homeassistant = true;
       permit_join = false;
       serial = {
+        adapter = "ember";
         port = "/dev/ttyACM0";
       };
       mqtt = {
         server = "mqtt://localhost:1883";
         user = "root";
-        password = "'!/run/agenix/zigbee2mqtt.yaml mqtt_password'";
+        password = "!/run/agenix/zigbee2mqtt.yaml mqtt_password";
       };
       frontend = {
         host = "localhost";

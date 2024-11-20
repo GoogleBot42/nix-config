@@ -27,10 +27,6 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    # vulkan
-    hardware.opengl.driSupport = true;
-    hardware.opengl.driSupport32Bit = true;
-
     # Applications
     users.users.googlebot.packages = with pkgs; [
       chromium

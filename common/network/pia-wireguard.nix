@@ -151,7 +151,7 @@ in
       partOf = [ containerServiceName ];
       wantedBy = [ "multi-user.target" ];
 
-      path = with pkgs; [ wireguard-tools jq curl iproute iputils ];
+      path = with pkgs; [ wireguard-tools jq curl iproute2 iputils ];
 
       serviceConfig = {
         Type = "oneshot";
@@ -224,7 +224,7 @@ in
       after = [ "network.target" "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
 
-      path = with pkgs; [ wireguard-tools iproute curl jq iptables ];
+      path = with pkgs; [ wireguard-tools iproute2 curl jq iptables ];
 
       serviceConfig = {
         Type = "oneshot";

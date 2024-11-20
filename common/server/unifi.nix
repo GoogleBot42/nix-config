@@ -10,7 +10,8 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    services.unifi.unifiPackage = pkgs.unifi8;
+    services.unifi.unifiPackage = pkgs.unifi;
+    services.unifi.mongodbPackage = pkgs.mongodb-7_0;
 
     networking.firewall = lib.mkIf cfg.openMinimalFirewall {
       allowedUDPPorts = [

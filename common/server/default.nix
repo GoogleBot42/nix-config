@@ -10,7 +10,6 @@
     ./matrix.nix
     ./zerobin.nix
     ./gitea.nix
-    ./privatebin/privatebin.nix
     ./radio.nix
     ./samba.nix
     ./owncast.nix

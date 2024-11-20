@@ -7,13 +7,5 @@
 
 let
   cfg = config.kernel;
-
-  gasket = config.boot.kernelPackages.callPackage ./gasket.nix { };
 in
-{
-  options.kernel.enableGasketKernelModule = lib.mkEnableOption "Enable Gasket Kernel Module";
-
-  config = lib.mkIf cfg.enableGasketKernelModule {
-    boot.extraModulePackages = [ gasket ];
-  };
-}
+{ }

@@ -5,30 +5,28 @@
     services.samba = {
       openFirewall = true;
       package = pkgs.sambaFull; # printer sharing
-      securityType = "user";
 
       # should this be on?
       nsswins = true;
 
-      extraConfig = ''
-        workgroup = HOME
-        server string = smbnix
-        netbios name = smbnix
-        security = user 
-        use sendfile = yes
-        min protocol = smb2
-        guest account = nobody
-        map to guest = bad user
+      settings = {
+        global = {
+          security = "user";
+          workgroup = "HOME";
+          "server string" = "smbnix";
+          "netbios name" = "smbnix";
+          "use sendfile" = "yes";
+          "min protocol" = "smb2";
+          "guest account" = "nobody";
+          "map to guest" = "bad user";
 
-        # printing
-        load printers = yes
-        printing = cups
-        printcap name = cups
+          # printing
+          "load printers" = "yes";
+          printing = "cups";
+          "printcap name" = "cups";
 
-        hide files = /.nobackup/.DS_Store/._.DS_Store/
-      '';
-
-      shares = {
+          "hide files" = "/.nobackup/.DS_Store/._.DS_Store/";
+        };
         public = {
           path = "/data/samba/Public";
           browseable = "yes";
@@ -77,9 +75,9 @@
 
     # backups
     backup.group."samba".paths = [
-      config.services.samba.shares.googlebot.path
-      config.services.samba.shares.cris.path
-      config.services.samba.shares.public.path
+      config.services.samba.settings.googlebot.path
+      config.services.samba.settings.cris.path
+      config.services.samba.settings.public.path
     ];
 
     # Windows discovery of samba server

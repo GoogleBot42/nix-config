@@ -82,9 +82,11 @@ lib.mkMerge [
       settings = {
         mqtt = {
           enabled = true;
-          host = "localhost:1883";
+          host = "localhost";
+          port = 1883;
+          user = "root";
+          password = "{FRIGATE_MQTT_PASSWORD}";
         };
-        rtmp.enabled = false;
         snapshots = {
           enabled = true;
           bounding_box = true;
@@ -145,11 +147,23 @@ lib.mkMerge [
     systemd.services.frigate.serviceConfig.SupplementaryGroups = [ "apex" ];
 
     # Coral PCIe driver
-    kernel.enableGasketKernelModule = true;
+    boot.extraModulePackages = with config.boot.kernelPackages; [ gasket ];
+    services.udev.extraRules = ''
+      SUBSYSTEM=="apex", MODE="0660", GROUP="apex"
+    '';
 
     services.frigate.settings.detectors.coral = {
       type = "edgetpu";
       device = "pci";
     };
+  }
+  {
+    # Fix bug in nixos module where cache is not cleared when starting the service because "rm" cannot be found
+    systemd.services.frigate.serviceConfig.ExecStartPre = lib.mkForce "${pkgs.bash}/bin/sh -c 'rm -f /var/cache/frigate/*.mp4'";
+  }
+  {
+    # Don't require authentication for frigate
+    # This is ok because the reverse proxy already requires tailscale access anyway
+    services.frigate.settings.auth.enabled = false;
   }
 ]

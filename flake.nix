@@ -1,8 +1,7 @@
 {
   inputs = {
     # nixpkgs
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
-    nixpkgs-frigate.url = "github:NixOS/nixpkgs/5cfafa12d57374f48bcc36fda3274ada276cf69e";
+    nixpkgs.url = "github:NixOS/nixpkgs/master";
 
     # Common Utils Among flake inputs
     systems.url = "github:nix-systems/default";

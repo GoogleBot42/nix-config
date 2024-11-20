@@ -29,10 +29,10 @@
       text = ''
         #!${pkgs.stdenv.shell}
         set -e
-        ${pkgs.kexectools}/bin/kexec -l ${image}/kernel --initrd=${image}/initrd --append="init=${builtins.unsafeDiscardStringContext config.system.build.toplevel}/init ${toString config.boot.kernelParams}"
+        ${pkgs.kexec-tools}/bin/kexec -l ${image}/kernel --initrd=${image}/initrd --append="init=${builtins.unsafeDiscardStringContext config.system.build.toplevel}/init ${toString config.boot.kernelParams}"
         sync
         echo "executing kernel, filesystems will be improperly umounted"
-        ${pkgs.kexectools}/bin/kexec -e
+        ${pkgs.kexec-tools}/bin/kexec -e
       '';
     };
     kexec_tarball = pkgs.callPackage (modulesPath + "/../lib/make-system-tarball.nix") {
