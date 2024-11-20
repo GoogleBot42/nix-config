@@ -30,22 +30,22 @@
   # disks
   remoteLuksUnlock.enable = true;
   boot.initrd.luks.devices."enc-pv" = {
-    device = "/dev/disk/by-uuid/c801586b-f0a2-465c-8dae-532e61b83fee";
+    device = "/dev/disk/by-uuid/2e4a6960-a6b1-40ee-9c2c-2766eb718d52";
     allowDiscards = true;
   };
   fileSystems."/" =
     {
-      device = "/dev/disk/by-uuid/95db6950-a7bc-46cf-9765-3ea675ccf014";
+      device = "/dev/disk/by-uuid/1f62386c-3243-49f5-b72f-df8fc8f39db8";
       fsType = "btrfs";
     };
   fileSystems."/boot" =
     {
-      device = "/dev/disk/by-uuid/B087-2C20";
+      device = "/dev/disk/by-uuid/F4D9-C5E8";
       fsType = "vfat";
       options = [ "fmask=0022" "dmask=0022" ];
     };
   swapDevices =
-    [{ device = "/dev/disk/by-uuid/49fbdf62-eef4-421b-aac3-c93494afd23c"; }];
+    [{ device = "/dev/disk/by-uuid/5f65cb11-2649-48fe-9c78-3e325b857c53"; }];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
   # (the default) this is the recommended approach. When using systemd-networkd it's
