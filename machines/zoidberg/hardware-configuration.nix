@@ -17,16 +17,17 @@
   boot.extraModulePackages = [ ];
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
+  # luks unlock with clevis
+  boot.initrd.systemd.enable = true;
+  boot.initrd.clevis = {
+    enable = true;
+    devices."enc-pv".secretFile = "/secret/decrypt.jwe";
+  };
+
   # disks
-  remoteLuksUnlock.enable = true;
   boot.initrd.luks.devices."enc-pv" = {
     device = "/dev/disk/by-uuid/04231c41-2f13-49c0-8fce-0357eea67990";
     allowDiscards = true;
-
-    # Fetch key from USB drive
-    keyFileSize = 4096;
-    keyFile = "/dev/disk/by-id/usb-Mass_Storage_Device_121220160204-0:0-part2";
-    fallbackToPassword = true;
   };
   fileSystems."/" =
     {
