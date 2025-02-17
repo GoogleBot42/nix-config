@@ -36,6 +36,11 @@ let
             record = "preset-record-generic-audio-copy";
           };
         };
+        detect = {
+          width = 1280;
+          height = 720;
+          fps = 5;
+        };
       };
     };
     services.go2rtc.settings.streams = lib.mkMerge [
@@ -54,7 +59,7 @@ let
       # - go2rtc: ${VAR}
       # - frigate: {VAR}
       primaryUrl = "rtsp://admin:\${FRIGATE_RTSP_PASSWORD}@${address}/cam/realmonitor?channel=1&subtype=0";
-      detectUrl = "rtsp://admin:{FRIGATE_RTSP_PASSWORD}@${address}/cam/realmonitor?channel=1&subtype=1";
+      detectUrl = "rtsp://admin:{FRIGATE_RTSP_PASSWORD}@${address}/cam/realmonitor?channel=1&subtype=3";
     in
     mkCamera name primaryUrl detectUrl;
 
@@ -95,8 +100,9 @@ lib.mkMerge [
           enabled = true;
           # sync_recordings = true; # detect if recordings were deleted outside of frigate (expensive)
           retain = {
-            days = 2; # Keep video for 2 days
-            mode = "motion";
+            days = 7; # Keep video for 7 days
+            mode = "all";
+            # mode = "motion";
           };
           events = {
             retain = {
@@ -108,7 +114,7 @@ lib.mkMerge [
         };
         # Make frigate aware of the go2rtc streams
         go2rtc.streams = config.services.go2rtc.settings.streams;
-        detect.enabled = true;
+        detect.enabled = false; # :(
         objects = {
           track = [ "person" "dog" ];
         };
