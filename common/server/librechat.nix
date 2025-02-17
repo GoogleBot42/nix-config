@@ -21,7 +21,7 @@ in
   config = mkIf cfg.enable {
     virtualisation.oci-containers.containers = {
       librechat = {
-        image = "ghcr.io/danny-avila/librechat:v0.6.6";
+        image = "ghcr.io/danny-avila/librechat:v0.7.6";
         environment = {
           HOST = "0.0.0.0";
           MONGO_URI = "mongodb://host.containers.internal:27017/LibreChat";
