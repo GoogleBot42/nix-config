@@ -22,8 +22,8 @@ in
     services.pipewire.extraConfig.pipewire."92-fix-wine-audio" = {
       context.properties = {
         default.clock.rate = 48000;
-        default.clock.quantum = 2048;
-        default.clock.min-quantum = 512;
+        default.clock.quantum = 256;
+        default.clock.min-quantum = 256;
         default.clock.max-quantum = 2048;
       };
     };
