@@ -58,12 +58,43 @@
     };
   swapDevices = [ ];
 
-  networking.vlans = {
-    iot = {
-      id = 2;
-      interface = "eth1";
+  networking = {
+    dhcpcd.enable = false;
+
+    vlans = {
+      iot = {
+        id = 2;
+        interface = "eth1";
+      };
     };
+
+    interfaces.eth1.ipv4.addresses = [{
+      address = "192.168.1.2";
+      prefixLength = 21;
+    }];
+    interfaces.iot.ipv4.addresses = [{
+      address = "192.168.9.8";
+      prefixLength = 22;
+    }];
+
+    defaultGateway = "192.168.1.1";
+    nameservers = [ "1.1.1.1" "8.8.8.8" ];
   };
+
+  # networking = {
+  #   vlans = {
+  #     iot = {
+  #       id = 2;
+  #       interface = "eth1";
+  #     };
+  #   };
+
+  #   defaultGateway = {
+  #     interface = "eth1";
+  #     address = "192.168.1.1";
+  #     metric = 10; # always use this route as default gateway
+  #   };
+  # };
 
   powerManagement.cpuFreqGovernor = "powersave";
 }
