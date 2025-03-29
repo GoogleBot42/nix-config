@@ -54,6 +54,8 @@ in
 
       # For Nix IDE
       nixpkgs-fmt
+      nixd
+      nil
     ];
 
     # Networking
