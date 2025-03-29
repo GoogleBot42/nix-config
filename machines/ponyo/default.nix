@@ -10,6 +10,8 @@
   # p2p mesh network
   services.tailscale.exitNode = true;
 
+  services.iperf3.enable = true;
+
   # email server
   mailserver.enable = true;
 
