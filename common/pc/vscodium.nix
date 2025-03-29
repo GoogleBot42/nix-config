@@ -13,6 +13,7 @@ let
     ms-vscode.cpptools
     rust-lang.rust-analyzer
     vadimcn.vscode-lldb
+    tauri-apps.tauri-vscode
   ] ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
     {
       name = "platformio-ide";
@@ -25,6 +26,12 @@ let
       publisher = "wgsl-analyzer";
       version = "0.8.1";
       sha256 = "ckclcxdUxhjWlPnDFVleLCWgWxUEENe0V328cjaZv+Y=";
+    }
+    {
+      name = "volar";
+      publisher = "Vue";
+      version = "2.2.4";
+      sha256 = "FHS/LNjSUVfCb4SVF9naR4W0JqycWzSWiK54jfbRagA=";
     }
   ];
 
