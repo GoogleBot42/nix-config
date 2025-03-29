@@ -17,6 +17,12 @@
     # NixOS hardware
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
+    # Home Manager
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Mail Server
     simple-nixos-mailserver = {
       url = "gitlab:simple-nixos-mailserver/nixos-mailserver/master";
@@ -33,6 +39,7 @@
       inputs = {
         nixpkgs.follows = "nixpkgs";
         systems.follows = "systems";
+        home-manager.follows = "home-manager";
       };
     };
 
@@ -81,7 +88,9 @@
         {
           inherit nixpkgs;
           assertionsModule = "${nixpkgs}/nixos/modules/misc/assertions.nix";
-        }).machines.hosts;
+        }).machines;
+      machineHosts = machines.hosts;
+      machineRoles = machines.roles;
     in
     {
       nixosConfigurations =
@@ -92,6 +101,7 @@
             agenix.nixosModules.default
             dailybuild_modules.nixosModule
             nix-index-database.nixosModules.nix-index
+            home-manager.nixosModules.home-manager
             self.nixosModules.kernel-modules
             ({ lib, ... }: {
               config = {
@@ -102,6 +112,13 @@
                 ];
 
                 networking.hostName = hostname;
+
+                home-manager.useGlobalPkgs = true;
+                home-manager.useUserPackages = true;
+                home-manager.users.googlebot = import ./home/googlebot.nix {
+                  inherit hostname;
+                  inherit machineRoles;
+                };
               };
 
               # because nixos specialArgs doesn't work for containers... need to pass in inputs a different way
@@ -139,7 +156,7 @@
         nixpkgs.lib.mapAttrs
           (hostname: cfg:
             mkSystem cfg.arch nixpkgs cfg.configurationPath hostname)
-          machines;
+          machineHosts;
 
       packages =
         let
@@ -176,7 +193,7 @@
         nixpkgs.lib.mapAttrs
           (hostname: cfg:
             mkDeploy hostname cfg.arch (builtins.head cfg.hostNames))
-          machines;
+          machineHosts;
 
       checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) inputs.deploy-rs.lib;
 
