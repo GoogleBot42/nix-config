@@ -13,12 +13,6 @@ in
       extraOptions = ''
         experimental-features = nix-command flakes
       '';
-
-      # pin nixpkgs for system commands such as "nix shell"
-      registry.nixpkgs.flake = config.inputs.nixpkgs;
-
-      # pin system nixpkgs to the same version as the flake input
-      nixPath = [ "nixpkgs=${config.inputs.nixpkgs}" ];
     };
   };
 }
