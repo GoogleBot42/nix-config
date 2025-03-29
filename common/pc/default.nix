@@ -6,12 +6,10 @@ in
 {
   imports = [
     ./kde.nix
-    #    ./xfce.nix
     ./yubikey.nix
     ./chromium.nix
     ./firefox.nix
     ./audio.nix
-    #    ./torbrowser.nix
     ./pithos.nix
     ./vscodium.nix
     ./discord.nix
