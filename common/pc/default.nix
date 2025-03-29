@@ -27,6 +27,11 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    environment.systemPackages = with pkgs; [
+      # https://github.com/NixOS/nixpkgs/pull/328086#issuecomment-2235384618
+      gparted
+    ];
+
     # Applications
     users.users.googlebot.packages = with pkgs; [
       chromium
@@ -38,7 +43,6 @@ in
       mpv
       nextcloud-client
       signal-desktop
-      gparted
       libreoffice-fresh
       thunderbird
       spotify
