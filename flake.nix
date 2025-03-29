@@ -137,6 +137,7 @@
                 src = nixpkgs;
                 patches = [
                   ./patches/gamepadui.patch
+                  ./patches/dont-break-nix-serve.patch
                 ];
               };
               patchedNixpkgs = nixpkgs.lib.fix (self: (import "${patchedNixpkgsSrc}/flake.nix").outputs { self = nixpkgs; });

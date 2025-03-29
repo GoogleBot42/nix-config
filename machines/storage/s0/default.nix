@@ -171,16 +171,23 @@
     openFirewall = false; # All nginx services are internal
     virtualHosts =
       let
-        mkVirtualHost = external: internal:
+        mkHost = external: config:
           {
             ${external} = {
               useACMEHost = "s0.neet.dev"; # Use wildcard cert
               forceSSL = true;
-              locations."/" = {
-                proxyPass = internal;
-                proxyWebsockets = true;
-              };
+              locations."/" = config;
             };
+          };
+        mkVirtualHost = external: internal:
+          mkHost external {
+            proxyPass = internal;
+            proxyWebsockets = true;
+          };
+        mkStaticHost = external: static:
+          mkHost external {
+            root = static;
+            tryFiles = "$uri /index.html ";
           };
       in
       lib.mkMerge [
@@ -193,7 +200,7 @@
         (mkVirtualHost "unifi.s0.neet.dev" "https://localhost:8443")
         (mkVirtualHost "music.s0.neet.dev" "http://localhost:4533")
         (mkVirtualHost "jellyfin.s0.neet.dev" "http://localhost:8096")
-        (mkVirtualHost "s0.neet.dev" "http://localhost:56815")
+        (mkStaticHost "s0.neet.dev" config.services.dashy.finalDrv)
         {
           # Landing page LAN redirect
           "s0" = {
@@ -255,7 +262,7 @@
   virtualisation.podman.dockerSocket.enable = true; # TODO needed?
   services.dashy = {
     enable = true;
-    configFile = ./dashy.yaml;
+    settings = import ./dashy.nix;
   };
 
   services.unifi = {

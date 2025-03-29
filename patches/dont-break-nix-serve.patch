@@ -1,0 +1,15 @@
+diff --git a/nixos/modules/services/video/frigate.nix b/nixos/modules/services/video/frigate.nix
+index 49f8ed673816..643b59d68dde 100644
+--- a/nixos/modules/services/video/frigate.nix
++++ b/nixos/modules/services/video/frigate.nix
+@@ -482,10 +482,6 @@ in
+           };
+         };
+         extraConfig = ''
+-          # Frigate wants to connect on 127.0.0.1:5000 for unauthenticated requests
+-          # https://github.com/NixOS/nixpkgs/issues/370349
+-          listen 127.0.0.1:5000;
+-
+           # vod settings
+           vod_base_url "";
+           vod_segments_base_url "";

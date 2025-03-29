@@ -14,7 +14,7 @@ in
       # akonadi
       # kmail
       # plasma5Packages.kmail-account-wizard
-      kate
+      kdePackages.kate
     ];
   };
 }

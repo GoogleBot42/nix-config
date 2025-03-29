@@ -24,7 +24,7 @@ in
           SHOW_FOOTER_VERSION = false;
         };
         ui = {
-          DEFAULT_THEME = "arc-green";
+          DEFAULT_THEME = "gitea-dark";
         };
         service = {
           DISABLE_REGISTRATION = true;
