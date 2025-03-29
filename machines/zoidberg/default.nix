@@ -5,8 +5,6 @@
     ./hardware-configuration.nix
   ];
 
-  de.enable = true;
-
   # Login DE Option: Steam
   programs.steam.gamescopeSession.enable = true;
   # programs.gamescope.capSysNice = true;

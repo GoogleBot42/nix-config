@@ -9,7 +9,4 @@
 
   networking.hostName = "nat";
   networking.interfaces.ens160.useDHCP = true;
-
-  de.enable = true;
-  de.touchpad.enable = true;
 }

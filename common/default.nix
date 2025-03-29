@@ -98,4 +98,9 @@
 
   security.acme.acceptTerms = true;
   security.acme.defaults.email = "zuckerberg@neet.dev";
+
+  # Enable Desktop Environment if this is a PC (machine role is "personal")
+  de.enable = (
+    builtins.elem config.networking.hostName config.machines.roles.personal
+  );
 }
