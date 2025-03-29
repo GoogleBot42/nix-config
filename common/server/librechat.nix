@@ -21,11 +21,17 @@ in
   config = mkIf cfg.enable {
     virtualisation.oci-containers.containers = {
       librechat = {
-        image = "ghcr.io/danny-avila/librechat:v0.7.6";
+        image = "ghcr.io/danny-avila/librechat:v0.7.7";
         environment = {
           HOST = "0.0.0.0";
           MONGO_URI = "mongodb://host.containers.internal:27017/LibreChat";
           ENDPOINTS = "openAI,google,bingAI,gptPlugins";
+          OPENAI_MODELS = lib.concatStringsSep "," [
+            "gpt-4o-mini"
+            "o3-mini"
+            "gpt-4o"
+            "o1"
+          ];
           REFRESH_TOKEN_EXPIRY = toString (1000 * 60 * 60 * 24 * 30); # 30 days
         };
         environmentFiles = [
