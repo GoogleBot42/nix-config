@@ -9,10 +9,7 @@
 # TODO: skipping running inside of nixos container for now because of issues getting docker/podman running
 
 let
-  runnerRole = "gitea-actions-runner";
-  runners = config.machines.roles.${runnerRole};
-  thisMachineIsARunner = builtins.elem config.networking.hostName runners;
-
+  thisMachineIsARunner = config.thisMachine.hasRole."gitea-actions-runner";
   containerName = "gitea-runner";
 in
 {

@@ -1,9 +1,8 @@
-{ hostname, machineRoles }:
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, osConfig, ... }:
 
 let
   # Check if the current machine has the role "personal"
-  thisMachineIsPersonal = builtins.elem hostname machineRoles.personal;
+  thisMachineIsPersonal = osConfig.thisMachine.hasRole."personal";
 in
 {
   home.username = "googlebot";

@@ -1,18 +1,14 @@
 { config, lib, ... }:
 
 let
-  builderRole = "nix-builder";
   builderUserName = "nix-builder";
 
-  machinesByRole = role: lib.filterAttrs (hostname: cfg: builtins.elem role cfg.systemRoles) config.machines.hosts;
-  otherMachinesByRole = role: lib.filterAttrs (hostname: cfg: hostname != config.networking.hostName) (machinesByRole role);
-  thisMachineHasRole = role: builtins.hasAttr config.networking.hostName (machinesByRole role);
-
-  builders = machinesByRole builderRole;
-  thisMachineIsABuilder = thisMachineHasRole builderRole;
+  builderRole = "nix-builder";
+  builders = config.machines.withRole.${builderRole};
+  thisMachineIsABuilder = config.thisMachine.hasRole.${builderRole};
 
   # builders don't include themselves as a remote builder
-  otherBuilders = lib.filterAttrs (hostname: cfg: hostname != config.networking.hostName) builders;
+  otherBuilders = lib.filter (hostname: hostname != config.networking.hostName) builders;
 in
 lib.mkMerge [
   # configure builder
@@ -40,9 +36,9 @@ lib.mkMerge [
     nix.distributedBuilds = true;
 
     nix.buildMachines = builtins.map
-      (builderCfg: {
-        hostName = builtins.elemAt builderCfg.hostNames 0;
-        system = builderCfg.arch;
+      (builderHostname: {
+        hostName = builderHostname;
+        system = config.machines.hosts.${builderHostname}.arch;
         protocol = "ssh-ng";
         sshUser = builderUserName;
         sshKey = "/etc/ssh/ssh_host_ed25519_key";
@@ -50,7 +46,7 @@ lib.mkMerge [
         speedFactor = 10;
         supportedFeatures = [ "nixos-test" "benchmark" "big-parallel" "kvm" ];
       })
-      (builtins.attrValues otherBuilders);
+      otherBuilders;
 
     # It is very likely that the builder's internet is faster or just as fast
     nix.extraOptions = ''

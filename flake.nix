@@ -84,13 +84,11 @@
 
   outputs = { self, nixpkgs, ... }@inputs:
     let
-      machines = (import ./common/machine-info/moduleless.nix
+      machineHosts = (import ./common/machine-info/moduleless.nix
         {
           inherit nixpkgs;
           assertionsModule = "${nixpkgs}/nixos/modules/misc/assertions.nix";
-        }).machines;
-      machineHosts = machines.hosts;
-      machineRoles = machines.roles;
+        }).machines.hosts;
     in
     {
       nixosConfigurations =
@@ -115,10 +113,7 @@
 
                 home-manager.useGlobalPkgs = true;
                 home-manager.useUserPackages = true;
-                home-manager.users.googlebot = import ./home/googlebot.nix {
-                  inherit hostname;
-                  inherit machineRoles;
-                };
+                home-manager.users.googlebot = import ./home/googlebot.nix;
               };
 
               # because nixos specialArgs doesn't work for containers... need to pass in inputs a different way

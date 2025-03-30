@@ -39,6 +39,6 @@ in
         builtins.map
           (host: machines.hosts.${host}.hostKey)
           hosts)
-      machines.roles;
+      machines.withRole;
   };
 }
