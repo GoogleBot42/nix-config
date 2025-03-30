@@ -1,6 +1,7 @@
 {
   hostNames = [
     "s0"
+    "s0.neet.dev"
   ];
 
   arch = "x86_64-linux";
@@ -19,6 +20,8 @@
 
   remoteUnlock = {
     hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFNiceeFMos5ZXcYem4yFxh8PiZNNnuvhlyLbQLrgIZH";
+
+    clearnetHost = "192.168.1.2";
     onionHost = "r3zvf7f2ppaeithzswigma46pajt3hqytmkg3rshgknbl3jbni455fqd.onion";
   };
 }
