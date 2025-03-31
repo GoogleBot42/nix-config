@@ -60,4 +60,7 @@ with roles;
 
   # zigbee2mqtt secrets
   "zigbee2mqtt.yaml.age".publicKeys = zigbee;
+
+  # Firezone Token
+  "firezone-token.age".publicKeys = firezone;
 }
