@@ -60,4 +60,8 @@ with roles;
 
   # zigbee2mqtt secrets
   "zigbee2mqtt.yaml.age".publicKeys = zigbee;
+
+  # Sonarr and Radarr secrets
+  "radarr-api-key.age".publicKeys = media-server;
+  "sonarr-api-key.age".publicKeys = media-server;
 }
