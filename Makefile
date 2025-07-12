@@ -25,3 +25,8 @@ clean-old-nixos-profiles:
 .PHONY: gc
 gc:
 	nix store gc
+
+# Update a flake input by name (ex: 'nixpkgs')
+.PHONY: update-input
+update-input:
+	nix flake update $(filter-out $@,$(MAKECMDGOALS))
