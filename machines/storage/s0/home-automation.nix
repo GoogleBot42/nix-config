@@ -47,6 +47,7 @@
     enable = true;
     extraComponents = [
       "default_config"
+      "rest_command"
       "esphome"
       "met"
       "radio_browser"
@@ -75,7 +76,6 @@
       "zha"
       "bluetooth"
     ];
-    # config = null;
     config = {
       # Includes dependencies for a basic setup
       # https://www.home-assistant.io/integrations/default_config/
@@ -94,6 +94,15 @@
       ];
       # Allow using automations generated from the UI
       "automation ui" = "!include automations.yaml";
+
+      "rest_command" = {
+        json_post_request = {
+          url = "{{ url }}";
+          method = "POST";
+          content_type = "application/json";
+          payload = "{{ payload | default('{}') }}";
+        };
+      };
     };
   };
 }
