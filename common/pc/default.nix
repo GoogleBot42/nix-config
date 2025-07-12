@@ -92,5 +92,7 @@ in
 
     # Enable wayland support in various chromium based applications
     environment.sessionVariables.NIXOS_OZONE_WL = "1";
+
+    fonts.packages = with pkgs; [ nerd-fonts.symbols-only ];
   };
 }

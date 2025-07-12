@@ -11,6 +11,36 @@ in
   home.stateVersion = "24.11";
   programs.home-manager.enable = true;
 
+  services.ssh-agent.enable = true;
+
+  # System Monitoring
+  programs.btop.enable = true;
+  programs.bottom.enable = true;
+
+  # Modern "ls" replacement
+  programs.pls.enable = true;
+  programs.eza.enable = true;
+
+  # Graphical terminal
+  programs.ghostty.enable = thisMachineIsPersonal;
+
+  # Advanced terminal file explorer
+  programs.broot.enable = true;
+
+  # Shell promt theming
+  programs.fish.enable = true;
+  programs.starship.enable = true;
+  programs.starship.enableFishIntegration = true;
+  programs.starship.enableInteractive = true;
+  # programs.oh-my-posh.enable = true;
+  # programs.oh-my-posh.enableFishIntegration = true;
+
+  # Advanced search
+  programs.ripgrep.enable = true;
+
+  # tldr: Simplified, example based and community-driven man pages.
+  programs.tealdeer.enable = true;
+
   programs.zed-editor = {
     enable = thisMachineIsPersonal;
     extensions = [

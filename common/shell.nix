@@ -21,8 +21,6 @@
     shellInit = ''
       # disable annoying fish shell greeting
       set fish_greeting
-
-      alias sudo="doas"
     '';
   };
 
@@ -36,6 +34,13 @@
     io_rand_write = "${pkgs.fio}/bin/fio --name TEST --eta-newline=5s --filename=temp.file --rw=randrw --size=2g --io_size=10g --blocksize=4k --ioengine=libaio --fsync=1 --iodepth=1 --direct=1 --numjobs=1 --runtime=60 --group_reporting; rm temp.file";
 
     llsblk = "lsblk -o +uuid,fsType";
+
+    sudo = "doas";
+
+    ls = "pls";
+    ls2 = "eza";
+
+    explorer = "broot";
   };
 
   nixpkgs.overlays = [
