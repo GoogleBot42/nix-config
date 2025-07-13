@@ -28,7 +28,6 @@ in
       indexDir = "/var/lib/mailindex";
       enableManageSieve = true;
       fullTextSearch.enable = true;
-      fullTextSearch.indexAttachments = true;
       fullTextSearch.memoryLimit = 500;
       inherit domains;
       loginAccounts = {

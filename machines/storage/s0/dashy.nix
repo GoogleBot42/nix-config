@@ -214,15 +214,6 @@
             statusCheck = true;
             id = "0_836_matrix";
           };
-          radio = {
-            title = "Radio";
-            description = "Radio service";
-            icon = "generative";
-            url = "https://radio.runyan.org";
-            target = "sametab";
-            statusCheck = true;
-            id = "1_836_radio";
-          };
           mumble = {
             title = "Mumble";
             description = "voice.neet.space";
@@ -280,7 +271,6 @@
         };
         servicesList = [
           servicesItems.matrix
-          servicesItems.radio
           servicesItems.mumble
           servicesItems.irc
           servicesItems.git

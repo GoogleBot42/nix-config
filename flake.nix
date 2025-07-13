@@ -1,7 +1,7 @@
 {
   inputs = {
     # nixpkgs
-    nixpkgs.url = "github:NixOS/nixpkgs/master";
+    nixpkgs.url = "github:NixOS/nixpkgs/release-25.05";
 
     # Common Utils Among flake inputs
     systems.url = "github:nix-systems/default";
@@ -19,16 +19,16 @@
 
     # Home Manager
     home-manager = {
-      url = "github:nix-community/home-manager";
+      url = "github:nix-community/home-manager/release-25.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     # Mail Server
     simple-nixos-mailserver = {
-      url = "gitlab:simple-nixos-mailserver/nixos-mailserver/master";
+      url = "gitlab:simple-nixos-mailserver/nixos-mailserver/nixos-25.05";
       inputs = {
         nixpkgs.follows = "nixpkgs";
-        nixpkgs-24_05.follows = "nixpkgs";
+        nixpkgs-25_05.follows = "nixpkgs";
         flake-compat.follows = "flake-compat";
       };
     };
@@ -41,19 +41,6 @@
         systems.follows = "systems";
         home-manager.follows = "home-manager";
       };
-    };
-
-    # Radio
-    radio = {
-      url = "git+https://git.neet.dev/zuckerberg/radio.git?ref=main&rev=5bf607fed977d41a269942a7d1e92f3e6d4f2473";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        flake-utils.follows = "flake-utils";
-      };
-    };
-    radio-web = {
-      url = "git+https://git.neet.dev/zuckerberg/radio-web.git";
-      flake = false;
     };
 
     # Dailybot
@@ -131,7 +118,7 @@
                 name = "nixpkgs-patched";
                 src = nixpkgs;
                 patches = [
-                  ./patches/gamepadui.patch
+                  # ./patches/gamepadui.patch
                   ./patches/dont-break-nix-serve.patch
                 ];
               };

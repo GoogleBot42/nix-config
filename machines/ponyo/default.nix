@@ -56,44 +56,6 @@
     config.services.drastikbot.dataDir
   ];
 
-  # music radio
-  vpn-container.enable = true;
-  vpn-container.config = {
-    services.radio = {
-      enable = true;
-      host = "radio.runyan.org";
-    };
-  };
-  pia.wireguard.badPortForwardPorts = [ ];
-  services.nginx.virtualHosts = {
-    "radio.runyan.org" = {
-      enableACME = true;
-      forceSSL = true;
-      locations = {
-        "/stream.mp3" = {
-          proxyPass = "http://vpn.containers:8001/stream.mp3";
-          extraConfig = ''
-            add_header Access-Control-Allow-Origin *;
-          '';
-        };
-        "/".root = config.inputs.radio-web;
-      };
-    };
-    "radio.neet.space" = {
-      enableACME = true;
-      forceSSL = true;
-      locations = {
-        "/stream.mp3" = {
-          proxyPass = "http://vpn.containers:8001/stream.mp3";
-          extraConfig = ''
-            add_header Access-Control-Allow-Origin *;
-          '';
-        };
-        "/".root = config.inputs.radio-web;
-      };
-    };
-  };
-
   # matrix home server
   services.matrix = {
     enable = true;
