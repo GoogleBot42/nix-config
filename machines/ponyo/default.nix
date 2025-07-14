@@ -95,12 +95,12 @@
     root = "/var/www/tmp";
   };
 
-  # redirect runyan.org to github
-  services.nginx.virtualHosts."runyan.org" = {
+  # redirect neet.cloud to nextcloud instance on runyan.org
+  services.nginx.virtualHosts."neet.cloud" = {
     enableACME = true;
     forceSSL = true;
     extraConfig = ''
-      rewrite ^/(.*)$ https://github.com/GoogleBot42 redirect;
+      return 302 https://runyan.org$request_uri;
     '';
   };
 
