@@ -136,36 +136,15 @@ lib.mkMerge [
   }
   {
     # hardware encode/decode with amdgpu vaapi
-    systemd.services.frigate = {
-      environment.LIBVA_DRIVER_NAME = "radeonsi";
-      serviceConfig = {
-        SupplementaryGroups = [ "render" "video" ]; # for access to dev/dri/*
-        AmbientCapabilities = "CAP_PERFMON";
-      };
-    };
+    services.frigate.vaapiDriver = "radeonsi";
     services.frigate.settings.ffmpeg.hwaccel_args = "preset-vaapi";
   }
   {
     # Coral TPU for frigate
-    services.udev.packages = [ pkgs.libedgetpu ];
-    users.groups.apex = { };
-    systemd.services.frigate.environment.LD_LIBRARY_PATH = "${pkgs.libedgetpu}/lib";
-    systemd.services.frigate.serviceConfig.SupplementaryGroups = [ "apex" ];
-
-    # Coral PCIe driver
-    boot.extraModulePackages = with config.boot.kernelPackages; [ gasket ];
-    services.udev.extraRules = ''
-      SUBSYSTEM=="apex", MODE="0660", GROUP="apex"
-    '';
-
     services.frigate.settings.detectors.coral = {
       type = "edgetpu";
       device = "pci";
     };
-  }
-  {
-    # Fix bug in nixos module where cache is not cleared when starting the service because "rm" cannot be found
-    systemd.services.frigate.serviceConfig.ExecStartPre = lib.mkForce "${pkgs.bash}/bin/sh -c 'rm -f /var/cache/frigate/*.mp4'";
   }
   {
     # Don't require authentication for frigate
