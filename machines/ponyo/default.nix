@@ -78,7 +78,7 @@
   services.postgresql.package = pkgs.postgresql_15;
 
   # iodine DNS-based vpn
-  services.iodine.server.enable = true;
+  # services.iodine.server.enable = true;
 
   # proxied web services
   services.nginx.enable = true;
