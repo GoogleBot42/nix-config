@@ -19,6 +19,7 @@ in
 
   # Modern "ls" replacement
   programs.pls.enable = true;
+  programs.pls.enableFishIntegration = true;
   programs.eza.enable = true;
 
   # Graphical terminal
@@ -40,6 +41,12 @@ in
 
   # tldr: Simplified, example based and community-driven man pages.
   programs.tealdeer.enable = true;
+
+  home.shellAliases = {
+    sudo = "doas";
+    ls2 = "eza";
+    explorer = "broot";
+  };
 
   programs.zed-editor = {
     enable = thisMachineIsPersonal;
