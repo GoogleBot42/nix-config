@@ -199,5 +199,9 @@ in
     # perspective of a perticular machine but is instead intended for reflecting on
     # the properties of all machines as a whole system.
     thisMachine.config = config.machines.hosts.${config.networking.hostName};
+
+    # Add ssh keys from KeepassXC
+    machines.ssh.userKeys = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILACiZO7QnB4bcmziVaUkUE0ZPMR0M/yJbbHYsHIZz9g" ];
+    machines.ssh.deployKeys = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID58MvKGs3GDMMcN8Iyi9S59SciSrVM97wKtOvUAl3li" ];
   };
 }
