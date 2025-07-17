@@ -6,6 +6,8 @@ let
 
   nextcloudHostname = "runyan.org";
   collaboraOnlineHostname = "collabora.runyan.org";
+  whiteboardHostname = "whiteboard.runyan.org";
+  whiteboardPort = 3002; # Seems impossible to change
 
   # Hardcoded public ip of ponyo... I wish I didn't need this...
   public_ip_address = "147.135.114.130";
@@ -28,7 +30,7 @@ in
         inherit end_to_end_encryption mail spreed;
 
         # For file and document editing (collabora online and excalidraw)
-        inherit richdocuments;
+        inherit richdocuments whiteboard;
 
         # Might use
         inherit calendar qownnotesapi;
@@ -117,5 +119,37 @@ in
           Type = "oneshot";
         };
       };
+
+    # Whiteboard
+    services.nextcloud-whiteboard-server = {
+      enable = true;
+      settings.NEXTCLOUD_URL = "https://${nextcloudHostname}";
+      secrets = [ "/run/agenix/whiteboard-server-jwt-secret" ];
+    };
+    systemd.services.nextcloud-config-whiteboard = {
+      wantedBy = [ "multi-user.target" ];
+      after = [ "nextcloud-setup.service" ];
+      requires = [ "coolwsd.service" ];
+      path = [
+        config.services.nextcloud.occ
+      ];
+      script = ''
+        nextcloud-occ -- config:app:set whiteboard collabBackendUrl --value="https://${whiteboardHostname}"
+        nextcloud-occ -- config:app:set whiteboard jwt_secret_key --value="$JWT_SECRET_KEY"
+      '';
+      serviceConfig = {
+        Type = "oneshot";
+        EnvironmentFile = [ "/run/agenix/whiteboard-server-jwt-secret" ];
+      };
+    };
+    age.secrets.whiteboard-server-jwt-secret.file = ../../secrets/whiteboard-server-jwt-secret.age;
+    services.nginx.virtualHosts.${whiteboardHostname} = {
+      enableACME = true;
+      forceSSL = true;
+      locations."/" = {
+        proxyPass = "http://localhost:${toString whiteboardPort}";
+        proxyWebsockets = true;
+      };
+    };
   };
 }

@@ -31,6 +31,7 @@ with roles;
 
   # cloud
   "nextcloud-pw.age".publicKeys = nextcloud;
+  "whiteboard-server-jwt-secret.age".publicKeys = nextcloud;
   "smb-secrets.age".publicKeys = personal ++ media-center;
   "oauth2-proxy-env.age".publicKeys = server;
 
