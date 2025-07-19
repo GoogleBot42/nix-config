@@ -24,6 +24,10 @@ in
 
   # Graphical terminal
   programs.ghostty.enable = thisMachineIsPersonal;
+  programs.ghostty.settings = {
+    theme = "Snazzy";
+    font-size = 10;
+  };
 
   # Advanced terminal file explorer
   programs.broot.enable = true;
