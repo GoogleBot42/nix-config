@@ -38,6 +38,7 @@ with roles;
   # services
   "searx.age".publicKeys = nobody;
   "wolframalpha.age".publicKeys = dailybot;
+  "linkwarden-environment.age".publicKeys = linkwarden;
 
   # hostapd
   "hostapd-pw-experimental-tower.age".publicKeys = nobody;

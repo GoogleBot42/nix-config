@@ -251,6 +251,7 @@
         (mkVirtualHost "sandman.s0.neet.dev" "http://192.168.9.14:3000") # es
         (mkVirtualHost "todo.s0.neet.dev" "http://localhost:${toString config.services.vikunja.port}")
         (mkVirtualHost "budget.s0.neet.dev" "http://localhost:${toString config.services.actual.settings.port}") # actual budget
+        (mkVirtualHost "linkwarden.s0.neet.dev" "http://localhost:${toString config.services.linkwarden.port}")
       ];
 
     tailscaleAuth = {
@@ -313,6 +314,19 @@
   ];
 
   services.actual.enable = true;
+
+  services.linkwarden = {
+    enable = true;
+    enableRegistration = true;
+    port = 41709;
+    environment.NEXTAUTH_URL = "https://linkwarden.s0.neet.dev/api/v1/auth";
+    environmentFile = "/run/agenix/linkwarden-environment";
+  };
+  age.secrets.linkwarden-environment.file = ../../../secrets/linkwarden-environment.age;
+  services.meilisearch = {
+    enable = true;
+    package = pkgs.meilisearch;
+  };
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv7l-linux" ];
 }

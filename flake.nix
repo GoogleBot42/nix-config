@@ -2,6 +2,10 @@
   inputs = {
     # nixpkgs
     nixpkgs.url = "github:NixOS/nixpkgs/release-25.05";
+    nixpkgs-linkwarden = {
+      url = "https://github.com/NixOS/nixpkgs/pull/347353.diff";
+      flake = false;
+    };
 
     # Common Utils Among flake inputs
     systems.url = "github:nix-systems/default";
@@ -124,6 +128,7 @@
                   # I tried to use an overlay but my attempts to override the rust package did not work out
                   # despite me following guides and examples specific to rust packages.
                   ./patches/librespot-pin.patch
+                  inputs.nixpkgs-linkwarden
                 ];
               };
               patchedNixpkgs = nixpkgs.lib.fix (self: (import "${patchedNixpkgsSrc}/flake.nix").outputs { self = nixpkgs; });
