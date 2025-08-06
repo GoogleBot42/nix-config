@@ -30,3 +30,8 @@ gc:
 .PHONY: update-input
 update-input:
 	nix flake update $(filter-out $@,$(MAKECMDGOALS))
+
+# Build Custom Install ISO
+.PHONY: iso
+iso:
+	nix build .#packages.x86_64-linux.iso
