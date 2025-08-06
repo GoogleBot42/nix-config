@@ -6,7 +6,8 @@
     nixos-hardware.nixosModules.framework-13-7040-amd
   ];
 
-  boot.kernelPackages = pkgs.linuxPackages_6_14;
+  # boot.kernelPackages = pkgs.linuxPackages_6_14;
+  boot.kernelPackages = pkgs.linuxPackages_6_13;
 
   hardware.framework.amd-7040.preventWakeOnAC = true;
   services.fwupd.enable = true;
