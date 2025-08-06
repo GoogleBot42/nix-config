@@ -15,7 +15,14 @@
     ];
   };
   networking.firewall.allowedTCPPorts = [
-    1883 # mqtt
+    # mqtt
+    1883
+
+    # Must be exposed so some local devices (such as HA voice preview) can pair with home assistant
+    config.services.home-assistant.config.http.server_port
+
+    # Music assistant (must be exposed so local devices can fetch the audio stream from it)
+    8097
   ];
 
   services.zigbee2mqtt = {
@@ -75,11 +82,22 @@
       "homekit_controller"
       "zha"
       "bluetooth"
+      "whisper"
+      "piper"
+      "wyoming"
+      "tts"
+      "music_assistant"
+      "openai_conversation"
     ];
     config = {
       # Includes dependencies for a basic setup
       # https://www.home-assistant.io/integrations/default_config/
       default_config = { };
+
+      homeassistant = {
+        external_url = "https://ha.s0.neet.dev";
+        internal_url = "http://192.168.1.2:${toString config.services.home-assistant.config.http.server_port}";
+      };
 
       # Enable reverse proxy support
       http = {
@@ -104,5 +122,29 @@
         };
       };
     };
+  };
+
+  services.wyoming.faster-whisper.servers."hass" = {
+    enable = true;
+    uri = "tcp://0.0.0.0:45785";
+    model = "distil-small.en";
+    language = "en";
+  };
+
+  services.wyoming.piper.servers."hass" = {
+    enable = true;
+    uri = "tcp://0.0.0.0:45786";
+    voice = "en_US-joe-medium";
+  };
+
+  services.music-assistant = {
+    enable = true;
+    providers = [
+      "hass"
+      "hass_players"
+      "jellyfin"
+      "radiobrowser"
+      "spotify"
+    ];
   };
 }

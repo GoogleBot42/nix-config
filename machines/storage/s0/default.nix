@@ -237,7 +237,7 @@
             globalRedirect = "s0.neet.dev";
           };
         }
-        (mkVirtualHost "ha.s0.neet.dev" "http://localhost:8123") # home assistant
+        (mkVirtualHost "ha.s0.neet.dev" "http://localhost:${toString config.services.home-assistant.config.http.server_port}")
         (mkVirtualHost "esphome.s0.neet.dev" "http://localhost:6052")
         (mkVirtualHost "zigbee.s0.neet.dev" "http://localhost:55834")
         {

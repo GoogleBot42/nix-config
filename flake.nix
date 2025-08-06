@@ -120,6 +120,10 @@
                 patches = [
                   # ./patches/gamepadui.patch
                   ./patches/dont-break-nix-serve.patch
+                  # music-assistant needs a specific custom version of librespot
+                  # I tried to use an overlay but my attempts to override the rust package did not work out
+                  # despite me following guides and examples specific to rust packages.
+                  ./patches/librespot-pin.patch
                 ];
               };
               patchedNixpkgs = nixpkgs.lib.fix (self: (import "${patchedNixpkgsSrc}/flake.nix").outputs { self = nixpkgs; });

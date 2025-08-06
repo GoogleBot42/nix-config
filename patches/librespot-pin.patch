@@ -1,0 +1,28 @@
+diff --git a/pkgs/applications/audio/librespot/default.nix b/pkgs/applications/audio/librespot/default.nix
+index 9694c3d0cf4f..ca9502de7ee1 100644
+--- a/pkgs/applications/audio/librespot/default.nix
++++ b/pkgs/applications/audio/librespot/default.nix
+@@ -25,14 +25,19 @@ rustPlatform.buildRustPackage rec {
+   version = "0.6.0";
+ 
+   src = fetchFromGitHub {
+-    owner = "librespot-org";
++    owner = "googlebot42";
+     repo = "librespot";
+-    rev = "v${version}";
+-    sha256 = "sha256-dGQDRb7fgIkXelZKa+PdodIs9DxbgEMlVGJjK/hU3Mo=";
++    rev = "786cc46199e583f304a84c786acb0a9b37bc3fbd";
++    sha256 = "sha256-xaOrqC8yCjF23Tz31RD3CzqZ3xxrDM6ncW1yoovEaGQ=";
+   };
+ 
+   useFetchCargoVendor = true;
+-  cargoHash = "sha256-SqvJSHkyd1IicT6c4pE96dBJNNodULhpyG14HRGVWCk=";
++  cargoHash = "sha256-sUAZgOuBD9CGAy1mRqLRzVnVfxB0DqSCNAc2yzItTCA=";
++
++  cargoBuildFlags = [
++    "--features"
++    "passthrough-decoder"
++  ];
+ 
+   nativeBuildInputs = [
+     pkg-config
