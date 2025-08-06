@@ -22,8 +22,7 @@
 
   # networking.useDHCP = lib.mkForce true;
 
-  # TODO
-  # networking.usePredictableInterfaceNames = true;
+  networking.usePredictableInterfaceNames = false;
 
   powerManagement.cpuFreqGovernor = "ondemand";
 
