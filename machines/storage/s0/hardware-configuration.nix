@@ -58,25 +58,34 @@
     };
   swapDevices = [ ];
 
-  systemd.network.enable = true;
+  ### networking ###
+
+  # systemd.network.enable = true;
   networking = {
-    useNetworkd = true;
-    dhcpcd.enable = true;
+    # useNetworkd = true;
+    dhcpcd.enable = false;
+
     vlans = {
-      main = {
-        id = 1;
-        interface = "eth1";
-      };
       iot = {
         id = 2;
         interface = "eth1";
       };
     };
 
-    # Shouldn't be needed but it is. DHCP only works for a day or so while without these.
-    # This ensures that each interface is configured with DHCP
-    interfaces."main".useDHCP = true;
-    interfaces."iot".useDHCP = true;
+    interfaces.eth1.ipv4.addresses = [{
+      address = "192.168.1.2";
+      prefixLength = 21;
+    }];
+    interfaces.iot.ipv4.addresses = [{
+      address = "192.168.9.8";
+      prefixLength = 22;
+    }];
+
+    defaultGateway = {
+      interface = "eth1";
+      address = "192.168.1.1";
+    };
+    nameservers = [ "1.1.1.1" "8.8.8.8" ];
   };
 
   powerManagement.cpuFreqGovernor = "powersave";
