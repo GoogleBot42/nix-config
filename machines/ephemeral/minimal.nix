@@ -7,12 +7,20 @@
     ../../common/ssh.nix
   ];
 
-  boot.initrd.availableKernelModules = [ "ata_piix" "uhci_hcd" "e1000" "e1000e" "virtio_pci" "r8169" ];
+  boot.initrd.availableKernelModules = [
+    "ata_piix"
+    "uhci_hcd"
+    "e1000"
+    "e1000e"
+    "virtio_pci"
+    "r8169"
+    "sdhci"
+    "sdhci_pci"
+    "mmc_core"
+    "mmc_block"
+  ];
   boot.kernelParams = [
-    "panic=30"
-    "boot.panic_on_fail" # reboot the machine upon fatal boot issues
     "console=ttyS0,115200" # enable serial console
-    "console=tty1"
   ];
   boot.kernel.sysctl."vm.overcommit_memory" = "1";
 
