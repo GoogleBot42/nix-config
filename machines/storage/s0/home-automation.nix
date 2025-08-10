@@ -22,6 +22,7 @@
     config.services.home-assistant.config.http.server_port
 
     # Music assistant (must be exposed so local devices can fetch the audio stream from it)
+    8095
     8097
   ];
 
