@@ -1,0 +1,144 @@
+commit 3dac9f081f267e4a528decbd9d50e1f45ea7c2ba
+Author: SteveImmanuel <steve@telepix.net>
+Date:   Fri Jun 27 13:07:38 2025 +0900
+
+    Add flaresolverr support into linkwarden
+
+diff --git a/.env.sample b/.env.sample
+index bd3abcb0..0ca96d92 100644
+--- a/.env.sample
++++ b/.env.sample
+@@ -43,6 +43,7 @@ TEXT_CONTENT_LIMIT=
+ SEARCH_FILTER_LIMIT=
+ INDEX_TAKE_COUNT=
+ MEILI_TIMEOUT=
++FLARESOLVERR_URL=
+ 
+ # AI Settings
+ NEXT_PUBLIC_OLLAMA_ENDPOINT_URL=
+diff --git a/apps/worker/lib/archiveHandler.ts b/apps/worker/lib/archiveHandler.ts
+index 8ae19e2c..6c8656b2 100644
+--- a/apps/worker/lib/archiveHandler.ts
++++ b/apps/worker/lib/archiveHandler.ts
+@@ -6,6 +6,7 @@ import {
+   chromium,
+   devices,
+ } from "playwright";
++import axios from 'axios';
+ import { prisma } from "@linkwarden/prisma";
+ import sendToWayback from "./preservationScheme/sendToWayback";
+ import { AiTaggingMethod } from "@linkwarden/prisma/client";
+@@ -75,6 +76,22 @@ export default async function archiveHandler(
+   });
+ 
+   const { browser, context } = await getBrowser();
++
++  const captchaSolve = await solveCaptcha(link.url);
++
++  if (captchaSolve.status === 'error') {
++    console.error('Error solving captcha');
++  } else if (captchaSolve.status === 'fail') {
++    console.warn('Failed solving captcha');
++  } else if (captchaSolve.status === 'skip') {
++    console.info('Skip solving captcha');
++  } else {
++    if (captchaSolve.solution) {
++      console.info('Solving captcha');
++      await context.addCookies(captchaSolve.solution.cookies);
++    }
++  }
++
+   const page = await context.newPage();
+ 
+   createFolder({ filePath: `archives/preview/${link.collectionId}` });
+@@ -105,6 +122,7 @@ export default async function archiveHandler(
+           aiTag: user.aiTaggingMethod !== AiTaggingMethod.DISABLED,
+         };
+ 
++  let newLinkName = '';
+   try {
+     await Promise.race([
+       (async () => {
+@@ -127,6 +145,7 @@ export default async function archiveHandler(
+           // archive url
+ 
+           await page.goto(link.url, { waitUntil: "domcontentloaded" });
++          newLinkName = await page.title();
+ 
+           const metaDescription = await page.evaluate(() => {
+             const description = document.querySelector(
+@@ -186,10 +205,16 @@ export default async function archiveHandler(
+       where: { id: link.id },
+     });
+ 
+-    if (finalLink)
++    if (finalLink) {
++      // Replace the captcha-blocked link name if it has not been updated by user, else keep the same name
++      if (newLinkName === '' || finalLink.name === newLinkName || finalLink.name !== 'Just a moment...') {
++        newLinkName = finalLink.name;
++      }
++
+       await prisma.link.update({
+         where: { id: link.id },
+         data: {
++          name: newLinkName,
+           lastPreserved: new Date().toISOString(),
+           readable: !finalLink.readable ? "unavailable" : undefined,
+           image: !finalLink.image ? "unavailable" : undefined,
+@@ -203,6 +228,7 @@ export default async function archiveHandler(
+               : undefined,
+         },
+       });
++    }
+     else {
+       await removeFiles(link.id, link.collectionId);
+     }
+@@ -271,6 +297,48 @@ export function getBrowserOptions(): LaunchOptions {
+   return browserOptions;
+ }
+ 
++async function solveCaptcha(url: string, maxTimeout: number = 60000): Promise<{
++  status: string,
++  solution?: {
++    cookies: {
++      name: string,
++      value: string,
++      domain: string,
++      path: string,
++      secure: boolean,
++      expires?: number,
++      httpOnly?: boolean,
++      sameSite?: "Strict" | "Lax" | "None"
++    }[],
++  }
++}> {
++  if (process.env.FLARESOLVERR_URL) {
++    try {
++      const response = await axios.post(process.env.FLARESOLVERR_URL,
++        {
++          cmd: 'request.get',
++          url,
++          maxTimeout
++        },
++        {
++          headers: { 'Content-Type': 'application/json' }
++        }
++      )
++
++      if (response.status !== 200) {
++        return { status: 'fail' };
++      }
++
++      return { status: response.data.status, solution: response.data.solution };
++    } catch (error) {
++      console.error('Error during captcha solving:', error);
++      return { status: 'error' };
++    }
++  }
++
++  return { status: 'skip' };
++}
++
+ async function getBrowser(): Promise<{
+   browser: Browser;
+   context: BrowserContext;

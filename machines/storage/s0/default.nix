@@ -320,12 +320,25 @@
     enableRegistration = true;
     port = 41709;
     environment.NEXTAUTH_URL = "https://linkwarden.s0.neet.dev/api/v1/auth";
+    environment.FLARESOLVERR_URL = "http://localhost:${toString config.services.flaresolverr.port}/v1";
     environmentFile = "/run/agenix/linkwarden-environment";
+    package = pkgs.linkwarden.overrideAttrs (oldAttrs: {
+      # Add patch that adds support for flaresolverr
+      patches = oldAttrs.patches or [ ] ++ [
+        # https://github.com/linkwarden/linkwarden/pull/1251
+        ../../../patches/linkwarden-flaresolverr.patch
+      ];
+    });
   };
   age.secrets.linkwarden-environment.file = ../../../secrets/linkwarden-environment.age;
   services.meilisearch = {
     enable = true;
     package = pkgs.meilisearch;
+  };
+
+  services.flaresolverr = {
+    enable = true;
+    port = 48072;
   };
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv7l-linux" ];
