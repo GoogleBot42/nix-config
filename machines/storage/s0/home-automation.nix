@@ -148,4 +148,9 @@
       "spotify"
     ];
   };
+  networking.hosts = {
+    # Workaround for broken spotify api integration
+    # https://github.com/librespot-org/librespot/issues/1527#issuecomment-3167094158
+    "0.0.0.0" = [ "apresolve.spotify.com" ];
+  };
 }
