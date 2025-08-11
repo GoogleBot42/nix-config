@@ -272,6 +272,8 @@
         "zigbee.s0.neet.dev"
         "vacuum.s0.neet.dev"
         "todo.s0.neet.dev"
+        "budget.s0.neet.dev"
+        "linkwarden.s0.neet.dev"
       ];
       expectedTailnet = "koi-bebop.ts.net";
     };
