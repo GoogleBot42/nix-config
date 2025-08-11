@@ -17,7 +17,7 @@ with roles;
   "cris-hashed-email-pw.age".publicKeys = email-server;
   "sasl_relay_passwd.age".publicKeys = email-server;
   "hashed-robots-email-pw.age".publicKeys = email-server;
-  "robots-email-pw.age".publicKeys = gitea;
+  "robots-email-pw.age".publicKeys = gitea ++ outline;
 
   # nix binary cache
   # public key: s0.koi-bebop.ts.net:OjbzD86YjyJZpCp9RWaQKANaflcpKhtzBMNP8I2aPUU=

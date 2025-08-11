@@ -253,6 +253,7 @@
         (mkVirtualHost "budget.s0.neet.dev" "http://localhost:${toString config.services.actual.settings.port}") # actual budget
         (mkVirtualHost "linkwarden.s0.neet.dev" "http://localhost:${toString config.services.linkwarden.port}")
         (mkVirtualHost "memos.s0.neet.dev" "http://localhost:${toString config.services.memos.port}")
+        (mkVirtualHost "outline.s0.neet.dev" "http://localhost:${toString config.services.outline.port}")
       ];
 
     tailscaleAuth = {
@@ -276,6 +277,7 @@
         "budget.s0.neet.dev"
         "linkwarden.s0.neet.dev"
         # "memos.s0.neet.dev" # messes up memos /auth route
+        # "outline.s0.neet.dev" # messes up outline /auth route
       ];
       expectedTailnet = "koi-bebop.ts.net";
     };
@@ -349,6 +351,27 @@
     enable = true;
     address = "127.0.0.1";
     port = 57643;
+  };
+
+  services.outline = {
+    enable = true;
+    forceHttps = false; # https through nginx
+    port = 43933;
+    publicUrl = "https://outline.s0.neet.dev";
+    storage.storageType = "local";
+    smtp = {
+      secure = true;
+      fromEmail = "robot@runyan.org";
+      username = "robot@runyan.org";
+      replyEmail = "robot@runyan.org";
+      host = "mail.neet.dev";
+      port = 465;
+      passwordFile = "/run/agenix/robots-email-pw";
+    };
+  };
+  age.secrets.robots-email-pw = {
+    file = ../../../secrets/robots-email-pw.age;
+    owner = config.services.outline.user;
   };
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv7l-linux" ];
