@@ -6,6 +6,10 @@
       url = "https://github.com/NixOS/nixpkgs/pull/347353.diff";
       flake = false;
     };
+    nixpkgs-memos = {
+      url = "https://github.com/NixOS/nixpkgs/pull/426687.diff";
+      flake = false;
+    };
 
     # Common Utils Among flake inputs
     systems.url = "github:nix-systems/default";
@@ -129,6 +133,7 @@
                   # despite me following guides and examples specific to rust packages.
                   ./patches/librespot-pin.patch
                   inputs.nixpkgs-linkwarden
+                  inputs.nixpkgs-memos
                 ];
               };
               patchedNixpkgs = nixpkgs.lib.fix (self: (import "${patchedNixpkgsSrc}/flake.nix").outputs { self = nixpkgs; });

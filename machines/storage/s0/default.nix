@@ -252,6 +252,7 @@
         (mkVirtualHost "todo.s0.neet.dev" "http://localhost:${toString config.services.vikunja.port}")
         (mkVirtualHost "budget.s0.neet.dev" "http://localhost:${toString config.services.actual.settings.port}") # actual budget
         (mkVirtualHost "linkwarden.s0.neet.dev" "http://localhost:${toString config.services.linkwarden.port}")
+        (mkVirtualHost "memos.s0.neet.dev" "http://localhost:${toString config.services.memos.port}")
       ];
 
     tailscaleAuth = {
@@ -274,6 +275,7 @@
         "todo.s0.neet.dev"
         "budget.s0.neet.dev"
         "linkwarden.s0.neet.dev"
+        # "memos.s0.neet.dev" # messes up memos /auth route
       ];
       expectedTailnet = "koi-bebop.ts.net";
     };
@@ -341,6 +343,12 @@
   services.flaresolverr = {
     enable = true;
     port = 48072;
+  };
+
+  services.memos = {
+    enable = true;
+    address = "127.0.0.1";
+    port = 57643;
   };
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv7l-linux" ];

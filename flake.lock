@@ -283,6 +283,18 @@
         "url": "https://github.com/NixOS/nixpkgs/pull/347353.diff"
       }
     },
+    "nixpkgs-memos": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-UidUaQY+9vo90rNCVInX1E+JbJ1xKFVSTMNRYKQEKpQ=",
+        "type": "file",
+        "url": "https://github.com/NixOS/nixpkgs/pull/426687.diff"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://github.com/NixOS/nixpkgs/pull/426687.diff"
+      }
+    },
     "root": {
       "inputs": {
         "agenix": "agenix",
@@ -295,6 +307,7 @@
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs",
         "nixpkgs-linkwarden": "nixpkgs-linkwarden",
+        "nixpkgs-memos": "nixpkgs-memos",
         "simple-nixos-mailserver": "simple-nixos-mailserver",
         "systems": "systems"
       }
