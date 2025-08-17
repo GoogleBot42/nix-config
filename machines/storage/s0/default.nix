@@ -254,6 +254,7 @@
         (mkVirtualHost "linkwarden.s0.neet.dev" "http://localhost:${toString config.services.linkwarden.port}")
         (mkVirtualHost "memos.s0.neet.dev" "http://localhost:${toString config.services.memos.port}")
         (mkVirtualHost "outline.s0.neet.dev" "http://localhost:${toString config.services.outline.port}")
+        (mkVirtualHost "languagetool.s0.neet.dev" "http://localhost:${toString config.services.languagetool.port}")
       ];
 
     tailscaleAuth = {
@@ -278,6 +279,7 @@
         "linkwarden.s0.neet.dev"
         # "memos.s0.neet.dev" # messes up memos /auth route
         # "outline.s0.neet.dev" # messes up outline /auth route
+        "languagetool.s0.neet.dev"
       ];
       expectedTailnet = "koi-bebop.ts.net";
     };
@@ -372,6 +374,11 @@
   age.secrets.robots-email-pw = {
     file = ../../../secrets/robots-email-pw.age;
     owner = config.services.outline.user;
+  };
+
+  services.languagetool = {
+    enable = true;
+    port = 60613;
   };
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv7l-linux" ];
