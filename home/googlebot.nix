@@ -19,7 +19,7 @@ in
 
   # Modern "ls" replacement
   programs.pls.enable = true;
-  programs.pls.enableFishIntegration = true;
+  programs.pls.enableFishIntegration = false;
   programs.eza.enable = true;
 
   # Graphical terminal
