@@ -1,8 +1,8 @@
 diff --git a/pkgs/applications/audio/librespot/default.nix b/pkgs/applications/audio/librespot/default.nix
-index 9694c3d0cf4f..ca9502de7ee1 100644
+index f5ff221e1bfe..b85f6b53af1d 100644
 --- a/pkgs/applications/audio/librespot/default.nix
 +++ b/pkgs/applications/audio/librespot/default.nix
-@@ -25,14 +25,19 @@ rustPlatform.buildRustPackage rec {
+@@ -25,13 +25,18 @@ rustPlatform.buildRustPackage rec {
    version = "0.6.0";
  
    src = fetchFromGitHub {
@@ -11,13 +11,12 @@ index 9694c3d0cf4f..ca9502de7ee1 100644
      repo = "librespot";
 -    rev = "v${version}";
 -    sha256 = "sha256-dGQDRb7fgIkXelZKa+PdodIs9DxbgEMlVGJjK/hU3Mo=";
-+    rev = "786cc46199e583f304a84c786acb0a9b37bc3fbd";
-+    sha256 = "sha256-xaOrqC8yCjF23Tz31RD3CzqZ3xxrDM6ncW1yoovEaGQ=";
++    rev = "ab9ecb6d936edf24b18258be981966692e705a02";
++    sha256 = "sha256-7Wx7+2OYAczNKzqRH2v8fwNAfll27Bdr3Fo23uDtQ4Y=";
    };
  
-   useFetchCargoVendor = true;
 -  cargoHash = "sha256-SqvJSHkyd1IicT6c4pE96dBJNNodULhpyG14HRGVWCk=";
-+  cargoHash = "sha256-sUAZgOuBD9CGAy1mRqLRzVnVfxB0DqSCNAc2yzItTCA=";
++  cargoHash = "sha256-s6qUI+pDyfBRhuPuBsi2eVxH9DLXEgISf/N4ZY3zDgc=";
 +
 +  cargoBuildFlags = [
 +    "--features"

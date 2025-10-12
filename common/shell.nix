@@ -41,6 +41,9 @@
       # comma uses the "nix-index" package built into nixpkgs by default.
       # That package doesn't use the prebuilt nix-index database so it needs to be changed.
       comma = prev.comma.overrideAttrs (old: {
+        nativeBuildInputs = old.nativeBuildInputs ++ [
+          prev.makeWrapper
+        ];
         postInstall = ''
           wrapProgram $out/bin/comma \
             --prefix PATH : ${lib.makeBinPath [ prev.fzy config.programs.nix-index.package ]}
