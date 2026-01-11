@@ -14,11 +14,9 @@
     system76-keyboard-configurator
   ];
 
-  nixpkgs.config.rocmSupport = true;
   services.ollama = {
     enable = true;
-    acceleration = "rocm";
-    rocmOverrideGfx = "11.0.2";
+    package = pkgs.ollama-vulkan;
     host = "127.0.0.1";
   };
 

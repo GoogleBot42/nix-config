@@ -109,6 +109,6 @@
   services.owncast.hostname = "live.neet.dev";
 
   # librechat
-  services.librechat.enable = true;
-  services.librechat.host = "chat.neet.dev";
+  services.librechat-container.enable = true;
+  services.librechat-container.host = "chat.neet.dev";
 }

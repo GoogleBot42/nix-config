@@ -1,15 +1,7 @@
 {
   inputs = {
     # nixpkgs
-    nixpkgs.url = "github:NixOS/nixpkgs/release-25.05";
-    nixpkgs-linkwarden = {
-      url = "https://github.com/NixOS/nixpkgs/pull/347353.diff";
-      flake = false;
-    };
-    nixpkgs-memos = {
-      url = "https://github.com/NixOS/nixpkgs/pull/426687.diff";
-      flake = false;
-    };
+    nixpkgs.url = "github:NixOS/nixpkgs/master";
 
     # Common Utils Among flake inputs
     systems.url = "github:nix-systems/default";
@@ -27,7 +19,7 @@
 
     # Home Manager
     home-manager = {
-      url = "github:nix-community/home-manager/release-25.05";
+      url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -126,14 +118,7 @@
                 name = "nixpkgs-patched";
                 src = nixpkgs;
                 patches = [
-                  # ./patches/gamepadui.patch
                   ./patches/dont-break-nix-serve.patch
-                  # music-assistant needs a specific custom version of librespot
-                  # I tried to use an overlay but my attempts to override the rust package did not work out
-                  # despite me following guides and examples specific to rust packages.
-                  ./patches/librespot-pin.patch
-                  inputs.nixpkgs-linkwarden
-                  inputs.nixpkgs-memos
                 ];
               };
               patchedNixpkgs = nixpkgs.lib.fix (self: (import "${patchedNixpkgsSrc}/flake.nix").outputs { self = nixpkgs; });

@@ -84,6 +84,11 @@ lib.mkMerge [
     services.frigate = {
       enable = true;
       hostname = frigateHostname;
+
+      # Sadly this fails because it doesn't support frigate's var substition format
+      # which is critical... so what's even the point of it then?
+      checkConfig = false;
+
       settings = {
         mqtt = {
           enabled = true;

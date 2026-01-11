@@ -50,6 +50,8 @@ in
       config.inputs.deploy-rs.packages.${config.currentSystem}.deploy-rs
       lxqt.pavucontrol-qt
       deskflow
+      file-roller
+      android-tools
 
       # For Nix IDE
       nixpkgs-fmt
@@ -70,14 +72,9 @@ in
     services.avahi.enable = true;
     services.avahi.nssmdns4 = true;
 
-    programs.file-roller.enable = true;
-
     # Security
     services.gnome.gnome-keyring.enable = true;
     security.pam.services.googlebot.enableGnomeKeyring = true;
-
-    # Android dev
-    programs.adb.enable = true;
 
     # Mount personal SMB stores
     services.mount-samba.enable = true;

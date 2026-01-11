@@ -3,10 +3,10 @@
 with lib;
 
 let
-  cfg = config.services.librechat;
+  cfg = config.services.librechat-container;
 in
 {
-  options.services.librechat = {
+  options.services.librechat-container = {
     enable = mkEnableOption "librechat";
     port = mkOption {
       type = types.int;
@@ -21,7 +21,7 @@ in
   config = mkIf cfg.enable {
     virtualisation.oci-containers.containers = {
       librechat = {
-        image = "ghcr.io/danny-avila/librechat:v0.7.7";
+        image = "ghcr.io/danny-avila/librechat:v0.8.1";
         environment = {
           HOST = "0.0.0.0";
           MONGO_URI = "mongodb://host.containers.internal:27017/LibreChat";

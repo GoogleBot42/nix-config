@@ -104,6 +104,7 @@
 
     services.transmission = {
       enable = true;
+      package = pkgs.transmission_4;
       performanceNetParameters = true;
       user = "public_data";
       group = "public_data";
@@ -179,15 +180,10 @@
   # I could not figure out how to allow the container to access the encoder
   services.jellyfin.enable = true;
   users.users.${config.services.jellyfin.user}.extraGroups = [ "public_data" ];
-  nixpkgs.config.packageOverrides = pkgs: {
-    vaapiIntel = pkgs.vaapiIntel.override { enableHybridCodec = true; };
-  };
   hardware.graphics = {
     enable = true;
     extraPackages = with pkgs; [
       intel-media-driver
-      vaapiIntel
-      vaapiVdpau
       libvdpau-va-gl
       intel-compute-runtime # OpenCL filter support (hardware tonemapping and subtitle burn-in)
     ];
@@ -252,7 +248,7 @@
         (mkVirtualHost "todo.s0.neet.dev" "http://localhost:${toString config.services.vikunja.port}")
         (mkVirtualHost "budget.s0.neet.dev" "http://localhost:${toString config.services.actual.settings.port}") # actual budget
         (mkVirtualHost "linkwarden.s0.neet.dev" "http://localhost:${toString config.services.linkwarden.port}")
-        (mkVirtualHost "memos.s0.neet.dev" "http://localhost:${toString config.services.memos.port}")
+        (mkVirtualHost "memos.s0.neet.dev" "http://localhost:${toString config.services.memos.settings.MEMOS_PORT}")
         (mkVirtualHost "outline.s0.neet.dev" "http://localhost:${toString config.services.outline.port}")
         (mkVirtualHost "languagetool.s0.neet.dev" "http://localhost:${toString config.services.languagetool.port}")
       ];
@@ -328,15 +324,7 @@
     enableRegistration = true;
     port = 41709;
     environment.NEXTAUTH_URL = "https://linkwarden.s0.neet.dev/api/v1/auth";
-    environment.FLARESOLVERR_URL = "http://localhost:${toString config.services.flaresolverr.port}/v1";
     environmentFile = "/run/agenix/linkwarden-environment";
-    package = pkgs.linkwarden.overrideAttrs (oldAttrs: {
-      # Add patch that adds support for flaresolverr
-      patches = oldAttrs.patches or [ ] ++ [
-        # https://github.com/linkwarden/linkwarden/pull/1251
-        ../../../patches/linkwarden-flaresolverr.patch
-      ];
-    });
   };
   age.secrets.linkwarden-environment.file = ../../../secrets/linkwarden-environment.age;
   services.meilisearch = {
@@ -351,8 +339,7 @@
 
   services.memos = {
     enable = true;
-    address = "127.0.0.1";
-    port = 57643;
+    settings.MEMOS_PORT = "57643";
   };
 
   services.outline = {

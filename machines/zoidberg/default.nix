@@ -20,10 +20,6 @@
     );
   services.mount-samba.enable = true;
 
-  # Login DE Option: RetroArch
-  services.xserver.desktopManager.retroarch.enable = true;
-  services.xserver.desktopManager.retroarch.package = pkgs.retroarchFull;
-
   # wireless xbox controller support
   hardware.xone.enable = true;
   boot.kernelModules = [ "xone-wired" "xone-dongle" ];
@@ -69,16 +65,15 @@
   environment.systemPackages = with pkgs; [
     config.services.xserver.desktopManager.kodi.package
     spotify
-    retroarchFull
   ];
 
   # Command and Conquer Ports
   networking.firewall.allowedUDPPorts = [ 4321 27900 ];
   networking.firewall.allowedTCPPorts = [ 6667 28910 29900 29920 ];
 
-  nixpkgs.config.rocmSupport = true;
   services.ollama = {
     enable = true;
-    acceleration = "rocm";
+    package = pkgs.ollama-vulkan;
+    host = "127.0.0.1";
   };
 }
