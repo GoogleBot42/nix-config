@@ -12,6 +12,10 @@ in
   programs.home-manager.enable = true;
 
   services.ssh-agent.enable = true;
+  # Configure ssh askpass correctly
+  systemd.user.services.ssh-agent.Service.Environment = [
+    "SSH_ASKPASS=${pkgs.kdePackages.ksshaskpass}/bin/ksshaskpass"
+  ];
 
   # System Monitoring
   programs.btop.enable = true;
