@@ -15,6 +15,7 @@ in
       # kmail
       # plasma5Packages.kmail-account-wizard
       kdePackages.kate
+      kdePackages.kdeconnect-kde
     ];
   };
 }
