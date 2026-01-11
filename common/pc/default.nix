@@ -90,5 +90,9 @@ in
     environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
     fonts.packages = with pkgs; [ nerd-fonts.symbols-only ];
+
+    # SSH Ask pass
+    programs.ssh.enableAskPassword = true;
+    programs.ssh.askPassword = "${pkgs.kdePackages.ksshaskpass}/bin/ksshaskpass";
   };
 }
