@@ -35,3 +35,8 @@ update-input:
 .PHONY: iso
 iso:
 	nix build .#packages.x86_64-linux.iso
+
+# Deploy a host by name (ex: 's0')
+.PHONY: deploy
+deploy:
+	deploy --remote-build --boot --debug-logs --skip-checks .#$(filter-out $@,$(MAKECMDGOALS))
