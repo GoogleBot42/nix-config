@@ -63,18 +63,28 @@ in
           "cris@runyan.org"
         ];
       };
-      certificateScheme = "acme-nginx"; # use let's encrypt for certs
+      x509.useACMEHost = config.mailserver.fqdn; # use let's encrypt for certs
+      stateVersion = 3;
     };
     age.secrets.hashed-email-pw.file = ../../secrets/hashed-email-pw.age;
     age.secrets.cris-hashed-email-pw.file = ../../secrets/cris-hashed-email-pw.age;
     age.secrets.hashed-robots-email-pw.file = ../../secrets/hashed-robots-email-pw.age;
 
+    # Get let's encrypt cert
+    services.nginx = {
+      enable = true;
+      virtualHosts."${config.mailserver.fqdn}" = {
+        forceSSL = true;
+        enableACME = true;
+      };
+    };
+
     # sendmail to use xxx@domain instead of xxx@mail.domain
-    services.postfix.origin = "$mydomain";
+    services.postfix.settings.main.myorigin = "$mydomain";
 
     # relay sent mail through mailgun
     # https://www.howtoforge.com/community/threads/different-smtp-relays-for-different-domains-in-postfix.82711/#post-392620
-    services.postfix.config = {
+    services.postfix.settings.main = {
       smtp_sasl_auth_enable = "yes";
       smtp_sasl_security_options = "noanonymous";
       smtp_sasl_password_maps = "hash:/var/lib/postfix/conf/sasl_relay_passwd";
@@ -92,7 +102,6 @@ in
     age.secrets.sasl_relay_passwd.file = ../../secrets/sasl_relay_passwd.age;
 
     # webmail
-    services.nginx.enable = true;
     services.roundcube = {
       enable = true;
       hostName = config.mailserver.fqdn;

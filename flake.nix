@@ -25,10 +25,9 @@
 
     # Mail Server
     simple-nixos-mailserver = {
-      url = "gitlab:simple-nixos-mailserver/nixos-mailserver/nixos-25.05";
+      url = "gitlab:simple-nixos-mailserver/nixos-mailserver/master";
       inputs = {
         nixpkgs.follows = "nixpkgs";
-        nixpkgs-25_05.follows = "nixpkgs";
         flake-compat.follows = "flake-compat";
       };
     };
