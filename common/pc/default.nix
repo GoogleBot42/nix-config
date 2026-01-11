@@ -46,7 +46,6 @@ in
       spotify
       arduino
       yt-dlp
-      jellyfin-media-player
       joplin-desktop
       config.inputs.deploy-rs.packages.${config.currentSystem}.deploy-rs
       lxqt.pavucontrol-qt

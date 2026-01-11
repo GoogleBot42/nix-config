@@ -89,7 +89,6 @@
   };
 
   environment.systemPackages = with pkgs; [
-    jellyfin-media-player
     config.services.xserver.desktopManager.kodi.package
     spotify
     retroarchFull
