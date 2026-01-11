@@ -10,6 +10,10 @@
 
   nix.gc.automatic = lib.mkForce false;
 
+  environment.systemPackages = with pkgs; [
+    system76-keyboard-configurator
+  ];
+
   nixpkgs.config.rocmSupport = true;
   services.ollama = {
     enable = true;
