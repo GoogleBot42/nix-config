@@ -36,6 +36,11 @@ update-input:
 iso:
 	nix build .#packages.x86_64-linux.iso
 
+# Build Custom kexec image
+.PHONY: kexec-img
+kexec-img:
+	nix build .#packages.x86_64-linux.kexec
+
 # Deploy a host by name (ex: 's0')
 .PHONY: deploy
 deploy:

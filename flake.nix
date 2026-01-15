@@ -3,6 +3,11 @@
     # nixpkgs
     nixpkgs.url = "github:NixOS/nixpkgs/master";
 
+    nixos-generators = {
+      url = "github:nix-community/nixos-generators";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Common Utils Among flake inputs
     systems.url = "github:nix-systems/default";
     flake-utils = {
@@ -141,22 +146,17 @@
 
       packages =
         let
-          mkKexec = system:
-            (nixpkgs.lib.nixosSystem {
-              inherit system;
-              modules = [ ./machines/ephemeral/kexec.nix ];
-            }).config.system.build.kexec_tarball;
-          mkIso = system:
-            (nixpkgs.lib.nixosSystem {
-              inherit system;
-              modules = [ ./machines/ephemeral/iso.nix ];
-            }).config.system.build.isoImage;
+          mkEphemeral = system: format: inputs.nixos-generators.nixosGenerate {
+            inherit system;
+            inherit format;
+            modules = [ ./machines/ephemeral/minimal.nix ];
+          };
         in
         {
-          "x86_64-linux"."kexec" = mkKexec "x86_64-linux";
-          "x86_64-linux"."iso" = mkIso "x86_64-linux";
-          "aarch64-linux"."kexec" = mkKexec "aarch64-linux";
-          "aarch64-linux"."iso" = mkIso "aarch64-linux";
+          "x86_64-linux".kexec = mkEphemeral "x86_64-linux" "kexec-bundle";
+          "x86_64-linux".iso = mkEphemeral "x86_64-linux" "iso";
+          "aarch64-linux".kexec = mkEphemeral "aarch64-linux" "kexec-bundle";
+          "aarch64-linux".iso = mkEphemeral "aarch64-linux" "iso";
         };
 
       overlays.default = import ./overlays { inherit inputs; };

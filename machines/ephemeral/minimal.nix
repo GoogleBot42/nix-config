@@ -22,9 +22,7 @@
   boot.kernelParams = [
     "console=ttyS0,115200" # enable serial console
   ];
-  boot.kernel.sysctl."vm.overcommit_memory" = "1";
-
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  # boot.kernelPackages = pkgs.linuxPackages_latest;
 
   system.stateVersion = "21.11";
 
@@ -46,7 +44,7 @@
 
   environment.variables.GC_INITIAL_HEAP_SIZE = "1M";
 
-  networking.useDHCP = true;
+  # networking.useDHCP = true;
 
   services.openssh = {
     enable = true;
@@ -56,6 +54,5 @@
     };
   };
 
-  services.getty.autologinUser = "root";
   users.users.root.openssh.authorizedKeys.keys = config.machines.ssh.userKeys;
 }
