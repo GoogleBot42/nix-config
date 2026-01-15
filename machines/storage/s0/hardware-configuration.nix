@@ -65,40 +65,11 @@
     # useNetworkd = true;
     dhcpcd.enable = true;
     interfaces."eth0".useDHCP = true;
-    interfaces."eth1".useDHCP = false;
-    interfaces."main@eth1".useDHCP = true;
-    interfaces."iot@eth1".useDHCP = true;
-    interfaces."management@eth1".useDHCP = true;
-
-    vlans = {
-      main = {
-        id = 5;
-        interface = "eth1";
-      };
-      iot = {
-        id = 2;
-        interface = "eth1";
-      };
-      management = {
-        id = 4;
-        interface = "eth1";
-      };
-    };
-
-    # interfaces.eth1.ipv4.addresses = [{
-    #   address = "192.168.1.2";
-    #   prefixLength = 21;
-    # }];
-    # interfaces.iot.ipv4.addresses = [{
-    #   address = "192.168.9.8";
-    #   prefixLength = 22;
-    # }];
+    interfaces."eth1".useDHCP = true;
 
     defaultGateway = {
-      # interface = "eth1";
       address = "192.168.1.1";
     };
-    # nameservers = [ "1.1.1.1" "8.8.8.8" ];
   };
 
   powerManagement.cpuFreqGovernor = "powersave";
