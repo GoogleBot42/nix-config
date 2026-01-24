@@ -110,10 +110,10 @@ in
           config.services.nextcloud.occ
         ];
         script = ''
-          nextcloud-occ -- config:app:set richdocuments wopi_url --value ${lib.escapeShellArg wopi_url}
-          nextcloud-occ -- config:app:set richdocuments public_wopi_url --value ${lib.escapeShellArg public_wopi_url}
-          nextcloud-occ -- config:app:set richdocuments wopi_allowlist --value ${lib.escapeShellArg wopi_allowlist}
-          nextcloud-occ -- richdocuments:setup
+          nextcloud-occ config:app:set richdocuments wopi_url --value ${lib.escapeShellArg wopi_url}
+          nextcloud-occ config:app:set richdocuments public_wopi_url --value ${lib.escapeShellArg public_wopi_url}
+          nextcloud-occ config:app:set richdocuments wopi_allowlist --value ${lib.escapeShellArg wopi_allowlist}
+          nextcloud-occ richdocuments:setup
         '';
         serviceConfig = {
           Type = "oneshot";
@@ -134,8 +134,8 @@ in
         config.services.nextcloud.occ
       ];
       script = ''
-        nextcloud-occ -- config:app:set whiteboard collabBackendUrl --value="https://${whiteboardHostname}"
-        nextcloud-occ -- config:app:set whiteboard jwt_secret_key --value="$JWT_SECRET_KEY"
+        nextcloud-occ config:app:set whiteboard collabBackendUrl --value="https://${whiteboardHostname}"
+        nextcloud-occ config:app:set whiteboard jwt_secret_key --value="$JWT_SECRET_KEY"
       '';
       serviceConfig = {
         Type = "oneshot";
