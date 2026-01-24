@@ -41,7 +41,12 @@ iso:
 kexec-img:
 	nix build .#packages.x86_64-linux.kexec
 
-# Deploy a host by name (ex: 's0')
+# Deploy a host by name (ex: 's0') but don't activate
 .PHONY: deploy
 deploy:
 	deploy --remote-build --boot --debug-logs --skip-checks .#$(filter-out $@,$(MAKECMDGOALS))
+
+# Deploy a host by name (ex: 's0')
+.PHONY: deploy-activate
+deploy-activate:
+	deploy --remote-build --debug-logs --skip-checks .#$(filter-out $@,$(MAKECMDGOALS))
