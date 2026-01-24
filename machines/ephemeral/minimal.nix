@@ -5,6 +5,8 @@
     (modulesPath + "/installer/cd-dvd/channel.nix")
     ../../common/machine-info
     ../../common/ssh.nix
+    ../../common/flakes.nix
+    ../../common/shell.nix
   ];
 
   boot.initrd.availableKernelModules = [
@@ -36,6 +38,7 @@
     git-lfs
     wget
     htop
+    btop
     dnsutils
     pciutils
     usbutils
@@ -53,6 +56,8 @@
       PasswordAuthentication = false;
     };
   };
+
+  nix.flakes.enable = true;
 
   users.users.root.openssh.authorizedKeys.keys = config.machines.ssh.userKeys;
 }

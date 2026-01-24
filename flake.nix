@@ -145,11 +145,15 @@
           machineHosts;
 
       packages =
+        with inputs;
         let
-          mkEphemeral = system: format: inputs.nixos-generators.nixosGenerate {
+          mkEphemeral = system: format: nixos-generators.nixosGenerate {
             inherit system;
             inherit format;
-            modules = [ ./machines/ephemeral/minimal.nix ];
+            modules = [
+              ./machines/ephemeral/minimal.nix
+              nix-index-database.nixosModules.default
+            ];
           };
         in
         {
