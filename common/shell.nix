@@ -6,14 +6,11 @@
 # - add some handy shell commands
 
 {
-  environment.systemPackages = with pkgs; [
-    comma
-  ];
-
   # nix-index
   programs.nix-index.enable = true;
   programs.nix-index.enableFishIntegration = true;
   programs.command-not-found.enable = false;
+  programs.nix-index-database.comma.enable = true;
 
   programs.fish = {
     enable = true;
@@ -35,21 +32,4 @@
 
     llsblk = "lsblk -o +uuid,fsType";
   };
-
-  nixpkgs.overlays = [
-    (final: prev: {
-      # comma uses the "nix-index" package built into nixpkgs by default.
-      # That package doesn't use the prebuilt nix-index database so it needs to be changed.
-      comma = prev.comma.overrideAttrs (old: {
-        nativeBuildInputs = old.nativeBuildInputs ++ [
-          prev.makeWrapper
-        ];
-        postInstall = ''
-          wrapProgram $out/bin/comma \
-            --prefix PATH : ${lib.makeBinPath [ prev.fzy config.programs.nix-index.package ]}
-          ln -s $out/bin/comma $out/bin/,
-        '';
-      });
-    })
-  ];
 }

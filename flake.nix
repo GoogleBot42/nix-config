@@ -89,7 +89,7 @@
             simple-nixos-mailserver.nixosModule
             agenix.nixosModules.default
             dailybuild_modules.nixosModule
-            nix-index-database.nixosModules.nix-index
+            nix-index-database.nixosModules.default
             home-manager.nixosModules.home-manager
             self.nixosModules.kernel-modules
             ({ lib, ... }: {
