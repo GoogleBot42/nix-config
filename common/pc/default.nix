@@ -61,14 +61,22 @@ in
 
     # Networking
     networking.networkmanager.enable = true;
-    users.users.googlebot.extraGroups = [ "networkmanager" ];
 
     # Printing
     services.printing.enable = true;
     services.printing.drivers = with pkgs; [
       gutenprint
     ];
-    # Printer discovery
+
+    # Scanning
+    hardware.sane.enable = true;
+    hardware.sane.extraBackends = with pkgs; [
+      # Enable support for "driverless" scanners
+      # Check for support here: https://mfi.apple.com/account/airprint-search
+      sane-airscan
+    ];
+
+    # Printer/Scanner discovery
     services.avahi.enable = true;
     services.avahi.nssmdns4 = true;
 
@@ -94,5 +102,13 @@ in
     # SSH Ask pass
     programs.ssh.enableAskPassword = true;
     programs.ssh.askPassword = "${pkgs.kdePackages.ksshaskpass}/bin/ksshaskpass";
+
+    users.users.googlebot.extraGroups = [
+      # Networking
+      "networkmanager"
+      # Scanning
+      "scanner"
+      "lp"
+    ];
   };
 }
