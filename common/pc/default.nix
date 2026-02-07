@@ -11,7 +11,6 @@ in
     ./firefox.nix
     ./audio.nix
     ./pithos.nix
-    ./vscodium.nix
     ./discord.nix
     ./steam.nix
     ./touchpad.nix
