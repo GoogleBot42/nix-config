@@ -51,11 +51,14 @@ in
       deskflow
       file-roller
       android-tools
+      logseq
 
       # For Nix IDE
       nixpkgs-fmt
       nixd
       nil
+
+      godot-mono
     ];
 
     # Networking
