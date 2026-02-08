@@ -103,6 +103,7 @@ in
   };
 
   home.packages = lib.mkIf thisMachineIsPersonal [
+    pkgs.claude-code
     pkgs.dotnetCorePackages.dotnet_9.sdk # For Godot-Mono VSCode-Extension CSharp
   ];
 }
