@@ -67,6 +67,7 @@
 
   # Basic system packages
   environment.systemPackages = with pkgs; [
+    claude-code
     kakoune
     vim
     git

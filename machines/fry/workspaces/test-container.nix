@@ -4,7 +4,7 @@
 #
 # Add to sandboxed-workspace.workspaces in machines/fry/default.nix:
 #   sandboxed-workspace.workspaces.test-container = {
-#     type = "container";
+#     type = "container" OR "incus";
 #     config = ./workspaces/test-container.nix;
 #     ip = "192.168.83.50";
 #   };

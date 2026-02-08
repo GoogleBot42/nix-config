@@ -12,6 +12,7 @@ in
   imports = [
     ./vm.nix
     ./container.nix
+    ./incus.nix
   ];
 
   options.sandboxed-workspace = {
@@ -21,11 +22,12 @@ in
       type = types.attrsOf (types.submodule {
         options = {
           type = mkOption {
-            type = types.enum [ "vm" "container" ];
+            type = types.enum [ "vm" "container" "incus" ];
             description = ''
               Backend type for this workspace:
               - "vm": microVM with cloud-hypervisor (more isolation, uses virtiofs)
-              - "container": systemd-nspawn container (less overhead, uses bind mounts)
+              - "container": systemd-nspawn via NixOS containers (less overhead, uses bind mounts)
+              - "incus": Incus/LXD container (unprivileged, better security than NixOS containers)
             '';
           };
 
@@ -102,11 +104,13 @@ in
       cfg.workspaces);
 
     # Shell aliases for workspace management
-    # Service names differ by type: microvm@<name> for VMs, container@<name> for containers
     environment.shellAliases = lib.mkMerge (lib.mapAttrsToList
       (name: ws:
         let
-          serviceName = if ws.type == "vm" then "microvm@${name}" else "container@${name}";
+          serviceName =
+            if ws.type == "vm" then "microvm@${name}"
+            else if ws.type == "incus" then "incus-workspace-${name}"
+            else "container@${name}";
         in
         {
           "workspace_${name}" = "ssh googlebot@workspace-${name}";
@@ -144,7 +148,10 @@ in
       (lib.mapAttrs'
         (name: ws:
           let
-            serviceName = if ws.type == "vm" then "microvm@${name}" else "container@${name}";
+            serviceName =
+              if ws.type == "vm" then "microvm@${name}"
+              else if ws.type == "incus" then "incus-workspace-${name}"
+              else "container@${name}";
             claudeConfig = builtins.toJSON {
               hasCompletedOnboarding = true;
               theme = "dark";
@@ -186,6 +193,13 @@ in
               if [ ! -f /home/googlebot/sandboxed/${name}/claude-config/.claude.json ]; then
                 echo '${claudeConfig}' > /home/googlebot/sandboxed/${name}/claude-config/.claude.json
                 chown googlebot:users /home/googlebot/sandboxed/${name}/claude-config/.claude.json
+              fi
+            '' + lib.optionalString (ws.type == "incus") ''
+              # Copy credentials for incus (can't use bind mount for files inside another mount)
+              if [ -f /home/googlebot/.claude/.credentials.json ]; then
+                cp /home/googlebot/.claude/.credentials.json /home/googlebot/sandboxed/${name}/claude-config/.credentials.json
+                chown googlebot:users /home/googlebot/sandboxed/${name}/claude-config/.credentials.json
+                chmod 600 /home/googlebot/sandboxed/${name}/claude-config/.credentials.json
               fi
             '';
           }

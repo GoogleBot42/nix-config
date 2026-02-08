@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 
 # VM-specific configuration for sandboxed workspaces using microvm.nix
 # This module is imported by default.nix for workspaces with type = "vm"
@@ -47,6 +47,7 @@ let
 
   # Generate VM configuration for a workspace
   mkVmConfig = name: ws: {
+    inherit pkgs;  # Use host's pkgs (includes allowUnfree)
     config = import ws.config;
     specialArgs = { inputs = hostConfig.inputs; };
     extraModules = [
@@ -57,6 +58,21 @@ let
         networkInterface = { Type = "ether"; };
       })
       {
+        # Copy credentials from host mount to per-workspace config
+        systemd.services.claude-credentials = {
+          description = "Copy Claude credentials from host";
+          wantedBy = [ "multi-user.target" ];
+          before = [ "multi-user.target" ];
+          serviceConfig.Type = "oneshot";
+          script = ''
+            if [ -f /home/googlebot/.claude-credentials/.credentials.json ]; then
+              install -m 600 -o googlebot -g users \
+                /home/googlebot/.claude-credentials/.credentials.json \
+                /home/googlebot/claude-config/.credentials.json
+            fi
+          '';
+        };
+
         # MicroVM specific configuration
         microvm = {
           # Use cloud-hypervisor for better performance
@@ -100,6 +116,14 @@ let
               source = "/home/googlebot/sandboxed/${name}/claude-config";
               mountPoint = "/home/googlebot/claude-config";
             }
+            {
+              # Credentials-only directory (read-only)
+              # This directory should contain only .credentials.json
+              proto = "virtiofs";
+              tag = "claude-credentials";
+              source = "/home/googlebot/.claude-credentials";
+              mountPoint = "/home/googlebot/.claude-credentials";
+            }
           ];
 
           # Writeable overlay for /nix/store
@@ -111,12 +135,7 @@ let
           interfaces = [{
             type = "tap";
             id = "vm-${name}";
-            # Generate a deterministic MAC from workspace name (02: prefix = locally administered)
-            mac =
-              let
-                hash = builtins.hashString "sha256" name;
-              in
-              "02:${builtins.substring 0 2 hash}:${builtins.substring 2 2 hash}:${builtins.substring 4 2 hash}:${builtins.substring 6 2 hash}:${builtins.substring 8 2 hash}";
+            mac = lib.mkMac "vm-${name}";
           }];
 
           # Enable vsock for systemd-notify integration

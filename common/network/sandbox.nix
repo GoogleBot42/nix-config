@@ -99,6 +99,7 @@ in
       "interface-name:${cfg.bridgeName}"
       "interface-name:vm-*"
       "interface-name:ve-*"
+      "interface-name:veth*"
     ];
 
     # Make systemd-resolved listen on the bridge for workspace DNS queries.

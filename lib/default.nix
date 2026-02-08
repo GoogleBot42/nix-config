@@ -53,4 +53,13 @@ with lib;
       getElem = x: y: elemAt (elemAt ll y) x;
     in
     genList (y: genList (x: f x y (getElem x y)) innerSize) outerSize;
+
+  # Generate a deterministic MAC address from a name
+  # Uses locally administered unicast range (02:xx:xx:xx:xx:xx)
+  mkMac = name:
+    let
+      hash = builtins.hashString "sha256" name;
+      octets = map (i: builtins.substring i 2 hash) [ 0 2 4 6 8 ];
+    in
+    "02:${builtins.concatStringsSep ":" octets}";
 }

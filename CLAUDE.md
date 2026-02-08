@@ -48,8 +48,30 @@ Configuration: `common/sandboxed-workspace/`
 
 - `common/` - Shared NixOS modules for all machines
 - `home/` - Home Manager configurations
+- `lib/` - Custom lib functions (extends nixpkgs lib, accessible as `lib.*` in modules)
 - `machines/` - Per-machine configurations
 - `skills/` - Claude Code skills for common tasks
+
+## Shared Library
+
+Custom utility functions go in `lib/default.nix`. The flake extends `nixpkgs.lib` with these functions, so they're accessible as `lib.functionName` in all modules. Add reusable functions here when used in multiple places.
+
+## Code Comments
+
+Only add comments that provide value beyond what the code already shows:
+- Explain *why* something is done, not *what* is being done
+- Document non-obvious constraints or gotchas
+- Never add filler comments that repeat the code (e.g. `# Start the service` before a start command)
+
+## Bash Commands
+
+Do not redirect stderr to stdout (no `2>&1`). This can hide important output and errors.
+
+Do not use `doas` or `sudo` - they will fail. Ask the user to run privileged commands themselves.
+
+## Nix Commands
+
+Use `--no-link` with `nix build` to avoid creating `result` symlinks in the working directory.
 
 ## Git Commits
 
