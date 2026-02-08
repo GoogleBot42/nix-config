@@ -10,6 +10,9 @@
 
   nix.gc.automatic = lib.mkForce false;
 
+  # Upstream interface for sandbox networking (NAT)
+  networking.sandbox.upstreamInterface = lib.mkDefault "enp191s0";
+
   environment.systemPackages = with pkgs; [
     system76-keyboard-configurator
   ];

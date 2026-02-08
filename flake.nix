@@ -48,7 +48,7 @@
     };
 
     # Dailybot
-    dailybuild_modules = {
+    dailybot = {
       url = "git+https://git.neet.dev/zuckerberg/dailybot.git";
       inputs = {
         nixpkgs.follows = "nixpkgs";
@@ -71,6 +71,12 @@
       url = "github:Mic92/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # MicroVM support
+    microvm = {
+      url = "github:astro/microvm.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { self, nixpkgs, ... }@inputs:
@@ -88,9 +94,10 @@
             ./common
             simple-nixos-mailserver.nixosModule
             agenix.nixosModules.default
-            dailybuild_modules.nixosModule
+            dailybot.nixosModule
             nix-index-database.nixosModules.default
             home-manager.nixosModules.home-manager
+            microvm.nixosModules.host
             self.nixosModules.kernel-modules
             ({ lib, ... }: {
               config = {

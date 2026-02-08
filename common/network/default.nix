@@ -12,6 +12,7 @@ in
     ./ping.nix
     ./tailscale.nix
     ./vpn.nix
+    ./sandbox.nix
   ];
 
   options.networking.ip_forward = mkEnableOption "Enable ip forwarding";

@@ -14,6 +14,7 @@
     ./machine-info
     ./nix-builder.nix
     ./ssh.nix
+    ./sandboxed-workspace
   ];
 
   nix.flakes.enable = true;
