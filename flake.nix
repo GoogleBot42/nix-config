@@ -3,11 +3,6 @@
     # nixpkgs
     nixpkgs.url = "github:NixOS/nixpkgs/master";
 
-    nixos-generators = {
-      url = "github:nix-community/nixos-generators";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # Common Utils Among flake inputs
     systems.url = "github:nix-systems/default";
     flake-utils = {
@@ -149,26 +144,33 @@
         nixpkgs.lib.mapAttrs
           (hostname: cfg:
             mkSystem cfg.arch nixpkgs cfg.configurationPath hostname)
-          machineHosts;
-
-      packages =
-        with inputs;
-        let
-          mkEphemeral = system: format: nixos-generators.nixosGenerate {
+          machineHosts
+        //
+        (let
+          mkEphemeral = system: nixpkgs.lib.nixosSystem {
             inherit system;
-            inherit format;
             modules = [
               ./machines/ephemeral/minimal.nix
-              nix-index-database.nixosModules.default
+              inputs.nix-index-database.nixosModules.default
             ];
           };
-        in
-        {
-          "x86_64-linux".kexec = mkEphemeral "x86_64-linux" "kexec-bundle";
-          "x86_64-linux".iso = mkEphemeral "x86_64-linux" "iso";
-          "aarch64-linux".kexec = mkEphemeral "aarch64-linux" "kexec-bundle";
-          "aarch64-linux".iso = mkEphemeral "aarch64-linux" "iso";
+        in {
+          ephemeral-x86_64 = mkEphemeral "x86_64-linux";
+          ephemeral-aarch64 = mkEphemeral "aarch64-linux";
+        });
+
+      # kexec produces a tarball; for a self-extracting bundle see:
+      # https://github.com/nix-community/nixos-generators/blob/master/formats/kexec.nix#L60
+      packages = {
+        "x86_64-linux" = {
+          kexec = self.nixosConfigurations.ephemeral-x86_64.config.system.build.images.kexec;
+          iso = self.nixosConfigurations.ephemeral-x86_64.config.system.build.images.iso;
         };
+        "aarch64-linux" = {
+          kexec = self.nixosConfigurations.ephemeral-aarch64.config.system.build.images.kexec;
+          iso = self.nixosConfigurations.ephemeral-aarch64.config.system.build.images.iso;
+        };
+      };
 
       overlays.default = import ./overlays { inherit inputs; };
       nixosModules.kernel-modules = import ./overlays/kernel-modules;
