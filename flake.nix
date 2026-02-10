@@ -72,6 +72,15 @@
       url = "github:astro/microvm.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Up to date claude-code
+    claude-code-nix = {
+      url = "github:sadjow/claude-code-nix";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
+    };
   };
 
   outputs = { self, nixpkgs, ... }@inputs:
@@ -96,7 +105,10 @@
             self.nixosModules.kernel-modules
             ({ lib, ... }: {
               config = {
-                nixpkgs.overlays = [ self.overlays.default ];
+                nixpkgs.overlays = [
+                  self.overlays.default
+                  inputs.claude-code-nix.overlays.default
+                ];
 
                 environment.systemPackages = [
                   agenix.packages.${system}.agenix
@@ -146,18 +158,21 @@
             mkSystem cfg.arch nixpkgs cfg.configurationPath hostname)
           machineHosts
         //
-        (let
-          mkEphemeral = system: nixpkgs.lib.nixosSystem {
-            inherit system;
-            modules = [
-              ./machines/ephemeral/minimal.nix
-              inputs.nix-index-database.nixosModules.default
-            ];
-          };
-        in {
-          ephemeral-x86_64 = mkEphemeral "x86_64-linux";
-          ephemeral-aarch64 = mkEphemeral "aarch64-linux";
-        });
+        (
+          let
+            mkEphemeral = system: nixpkgs.lib.nixosSystem {
+              inherit system;
+              modules = [
+                ./machines/ephemeral/minimal.nix
+                inputs.nix-index-database.nixosModules.default
+              ];
+            };
+          in
+          {
+            ephemeral-x86_64 = mkEphemeral "x86_64-linux";
+            ephemeral-aarch64 = mkEphemeral "aarch64-linux";
+          }
+        );
 
       # kexec produces a tarball; for a self-extracting bundle see:
       # https://github.com/nix-community/nixos-generators/blob/master/formats/kexec.nix#L60

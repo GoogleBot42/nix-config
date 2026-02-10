@@ -18,6 +18,10 @@
     hostConfig.inputs.nix-index-database.nixosModules.default
   ];
 
+  nixpkgs.overlays = [
+    hostConfig.inputs.claude-code-nix.overlays.default
+  ];
+
   # Basic system configuration
   system.stateVersion = "25.11";
 
