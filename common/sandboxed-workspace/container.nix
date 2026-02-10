@@ -47,15 +47,9 @@ in
             hostPath = "/home/googlebot/sandboxed/${name}/ssh-host-keys";
             isReadOnly = false;
           };
-          # Per-workspace claude config for isolated session data
           "/home/googlebot/claude-config" = {
             hostPath = "/home/googlebot/sandboxed/${name}/claude-config";
             isReadOnly = false;
-          };
-          # Share credentials from host (read-only)
-          "/home/googlebot/claude-config/.credentials.json" = {
-            hostPath = "/home/googlebot/.claude/.credentials.json";
-            isReadOnly = true;
           };
         };
 

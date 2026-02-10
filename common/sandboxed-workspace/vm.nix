@@ -58,20 +58,11 @@ let
         networkInterface = { Type = "ether"; };
       })
       {
-        # Copy credentials from host mount to per-workspace config
-        systemd.services.claude-credentials = {
-          description = "Copy Claude credentials from host";
-          wantedBy = [ "multi-user.target" ];
-          before = [ "multi-user.target" ];
-          serviceConfig.Type = "oneshot";
-          script = ''
-            if [ -f /home/googlebot/.claude-credentials/.credentials.json ]; then
-              install -m 600 -o googlebot -g users \
-                /home/googlebot/.claude-credentials/.credentials.json \
-                /home/googlebot/claude-config/.credentials.json
-            fi
-          '';
-        };
+        environment.systemPackages = [
+          (lib.hiPrio (pkgs.writeShellScriptBin "claude" ''
+            exec ${pkgs.claude-code}/bin/claude --dangerously-skip-permissions "$@"
+          ''))
+        ];
 
         # MicroVM specific configuration
         microvm = {
@@ -115,14 +106,6 @@ let
               tag = "claude-config";
               source = "/home/googlebot/sandboxed/${name}/claude-config";
               mountPoint = "/home/googlebot/claude-config";
-            }
-            {
-              # Credentials-only directory (read-only)
-              # This directory should contain only .credentials.json
-              proto = "virtiofs";
-              tag = "claude-credentials";
-              source = "/home/googlebot/.claude-credentials";
-              mountPoint = "/home/googlebot/.claude-credentials";
             }
           ];
 

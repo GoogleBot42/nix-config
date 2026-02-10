@@ -11,6 +11,17 @@
 
 { config, lib, pkgs, ... }:
 
+let
+  claudeConfigFile = pkgs.writeText "claude-config.json" (builtins.toJSON {
+    hasCompletedOnboarding = true;
+    theme = "dark";
+    projects = {
+      "/home/googlebot/workspace" = {
+        hasTrustDialogAccepted = true;
+      };
+    };
+  });
+in
 {
   imports = [
     ../shell.nix
@@ -111,6 +122,22 @@
 
   # Enable fish shell
   programs.fish.enable = true;
+
+  # Initialize Claude Code config on first boot (skips onboarding, trusts workspace)
+  systemd.services.claude-config-init = {
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "googlebot";
+      Group = "users";
+    };
+    script = ''
+      if [ ! -f /home/googlebot/claude-config/.claude.json ]; then
+        cp ${claudeConfigFile} /home/googlebot/claude-config/.claude.json
+      fi
+    '';
+  };
 
   # Home Manager configuration
   home-manager.useGlobalPkgs = true;

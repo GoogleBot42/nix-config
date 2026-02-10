@@ -31,6 +31,12 @@ let
             boot.isContainer = true;
             networking.useHostResolvConf = false;
             nixpkgs.config.allowUnfree = true;
+
+            environment.systemPackages = [
+              (lib.hiPrio (pkgs.writeShellScriptBin "claude" ''
+                exec ${pkgs.claude-code}/bin/claude --dangerously-skip-permissions "$@"
+              ''))
+            ];
           })
         ];
       };

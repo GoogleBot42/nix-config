@@ -122,45 +122,13 @@ in
       cfg.workspaces);
 
     # Automatically generate SSH host keys and directories for all workspaces
-    systemd.services = lib.mkMerge [
-      # Create credentials-only directory for VMs (symlinks to actual credentials)
-      {
-        claude-credentials-dir = {
-          description = "Setup Claude credentials directory for VM workspaces";
-          wantedBy = [ "multi-user.target" ];
-          serviceConfig = {
-            Type = "oneshot";
-            RemainAfterExit = true;
-            User = "googlebot";
-            Group = "users";
-          };
-          script = ''
-            mkdir -p /home/googlebot/.claude-credentials
-            # Copy credentials file (not symlink - virtiofs can't follow host symlinks)
-            if [ -f /home/googlebot/.claude/.credentials.json ]; then
-              cp /home/googlebot/.claude/.credentials.json /home/googlebot/.claude-credentials/.credentials.json
-              chmod 600 /home/googlebot/.claude-credentials/.credentials.json
-            fi
-          '';
-        };
-      }
-      # Per-workspace setup services
-      (lib.mapAttrs'
+    systemd.services = lib.mapAttrs'
         (name: ws:
           let
             serviceName =
               if ws.type == "vm" then "microvm@${name}"
               else if ws.type == "incus" then "incus-workspace-${name}"
               else "container@${name}";
-            claudeConfig = builtins.toJSON {
-              hasCompletedOnboarding = true;
-              theme = "dark";
-              projects = {
-                "/home/googlebot/workspace" = {
-                  hasTrustDialogAccepted = true;
-                };
-              };
-            };
           in
           lib.nameValuePair "workspace-${name}-setup" {
             description = "Setup directories and SSH keys for workspace ${name}";
@@ -188,23 +156,9 @@ in
                 chown googlebot:users /home/googlebot/sandboxed/${name}/ssh-host-keys/ssh_host_ed25519_key*
                 echo "Generated SSH host key for workspace ${name}"
               fi
-
-              # Create claude-code config to skip onboarding and trust ~/workspace
-              if [ ! -f /home/googlebot/sandboxed/${name}/claude-config/.claude.json ]; then
-                echo '${claudeConfig}' > /home/googlebot/sandboxed/${name}/claude-config/.claude.json
-                chown googlebot:users /home/googlebot/sandboxed/${name}/claude-config/.claude.json
-              fi
-            '' + lib.optionalString (ws.type == "incus") ''
-              # Copy credentials for incus (can't use bind mount for files inside another mount)
-              if [ -f /home/googlebot/.claude/.credentials.json ]; then
-                cp /home/googlebot/.claude/.credentials.json /home/googlebot/sandboxed/${name}/claude-config/.credentials.json
-                chown googlebot:users /home/googlebot/sandboxed/${name}/claude-config/.credentials.json
-                chmod 600 /home/googlebot/sandboxed/${name}/claude-config/.credentials.json
-              fi
             '';
           }
         )
-        cfg.workspaces)
-    ];
+        cfg.workspaces;
   };
 }
