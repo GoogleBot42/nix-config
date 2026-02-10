@@ -112,5 +112,15 @@ in
       allowedTCPPorts = [ 53 ];
       allowedUDPPorts = [ 53 ];
     };
+
+    # Block sandboxes from reaching the local network (private RFC1918 ranges)
+    # while still allowing public internet access via NAT.
+    # The sandbox subnet itself is allowed so workspaces can reach the host gateway.
+    networking.firewall.extraForwardRules = ''
+      iifname ${cfg.bridgeName} ip daddr ${cfg.hostAddress} accept
+      iifname ${cfg.bridgeName} ip daddr 10.0.0.0/8 drop
+      iifname ${cfg.bridgeName} ip daddr 172.16.0.0/12 drop
+      iifname ${cfg.bridgeName} ip daddr 192.168.0.0/16 drop
+    '';
   };
 }
