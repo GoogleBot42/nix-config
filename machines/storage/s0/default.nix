@@ -254,7 +254,7 @@
       ];
 
     tailscaleAuth = {
-      enable = true;
+      enable = false; # Disabled for now because it doesn't work with tailscale's ACL tagged groups
       virtualHosts = [
         "bazarr.s0.neet.dev"
         "radarr.s0.neet.dev"
