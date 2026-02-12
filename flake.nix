@@ -156,36 +156,30 @@
         nixpkgs.lib.mapAttrs
           (hostname: cfg:
             mkSystem cfg.arch nixpkgs cfg.configurationPath hostname)
-          machineHosts
-        //
-        (
-          let
-            mkEphemeral = system: nixpkgs.lib.nixosSystem {
-              inherit system;
-              modules = [
-                ./machines/ephemeral/minimal.nix
-                inputs.nix-index-database.nixosModules.default
-              ];
-            };
-          in
-          {
-            ephemeral-x86_64 = mkEphemeral "x86_64-linux";
-            ephemeral-aarch64 = mkEphemeral "aarch64-linux";
-          }
-        );
+          machineHosts;
 
       # kexec produces a tarball; for a self-extracting bundle see:
       # https://github.com/nix-community/nixos-generators/blob/master/formats/kexec.nix#L60
-      packages = {
-        "x86_64-linux" = {
-          kexec = self.nixosConfigurations.ephemeral-x86_64.config.system.build.images.kexec;
-          iso = self.nixosConfigurations.ephemeral-x86_64.config.system.build.images.iso;
+      packages =
+        let
+          mkEphemeral = system: nixpkgs.lib.nixosSystem {
+            inherit system;
+            modules = [
+              ./machines/ephemeral/minimal.nix
+              inputs.nix-index-database.nixosModules.default
+            ];
+          };
+        in
+        {
+          "x86_64-linux" = {
+            kexec = (mkEphemeral "x86_64-linux").config.system.build.images.kexec;
+            iso = (mkEphemeral "x86_64-linux").config.system.build.images.iso;
+          };
+          "aarch64-linux" = {
+            kexec = (mkEphemeral "aarch64-linux").config.system.build.images.kexec;
+            iso = (mkEphemeral "aarch64-linux").config.system.build.images.iso;
+          };
         };
-        "aarch64-linux" = {
-          kexec = self.nixosConfigurations.ephemeral-aarch64.config.system.build.images.kexec;
-          iso = self.nixosConfigurations.ephemeral-aarch64.config.system.build.images.iso;
-        };
-      };
 
       overlays.default = import ./overlays { inherit inputs; };
       nixosModules.kernel-modules = import ./overlays/kernel-modules;
