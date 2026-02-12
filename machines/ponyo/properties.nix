@@ -10,7 +10,6 @@
   systemRoles = [
     "server"
     "email-server"
-    "iodine"
     "pia"
     "nextcloud"
     "dailybot"

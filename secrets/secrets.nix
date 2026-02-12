@@ -26,23 +26,16 @@ with roles;
   "binary-cache-push-sshkey.age".publicKeys = nobody; # this value is directly given to gitea
 
   # vpn
-  "iodine.age".publicKeys = iodine;
   "pia-login.age".publicKeys = pia;
 
   # cloud
   "nextcloud-pw.age".publicKeys = nextcloud;
   "whiteboard-server-jwt-secret.age".publicKeys = nextcloud;
   "smb-secrets.age".publicKeys = personal ++ media-center;
-  "oauth2-proxy-env.age".publicKeys = server;
 
   # services
-  "searx.age".publicKeys = nobody;
   "wolframalpha.age".publicKeys = dailybot;
   "linkwarden-environment.age".publicKeys = linkwarden;
-
-  # hostapd
-  "hostapd-pw-experimental-tower.age".publicKeys = nobody;
-  "hostapd-pw-CXNK00BF9176.age".publicKeys = nobody;
 
   # backups
   "backblaze-s3-backups.age".publicKeys = personal ++ server;

@@ -9,7 +9,6 @@ in
   imports = [
     ./pia-openvpn.nix
     ./pia-wireguard.nix
-    ./ping.nix
     ./tailscale.nix
     ./vpn.nix
     ./sandbox.nix

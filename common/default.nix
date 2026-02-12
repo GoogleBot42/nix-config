@@ -56,7 +56,6 @@
     pciutils
     usbutils
     killall
-    screen
     micro
     helix
     lm_sensors
