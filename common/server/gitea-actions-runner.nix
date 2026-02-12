@@ -1,4 +1,4 @@
-{ config, pkgs, lib, allModules, ... }:
+{ config, pkgs, lib, ... }:
 
 # Gitea Actions Runner. Starts 'host' runner that runs directly on the host inside of a nixos container
 # This is useful for providing a real Nix/OS builder to gitea.

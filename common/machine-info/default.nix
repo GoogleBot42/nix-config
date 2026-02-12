@@ -1,7 +1,7 @@
 # Gathers info about each machine to constuct overall configuration
 # Ex: Each machine already trusts each others SSH fingerprint already
 
-{ config, lib, pkgs, ... }:
+{ config, lib, ... }:
 
 let
   machines = config.machines.hosts;

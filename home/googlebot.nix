@@ -1,4 +1,4 @@
-{ config, lib, pkgs, osConfig, ... }:
+{ lib, pkgs, osConfig, ... }:
 
 # https://home-manager-options.extranix.com/
 # https://nix-community.github.io/home-manager/options.xhtml

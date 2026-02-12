@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ pkgs, ... }:
 
 # Improvements to the default shell
 # - use nix-index for command-not-found

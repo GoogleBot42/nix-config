@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ lib, pkgs, ... }:
 
 # Home Manager configuration for sandboxed workspace user environment
 # This sets up the shell and tools inside VMs and containers

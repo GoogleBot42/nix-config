@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, lib, ... }:
 
 let
   frigateHostname = "frigate.s0.neet.dev";

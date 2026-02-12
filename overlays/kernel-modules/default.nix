@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, ... }:
 
 # Adds additional kernel modules to the nixos system
 # Not actually an overlay but a module. Has to be this way because kernel
