@@ -32,6 +32,9 @@ let
             networking.useHostResolvConf = false;
             nixpkgs.config.allowUnfree = true;
 
+            # Incus containers don't support the kernel features nix sandbox requires
+            nix.settings.sandbox = false;
+
             environment.systemPackages = [
               (lib.hiPrio (pkgs.writeShellScriptBin "claude" ''
                 exec ${pkgs.claude-code}/bin/claude --dangerously-skip-permissions "$@"

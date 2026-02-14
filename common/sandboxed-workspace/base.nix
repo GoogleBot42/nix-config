@@ -114,6 +114,7 @@ in
 
   # Enable flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.trusted-users = [ "googlebot" ];
 
   # Make nixpkgs available in NIX_PATH and registry (like the NixOS ISO)
   # This allows `nix-shell -p`, `nix repl '<nixpkgs>'`, etc. to work
