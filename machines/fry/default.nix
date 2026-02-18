@@ -13,6 +13,18 @@
   # Upstream interface for sandbox networking (NAT)
   networking.sandbox.upstreamInterface = lib.mkDefault "enp191s0";
 
+  # Enable sandboxed workspace
+  sandboxed-workspace = {
+    enable = true;
+    workspaces.test-incus = {
+      type = "incus";
+      autoStart = true;
+      config = ./workspaces/test-container.nix;
+      ip = "192.168.83.90";
+      hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL0SNSy/MdW38NqKzLr1SG8WKrs8XkrqibacaJtJPzgW";
+    };
+  };
+
   environment.systemPackages = with pkgs; [
     system76-keyboard-configurator
   ];
