@@ -61,7 +61,8 @@ in
 
   programs.vscode = {
     enable = thisMachineIsPersonal;
-    package = pkgs.vscodium;
+    # Must use fhs version for vscode-lldb
+    package = pkgs.vscodium-fhs;
     profiles.default = {
       userSettings = {
         editor.formatOnSave = true;
@@ -77,6 +78,15 @@ in
         godotTools = {
           lsp.serverPort = 6005; # port needs to match Godot configuration
           editorPath.godot4 = "godot-mono";
+        };
+        rust-analyzer = {
+          restartServerOnConfigChange = true;
+          testExplorer = true;
+          server.path = "rust-analyzer"; # Use the rust-analyzer from PATH (which is set by nixEnvSelector from the project's flake)
+        };
+        nixEnvSelector = {
+          useFlakes = true; # This hasn't ever worked for me and I have to use shell.nix... but maybe someday
+          suggestion = false; # Stop really annoy nagging
         };
       };
       extensions = with pkgs.vscode-extensions; [
