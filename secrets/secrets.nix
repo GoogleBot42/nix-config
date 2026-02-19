@@ -7,6 +7,9 @@ let
 
   # nobody is using this secret but I still need to be able to r/w it
   nobody = sshKeys.userKeys;
+
+  # For secrets that all machines need to know
+  everyone = roles.personal ++ roles.server;
 in
 
 with roles;
@@ -22,8 +25,10 @@ with roles;
   # nix binary cache
   # public key: s0.koi-bebop.ts.net:OjbzD86YjyJZpCp9RWaQKANaflcpKhtzBMNP8I2aPUU=
   "binary-cache-private-key.age".publicKeys = binary-cache;
-  # public key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINpUZFFL9BpBVqeeU63sFPhR9ewuhEZerTCDIGW1NPSB
-  "binary-cache-push-sshkey.age".publicKeys = nobody; # this value is directly given to gitea
+
+  # attic binary cache
+  "atticd-credentials.age".publicKeys = binary-cache;
+  "attic-netrc.age".publicKeys = everyone;
 
   # vpn
   "pia-login.age".publicKeys = pia;

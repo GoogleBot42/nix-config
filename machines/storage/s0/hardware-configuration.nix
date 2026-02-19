@@ -72,5 +72,5 @@
     };
   };
 
-  powerManagement.cpuFreqGovernor = "powersave";
+  powerManagement.cpuFreqGovernor = "schedutil";
 }

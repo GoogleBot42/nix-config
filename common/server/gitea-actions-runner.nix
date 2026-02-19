@@ -1,132 +1,85 @@
-{ config, pkgs, lib, ... }:
+{ config, lib, ... }:
 
-# Gitea Actions Runner. Starts 'host' runner that runs directly on the host inside of a nixos container
-# This is useful for providing a real Nix/OS builder to gitea.
-# Warning, NixOS containers are not secure. For example, the container shares the /nix/store
-# Therefore, this should not be used to run untrusted code.
-# To enable, assign a machine the 'gitea-actions-runner' system role
-
-# TODO: skipping running inside of nixos container for now because of issues getting docker/podman running
+# Gitea Actions Runner inside a NixOS container.
+# The container shares the host's /nix/store (read-only) and nix-daemon socket,
+# so builds go through the host daemon and outputs land in the host store.
+# Warning: NixOS containers are not fully secure — do not run untrusted code.
+# To enable, assign a machine the 'gitea-actions-runner' system role.
 
 let
   thisMachineIsARunner = config.thisMachine.hasRole."gitea-actions-runner";
   containerName = "gitea-runner";
+  giteaRunnerUid = 991;
+  giteaRunnerGid = 989;
 in
 {
   config = lib.mkIf (thisMachineIsARunner && !config.boot.isContainer) {
-    # containers.${containerName} = {
-    #   ephemeral = true;
-    #   autoStart = true;
 
-    #   # for podman
-    #   enableTun = true;
+    containers.${containerName} = {
+      autoStart = true;
+      ephemeral = true;
 
-    #   # privateNetwork = true;
-    #   # hostAddress = "172.16.101.1";
-    #   # localAddress = "172.16.101.2";
+      bindMounts = {
+        "/run/agenix/gitea-actions-runner-token" = {
+          hostPath = "/run/agenix/gitea-actions-runner-token";
+          isReadOnly = true;
+        };
+        "/var/lib/gitea-runner" = {
+          hostPath = "/var/lib/gitea-runner";
+          isReadOnly = false;
+        };
+      };
 
-    #   bindMounts =
-    #     {
-    #       "/run/agenix/gitea-actions-runner-token" = {
-    #         hostPath = "/run/agenix/gitea-actions-runner-token";
-    #         isReadOnly = true;
-    #       };
-    #       "/var/lib/gitea-runner" = {
-    #         hostPath = "/var/lib/gitea-runner";
-    #         isReadOnly = false;
-    #       };
-    #     };
+      config = { config, lib, pkgs, ... }: {
+        system.stateVersion = "25.11";
 
-    #   extraFlags = [
-    #     # Allow podman
-    #     ''--system-call-filter=thisystemcalldoesnotexistforsure''
-    #   ];
+        services.gitea-actions-runner.instances.inst = {
+          enable = true;
+          name = containerName;
+          url = "https://git.neet.dev/";
+          tokenFile = "/run/agenix/gitea-actions-runner-token";
+          labels = [ "nixos:host" ];
+        };
 
-    #   additionalCapabilities = [
-    #     "CAP_SYS_ADMIN"
-    #   ];
+        # Disable dynamic user so runner state persists via bind mount
+        assertions = [{
+          assertion = config.systemd.services.gitea-runner-inst.enable;
+          message = "Expected systemd service 'gitea-runner-inst' is not enabled — the gitea-actions-runner module may have changed its naming scheme.";
+        }];
+        systemd.services.gitea-runner-inst.serviceConfig.DynamicUser = lib.mkForce false;
+        users.users.gitea-runner = {
+          uid = giteaRunnerUid;
+          home = "/var/lib/gitea-runner";
+          group = "gitea-runner";
+          isSystemUser = true;
+          createHome = true;
+        };
+        users.groups.gitea-runner.gid = giteaRunnerGid;
 
-    #   config = {
-    #     imports = allModules;
+        nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
-    #     # speeds up evaluation
-    #     nixpkgs.pkgs = pkgs;
-
-    #     networking.hostName = lib.mkForce containerName;
-
-    #     # don't use remote builders
-    #     nix.distributedBuilds = lib.mkForce false;
-
-    #     environment.systemPackages = with pkgs; [
-    #       git
-    #       # Gitea Actions rely heavily on node. Include it because it would be installed anyway.
-    #       nodejs
-    #     ];
-
-    #     services.gitea-actions-runner.instances.inst = {
-    #       enable = true;
-    #       name = config.networking.hostName;
-    #       url = "https://git.neet.dev/";
-    #       tokenFile = "/run/agenix/gitea-actions-runner-token";
-    #       labels = [
-    #         "ubuntu-latest:docker://node:18-bullseye"
-    #         "nixos:host"
-    #       ];
-    #     };
-
-    #     # To allow building on the host, must override the the service's config so it doesn't use a dynamic user
-    #     systemd.services.gitea-runner-inst.serviceConfig.DynamicUser = lib.mkForce false;
-    #     users.users.gitea-runner = {
-    #       home = "/var/lib/gitea-runner";
-    #       group = "gitea-runner";
-    #       isSystemUser = true;
-    #       createHome = true;
-    #     };
-    #     users.groups.gitea-runner = { };
-
-    #     virtualisation.podman.enable = true;
-    #     boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
-    #   };
-    # };
-
-    # networking.nat.enable = true;
-    # networking.nat.internalInterfaces = [
-    #   "ve-${containerName}"
-    # ];
-    # networking.ip_forward = true;
-
-    # don't use remote builders
-    nix.distributedBuilds = lib.mkForce false;
-
-    services.gitea-actions-runner.instances.inst = {
-      enable = true;
-      name = config.networking.hostName;
-      url = "https://git.neet.dev/";
-      tokenFile = "/run/agenix/gitea-actions-runner-token";
-      labels = [
-        "ubuntu-latest:docker://node:18-bullseye"
-        "nixos:host"
-      ];
+        environment.systemPackages = with pkgs; [
+          git
+          nodejs
+          jq
+          attic-client
+        ];
+      };
     };
 
-    environment.systemPackages = with pkgs; [
-      git
-      # Gitea Actions rely heavily on node. Include it because it would be installed anyway.
-      nodejs
-    ];
+    # Needs to be outside of the container because container uses's the host's nix-daemon
+    nix.settings.trusted-users = [ "gitea-runner" ];
 
-    # To allow building on the host, must override the the service's config so it doesn't use a dynamic user
-    systemd.services.gitea-runner-inst.serviceConfig.DynamicUser = lib.mkForce false;
+    # Matching user on host — the container's gitea-runner UID must be
+    # recognized by the host's nix-daemon as trusted (shared UID namespace)
     users.users.gitea-runner = {
+      uid = giteaRunnerUid;
       home = "/var/lib/gitea-runner";
       group = "gitea-runner";
       isSystemUser = true;
       createHome = true;
     };
-    users.groups.gitea-runner = { };
-
-    virtualisation.podman.enable = true;
-    boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+    users.groups.gitea-runner.gid = giteaRunnerGid;
 
     age.secrets.gitea-actions-runner-token.file = ../../secrets/gitea-actions-runner-token.age;
   };

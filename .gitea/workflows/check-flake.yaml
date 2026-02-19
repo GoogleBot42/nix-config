@@ -5,6 +5,7 @@ on: [push]
 env:
   DEBIAN_FRONTEND: noninteractive
   PATH: /run/current-system/sw/bin/
+  XDG_CONFIG_HOME: ${{ runner.temp }}/.config
 
 jobs:
   check-flake:
@@ -15,5 +16,34 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Configure Attic cache
+        run: |
+          attic login local "${{ vars.ATTIC_ENDPOINT }}" "${{ secrets.ATTIC_TOKEN }}"
+          attic use local:nixos
+
       - name: Check Flake
         run: nix flake check --all-systems --print-build-logs --log-format raw --show-trace
+
+      - name: Build all systems
+        run: |
+          nix eval .#nixosConfigurations --apply 'cs: builtins.attrNames cs' --json \
+            | jq -r '.[]' \
+            | xargs -I{} nix build ".#nixosConfigurations.{}.config.system.build.toplevel" --no-link --print-build-logs --log-format raw
+
+      - name: Push to cache
+        run: |
+          set -euo pipefail
+          # Get all system toplevel store paths
+          toplevels=$(nix eval .#nixosConfigurations --apply 'cs: map (n: "${cs.${n}.config.system.build.toplevel}") (builtins.attrNames cs)' --json | jq -r '.[]')
+          echo "Found $(echo "$toplevels" | wc -l) system toplevels"
+          # Expand to full closures, deduplicate, and filter out paths that are:
+          # - already signed by cache.nixos.org (available upstream)
+          # - smaller than 0.5MB (insignificant build artifacts)
+          paths=$(echo "$toplevels" \
+            | xargs nix path-info -r --json \
+            | jq -r '[to_entries[] | select(
+                (.value.signatures | all(startswith("cache.nixos.org") | not))
+                and .value.narSize >= 524288
+              ) | .key] | unique[]')
+          echo "Pushing $(echo "$paths" | wc -l) unique paths to cache"
+          echo "$paths" | xargs attic push local:nixos
