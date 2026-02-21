@@ -16,5 +16,6 @@
     ./librechat.nix
     ./actualbudget.nix
     ./unifi.nix
+    ./ntfy.nix
   ];
 }

@@ -108,4 +108,8 @@
   # librechat
   services.librechat-container.enable = true;
   services.librechat-container.host = "chat.neet.dev";
+
+  # push notifications
+  services.ntfy-sh.enable = true;
+  services.ntfy-sh.hostname = "ntfy.neet.dev";
 }
