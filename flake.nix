@@ -1,7 +1,7 @@
 {
   inputs = {
     # nixpkgs
-    nixpkgs.url = "github:NixOS/nixpkgs/master";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     # Common Utils Among flake inputs
     systems.url = "github:nix-systems/default";
