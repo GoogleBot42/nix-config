@@ -1,0 +1,42 @@
+name: Auto Update Flake
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch: {}
+
+env:
+  DEBIAN_FRONTEND: noninteractive
+  PATH: /run/current-system/sw/bin/
+  XDG_CONFIG_HOME: ${{ runner.temp }}/.config
+  ATTIC_ENDPOINT: ${{ vars.ATTIC_ENDPOINT }}
+  ATTIC_TOKEN: ${{ secrets.ATTIC_TOKEN }}
+
+jobs:
+  auto-update:
+    runs-on: nixos
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: master
+
+      - name: Update flake inputs
+        run: nix flake update --commit-lock-file
+
+      - name: Build and cache
+        run: bash .gitea/scripts/build-and-cache.sh
+
+      - name: Push updated lockfile
+        run: git push
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          curl -s \
+            -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
+            -H "Title: Flake auto-update failed" \
+            -H "Priority: high" \
+            -H "Tags: warning" \
+            -d "Auto-update workflow failed. Check: ${{ gitea.server_url }}/${{ gitea.repository }}/actions/runs/${{ gitea.run_id }}" \
+            ntfy.neet.dev/nix-flake-updates
