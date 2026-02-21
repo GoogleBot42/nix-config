@@ -1,9 +1,0 @@
-{ lib, ... }:
-
-{
-  imports = [
-    ./hardware-configuration.nix
-  ];
-
-  networking.hostName = "phil";
-}

@@ -175,10 +175,10 @@
             kexec = (mkEphemeral "x86_64-linux").config.system.build.images.kexec;
             iso = (mkEphemeral "x86_64-linux").config.system.build.images.iso;
           };
-          "aarch64-linux" = {
-            kexec = (mkEphemeral "aarch64-linux").config.system.build.images.kexec;
-            iso = (mkEphemeral "aarch64-linux").config.system.build.images.iso;
-          };
+          # "aarch64-linux" = {
+          #   kexec = (mkEphemeral "aarch64-linux").config.system.build.images.kexec;
+          #   iso = (mkEphemeral "aarch64-linux").config.system.build.images.iso;
+          # };
         };
 
       overlays.default = import ./overlays { inherit inputs; };

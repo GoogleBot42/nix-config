@@ -4,8 +4,8 @@ let
   builderUserName = "nix-builder";
 
   builderRole = "nix-builder";
-  builders = config.machines.withRole.${builderRole};
-  thisMachineIsABuilder = config.thisMachine.hasRole.${builderRole};
+  builders = config.machines.withRole.${builderRole} or [];
+  thisMachineIsABuilder = config.thisMachine.hasRole.${builderRole} or false;
 
   # builders don't include themselves as a remote builder
   otherBuilders = lib.filter (hostname: hostname != config.networking.hostName) builders;
