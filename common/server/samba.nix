@@ -26,6 +26,16 @@
           "printcap name" = "cups";
 
           "hide files" = "/.nobackup/.DS_Store/._.DS_Store/";
+
+          # Samba 4.22+ enables SMB3 directory leases by default, allowing clients
+          # to cache directory listings locally. When files are created locally on
+          # the server (bypassing Samba), these cached listings go stale because
+          # kernel oplocks — the mechanism that would break leases on local
+          # changes — is incompatible with smb2 leases. Enabling kernel oplocks
+          # would fix this but forces Samba to disable smb2 leases, durable
+          # handles, and level2 oplocks, losing handle caching performance.
+          # https://wiki.samba.org/index.php/Editing_files_locally_on_server:_interoperability
+          "smb3 directory leases" = "no";
         };
         public = {
           path = "/data/samba/Public";
