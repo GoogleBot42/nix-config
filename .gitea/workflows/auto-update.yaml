@@ -28,16 +28,28 @@ jobs:
           git config user.email "gitea-runner@neet.dev"
 
       - name: Update flake inputs
-        run: nix flake update --commit-lock-file
+        id: update
+        run: |
+          nix flake update
+          if git diff --quiet flake.lock; then
+            echo "No changes to flake.lock, nothing to do"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git add flake.lock
+            git commit -m "flake.lock: update inputs"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Build and cache
+        if: steps.update.outputs.changed == 'true'
         run: bash .gitea/scripts/build-and-cache.sh
 
       - name: Push updated lockfile
+        if: steps.update.outputs.changed == 'true'
         run: git push
 
       - name: Notify on failure
-        if: failure()
+        if: failure() && steps.update.outputs.changed == 'true'
         run: |
           curl -s \
             -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
