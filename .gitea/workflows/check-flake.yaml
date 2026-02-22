@@ -20,3 +20,14 @@ jobs:
 
       - name: Build and cache
         run: bash .gitea/scripts/build-and-cache.sh
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          curl -s \
+            -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
+            -H "Title: Flake check failed" \
+            -H "Priority: high" \
+            -H "Tags: warning" \
+            -d "Check failed for ${{ gitea.ref_name }}. Check: ${{ gitea.server_url }}/${{ gitea.repository }}/actions/runs/${{ gitea.run_number }}" \
+            https://ntfy.neet.dev/nix-flake-updates
