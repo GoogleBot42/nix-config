@@ -20,6 +20,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: master
+          token: ${{ secrets.PUSH_TOKEN }}
 
       - name: Configure git identity
         run: |
@@ -43,5 +44,5 @@ jobs:
             -H "Title: Flake auto-update failed" \
             -H "Priority: high" \
             -H "Tags: warning" \
-            -d "Auto-update workflow failed. Check: ${{ gitea.server_url }}/${{ gitea.repository }}/actions/runs/${{ gitea.run_id }}" \
+            -d "Auto-update workflow failed. Check: ${{ gitea.server_url }}/${{ gitea.repository }}/actions/runs/${{ gitea.run_number }}" \
             https://ntfy.neet.dev/nix-flake-updates
