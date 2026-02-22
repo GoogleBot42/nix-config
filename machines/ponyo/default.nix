@@ -112,4 +112,8 @@
   # push notifications
   services.ntfy-sh.enable = true;
   services.ntfy-sh.hostname = "ntfy.neet.dev";
+
+  # uptime monitoring
+  services.uptime-kuma.enable = true;
+  services.uptime-kuma.hostname = "status.neet.dev";
 }
