@@ -55,123 +55,135 @@
   users.users.googlebot.extraGroups = [ "transmission" ];
   users.groups.transmission.gid = config.ids.gids.transmission;
 
-  vpn-container.enable = true;
-  vpn-container.mounts = [
-    "/var/lib"
-    "/data/samba/Public"
-  ];
-  vpn-container.config = {
-    # servarr services
-    services.prowlarr.enable = true;
-    services.sonarr.enable = true;
-    services.sonarr.user = "public_data";
-    services.sonarr.group = "public_data";
-    services.bazarr.enable = true;
-    services.bazarr.user = "public_data";
-    services.bazarr.group = "public_data";
-    services.radarr.enable = true;
-    services.radarr.user = "public_data";
-    services.radarr.group = "public_data";
-    services.lidarr.enable = true;
-    services.lidarr.user = "public_data";
-    services.lidarr.group = "public_data";
-    services.recyclarr = {
-      enable = true;
-      configuration = {
-        radarr.radarr_main = {
-          api_key = {
-            _secret = "/run/credentials/recyclarr.service/radarr-api-key";
-          };
-          base_url = "http://localhost:7878";
+  pia-vpn = {
+    enable = true;
+    serverLocation = "swiss";
 
-          quality_definition.type = "movie";
+    containers.transmission = {
+      ip = "10.100.0.10";
+      mounts."/var/lib".hostPath = "/var/lib";
+      mounts."/data/samba/Public".hostPath = "/data/samba/Public";
+      receiveForwardedPort = { protocol = "both"; };
+      onPortForwarded = ''
+        # Notify Transmission of the PIA-assigned peer port via RPC
+        for i in $(seq 1 30); do
+          curlout=$(curl -s "http://transmission.containers:8080/transmission/rpc" 2>/dev/null) && break
+          sleep 2
+        done
+        regex='X-Transmission-Session-Id: (\w*)'
+        if [[ $curlout =~ $regex ]]; then
+          sessionId=''${BASH_REMATCH[1]}
+          curl -s "http://transmission.containers:8080/transmission/rpc" \
+            -d "{\"method\":\"session-set\",\"arguments\":{\"peer-port\":$PORT}}" \
+            -H "X-Transmission-Session-Id: $sessionId"
+        fi
+      '';
+      config = {
+        services.transmission = {
+          enable = true;
+          package = pkgs.transmission_4;
+          performanceNetParameters = true;
+          user = "public_data";
+          group = "public_data";
+          settings = {
+            "download-dir" = "/data/samba/Public/Media/Transmission";
+            "incomplete-dir" = "/var/lib/transmission/.incomplete";
+            "incomplete-dir-enabled" = true;
+
+            "rpc-enabled" = true;
+            "rpc-port" = 8080;
+            "rpc-bind-address" = "0.0.0.0";
+            "rpc-whitelist" = "127.0.0.1,10.100.*.*,192.168.*.*";
+            "rpc-host-whitelist-enabled" = false;
+
+            "port-forwarding-enabled" = true;
+            "peer-port" = 51413;
+            "peer-port-random-on-start" = false;
+
+            "encryption" = 1;
+            "lpd-enabled" = true;
+            "dht-enabled" = true;
+            "pex-enabled" = true;
+
+            "blocklist-enabled" = true;
+            "blocklist-updates-enabled" = true;
+            "blocklist-url" = "https://github.com/Naunter/BT_BlockLists/raw/master/bt_blocklists.gz";
+
+            "ratio-limit" = 3;
+            "ratio-limit-enabled" = true;
+
+            "download-queue-enabled" = true;
+            "download-queue-size" = 20;
+          };
         };
-        sonarr.sonarr_main = {
-          api_key = {
-            _secret = "/run/credentials/recyclarr.service/sonarr-api-key";
-          };
-          base_url = "http://localhost:8989";
+        # https://github.com/NixOS/nixpkgs/issues/258793
+        systemd.services.transmission.serviceConfig = {
+          RootDirectoryStartOnly = lib.mkForce (lib.mkForce false);
+          RootDirectory = lib.mkForce (lib.mkForce "");
+        };
 
-          quality_definition.type = "series";
+        users.groups.public_data.gid = 994;
+        users.users.public_data = {
+          isSystemUser = true;
+          group = "public_data";
+          uid = 994;
         };
       };
     };
 
-    systemd.services.recyclarr.serviceConfig.LoadCredential = [
-      "radarr-api-key:/run/agenix/radarr-api-key"
-      "sonarr-api-key:/run/agenix/sonarr-api-key"
-    ];
+    containers.servarr = {
+      ip = "10.100.0.11";
+      mounts."/var/lib".hostPath = "/var/lib";
+      mounts."/data/samba/Public".hostPath = "/data/samba/Public";
+      mounts."/run/agenix" = { hostPath = "/run/agenix"; isReadOnly = true; };
+      config = {
+        services.prowlarr.enable = true;
+        services.sonarr.enable = true;
+        services.sonarr.user = "public_data";
+        services.sonarr.group = "public_data";
+        services.bazarr.enable = true;
+        services.bazarr.user = "public_data";
+        services.bazarr.group = "public_data";
+        services.radarr.enable = true;
+        services.radarr.user = "public_data";
+        services.radarr.group = "public_data";
+        services.lidarr.enable = true;
+        services.lidarr.user = "public_data";
+        services.lidarr.group = "public_data";
+        services.recyclarr = {
+          enable = true;
+          configuration = {
+            radarr.radarr_main = {
+              api_key = {
+                _secret = "/run/credentials/recyclarr.service/radarr-api-key";
+              };
+              base_url = "http://localhost:7878";
+              quality_definition.type = "movie";
+            };
+            sonarr.sonarr_main = {
+              api_key = {
+                _secret = "/run/credentials/recyclarr.service/sonarr-api-key";
+              };
+              base_url = "http://localhost:8989";
+              quality_definition.type = "series";
+            };
+          };
+        };
 
-    services.transmission = {
-      enable = true;
-      package = pkgs.transmission_4;
-      performanceNetParameters = true;
-      user = "public_data";
-      group = "public_data";
-      settings = {
-        /* directory settings */
-        # "watch-dir" = "/srv/storage/Transmission/To-Download";
-        # "watch-dir-enabled" = true;
-        "download-dir" = "/data/samba/Public/Media/Transmission";
-        "incomplete-dir" = "/var/lib/transmission/.incomplete";
-        "incomplete-dir-enabled" = true;
+        systemd.services.recyclarr.serviceConfig.LoadCredential = [
+          "radarr-api-key:/run/agenix/radarr-api-key"
+          "sonarr-api-key:/run/agenix/sonarr-api-key"
+        ];
 
-        /* web interface, accessible from local network */
-        "rpc-enabled" = true;
-        "rpc-bind-address" = "0.0.0.0";
-        "rpc-whitelist" = "127.0.0.1,192.168.*.*,172.16.*.*";
-        "rpc-host-whitelist" = "void,192.168.*.*,172.16.*.*";
-        "rpc-host-whitelist-enabled" = false;
-
-        "port-forwarding-enabled" = true;
-        "peer-port" = 50023;
-        "peer-port-random-on-start" = false;
-
-        "encryption" = 1;
-        "lpd-enabled" = true; /* local peer discovery */
-        "dht-enabled" = true; /* dht peer discovery in swarm */
-        "pex-enabled" = true; /* peer exchange */
-
-        /* ip blocklist */
-        "blocklist-enabled" = true;
-        "blocklist-updates-enabled" = true;
-        "blocklist-url" = "https://github.com/Naunter/BT_BlockLists/raw/master/bt_blocklists.gz";
-
-        /* download speed settings */
-        # "speed-limit-down" = 1200;
-        # "speed-limit-down-enabled" = false;
-        # "speed-limit-up" = 500;
-        # "speed-limit-up-enabled" = true;
-
-        /* seeding limit */
-        "ratio-limit" = 3;
-        "ratio-limit-enabled" = true;
-
-        "download-queue-enabled" = true;
-        "download-queue-size" = 20; # gotta go fast
+        users.groups.public_data.gid = 994;
+        users.users.public_data = {
+          isSystemUser = true;
+          group = "public_data";
+          uid = 994;
+        };
       };
-    };
-    # https://github.com/NixOS/nixpkgs/issues/258793
-    systemd.services.transmission.serviceConfig = {
-      RootDirectoryStartOnly = lib.mkForce (lib.mkForce false);
-      RootDirectory = lib.mkForce (lib.mkForce "");
-    };
-
-    users.groups.public_data.gid = 994;
-    users.users.public_data = {
-      isSystemUser = true;
-      group = "public_data";
-      uid = 994;
     };
   };
-  pia.wireguard.badPortForwardPorts = [
-    9696 # prowlarr
-    8989 # sonarr
-    6767 # bazarr
-    7878 # radarr
-    8686 # lidarr
-    9091 # transmission web
-  ];
   age.secrets.radarr-api-key.file = ../../../secrets/radarr-api-key.age;
   age.secrets.sonarr-api-key.file = ../../../secrets/sonarr-api-key.age;
 
@@ -215,12 +227,12 @@
           };
       in
       lib.mkMerge [
-        (mkVirtualHost "bazarr.s0.neet.dev" "http://vpn.containers:6767")
-        (mkVirtualHost "radarr.s0.neet.dev" "http://vpn.containers:7878")
-        (mkVirtualHost "lidarr.s0.neet.dev" "http://vpn.containers:8686")
-        (mkVirtualHost "sonarr.s0.neet.dev" "http://vpn.containers:8989")
-        (mkVirtualHost "prowlarr.s0.neet.dev" "http://vpn.containers:9696")
-        (mkVirtualHost "transmission.s0.neet.dev" "http://vpn.containers:9091")
+        (mkVirtualHost "bazarr.s0.neet.dev" "http://servarr.containers:6767")
+        (mkVirtualHost "radarr.s0.neet.dev" "http://servarr.containers:7878")
+        (mkVirtualHost "lidarr.s0.neet.dev" "http://servarr.containers:8686")
+        (mkVirtualHost "sonarr.s0.neet.dev" "http://servarr.containers:8989")
+        (mkVirtualHost "prowlarr.s0.neet.dev" "http://servarr.containers:9696")
+        (mkVirtualHost "transmission.s0.neet.dev" "http://transmission.containers:8080")
         (mkVirtualHost "unifi.s0.neet.dev" "https://localhost:8443")
         (mkVirtualHost "music.s0.neet.dev" "http://localhost:4533")
         (mkVirtualHost "jellyfin.s0.neet.dev" "http://localhost:8096")

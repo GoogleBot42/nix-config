@@ -96,7 +96,7 @@
     { groups = [ "wheel" ]; persist = true; }
   ];
 
-  nix.gc.automatic = true;
+  nix.gc.automatic = !config.boot.isContainer;
 
   security.acme.acceptTerms = true;
   security.acme.defaults.email = "zuckerberg@neet.dev";

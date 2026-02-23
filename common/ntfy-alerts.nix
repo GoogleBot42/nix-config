@@ -16,6 +16,12 @@ in
       default = "service-failures";
       description = "ntfy topic to publish alerts to.";
     };
+
+    curlExtraArgs = lib.mkOption {
+      type = lib.types.str;
+      default = "";
+      description = "Extra arguments to pass to curl (e.g. --proxy http://host:port).";
+    };
   };
 
   config = lib.mkIf config.thisMachine.hasRole."ntfy" {
@@ -33,6 +39,7 @@ in
           ${lib.getExe pkgs.curl} \
             --fail --silent --show-error \
             --max-time 30 --retry 3 \
+            ${cfg.curlExtraArgs} \
             -H "Authorization: Bearer $NTFY_TOKEN" \
             -H "Title: Service failure on ${config.networking.hostName}" \
             -H "Priority: high" \
