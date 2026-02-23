@@ -9,7 +9,7 @@ let
   nobody = sshKeys.userKeys;
 
   # For secrets that all machines need to know
-  everyone = roles.personal ++ roles.server;
+  everyone = lib.unique (roles.personal ++ roles.server);
 in
 
 with roles;
@@ -43,8 +43,11 @@ with roles;
   "linkwarden-environment.age".publicKeys = linkwarden;
 
   # backups
-  "backblaze-s3-backups.age".publicKeys = personal ++ server;
-  "restic-password.age".publicKeys = personal ++ server;
+  "backblaze-s3-backups.age".publicKeys = everyone;
+  "restic-password.age".publicKeys = everyone;
+
+  # ntfy alerts
+  "ntfy-token.age".publicKeys = everyone;
 
   # gitea actions runner
   "gitea-actions-runner-token.age".publicKeys = gitea-actions-runner;

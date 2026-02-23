@@ -6,6 +6,7 @@
     ./binary-cache.nix
     ./flakes.nix
     ./auto-update.nix
+    ./ntfy-alerts.nix
     ./shell.nix
     ./network
     ./boot
