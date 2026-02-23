@@ -17,6 +17,6 @@
     ./actualbudget.nix
     ./unifi.nix
     ./ntfy.nix
-    ./uptime-kuma.nix
+    ./gatus.nix
   ];
 }

@@ -67,6 +67,12 @@ IP allocation convention: VMs `.10-.49`, containers `.50-.89`, incus `.90-.129` 
 
 `flake.nix` applies patches from `/patches/` to nixpkgs before building (workaround for nix#3920).
 
+### Service Dashboard & Monitoring
+
+When adding or removing a web-facing service, update both:
+- **Gatus** (`common/server/gatus.nix`) — add/remove the endpoint monitor
+- **Dashy** — add/remove the service entry from the dashboard config
+
 ### Key Conventions
 
 - Uses `doas` instead of `sudo` everywhere
@@ -83,3 +89,5 @@ IP allocation convention: VMs `.10-.49`, containers `.50-.89`, incus `.90-.129` 
 ## Git Worktree Requirement
 
 When instructed to work in a git worktree (e.g., via `isolation: "worktree"` or told to use a worktree), you **MUST** do so. If you are unable to create or use a git worktree, you **MUST** stop work immediately and report the failure to the user. Do not fall back to working in the main working tree.
+
+When applying work from a git worktree back to the main branch, commit in the worktree first, then use `git cherry-pick` from the main working tree to bring the commit over. Do not use `git checkout` or `git apply` to copy files directly. Do **not** automatically apply worktree work to the main branch — always ask the user for approval first.

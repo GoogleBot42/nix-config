@@ -114,6 +114,6 @@
   services.ntfy-sh.hostname = "ntfy.neet.dev";
 
   # uptime monitoring
-  services.uptime-kuma.enable = true;
-  services.uptime-kuma.hostname = "status.neet.dev";
+  services.gatus.enable = true;
+  services.gatus.hostname = "status.neet.dev";
 }
