@@ -102,5 +102,5 @@
   security.acme.defaults.email = "zuckerberg@neet.dev";
 
   # Enable Desktop Environment if this is a PC (machine role is "personal")
-  de.enable = lib.mkDefault (config.thisMachine.hasRole."personal");
+  de.enable = lib.mkDefault (config.thisMachine.hasRole."personal" && !config.boot.isContainer);
 }

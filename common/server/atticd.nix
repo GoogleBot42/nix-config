@@ -1,7 +1,7 @@
 { config, lib, ... }:
 
 {
-  config = lib.mkIf (config.thisMachine.hasRole."binary-cache") {
+  config = lib.mkIf (config.thisMachine.hasRole."binary-cache" && !config.boot.isContainer) {
     services.atticd = {
       enable = true;
       environmentFile = config.age.secrets.atticd-credentials.path;

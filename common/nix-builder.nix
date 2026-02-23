@@ -12,7 +12,7 @@ let
 in
 lib.mkMerge [
   # configure builder
-  (lib.mkIf thisMachineIsABuilder {
+  (lib.mkIf (thisMachineIsABuilder && !config.boot.isContainer) {
     users.users.${builderUserName} = {
       description = "Distributed Nix Build User";
       group = builderUserName;
