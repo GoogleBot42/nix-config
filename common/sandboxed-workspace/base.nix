@@ -27,6 +27,7 @@ in
     ../shell.nix
     hostConfig.inputs.home-manager.nixosModules.home-manager
     hostConfig.inputs.nix-index-database.nixosModules.default
+    hostConfig.inputs.agenix.nixosModules.default
   ];
 
   nixpkgs.overlays = [
@@ -115,6 +116,13 @@ in
   # Enable flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nix.settings.trusted-users = [ "googlebot" ];
+
+  # Binary cache configuration (inherited from host's common/binary-cache.nix)
+  nix.settings.substituters = hostConfig.nix.settings.substituters;
+  nix.settings.trusted-public-keys = hostConfig.nix.settings.trusted-public-keys;
+  nix.settings.fallback = true;
+  nix.settings.netrc-file = config.age.secrets.attic-netrc.path;
+  age.secrets.attic-netrc.file = ../../secrets/attic-netrc.age;
 
   # Make nixpkgs available in NIX_PATH and registry (like the NixOS ISO)
   # This allows `nix-shell -p`, `nix repl '<nixpkgs>'`, etc. to work
