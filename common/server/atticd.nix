@@ -49,6 +49,7 @@
     systemd.services.atticd = {
       after = [ "postgresql.service" ];
       requires = [ "postgresql.service" ];
+      partOf = [ "postgresql.service" ];
       serviceConfig = {
         DynamicUser = lib.mkForce false;
         User = "atticd";
