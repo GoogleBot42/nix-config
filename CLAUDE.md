@@ -79,3 +79,7 @@ IP allocation convention: VMs `.10-.49`, containers `.50-.89`, incus `.90-.129` 
 - Always use `--no-link` when running `nix build`
 - Don't use `nix build --dry-run` unless you only need evaluation — it skips the actual build
 - Avoid `2>&1` on nix commands — it can cause error output to be missed
+
+## Git Worktree Requirement
+
+When instructed to work in a git worktree (e.g., via `isolation: "worktree"` or told to use a worktree), you **MUST** do so. If you are unable to create or use a git worktree, you **MUST** stop work immediately and report the failure to the user. Do not fall back to working in the main working tree.
