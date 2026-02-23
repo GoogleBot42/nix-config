@@ -8,6 +8,7 @@
   systemRoles = [
     "personal"
     "dns-challenge"
+    "ntfy"
   ];
 
   hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID/Df5lG07Il7fizEgZR/T9bMlR0joESRJ7cqM9BkOyP";

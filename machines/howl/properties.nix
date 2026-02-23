@@ -7,6 +7,7 @@
 
   systemRoles = [
     "personal"
+    "ntfy"
   ];
 
   hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEQi3q8jU6vRruExAL60J7GFO1gS8HsmXVJuKRT4ljrG";

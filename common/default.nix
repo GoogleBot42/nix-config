@@ -7,6 +7,7 @@
     ./flakes.nix
     ./auto-update.nix
     ./ntfy-alerts.nix
+    ./zfs-alerts.nix
     ./shell.nix
     ./network
     ./boot

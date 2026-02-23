@@ -18,7 +18,7 @@ in
     };
   };
 
-  config = lib.mkIf (config.thisMachine.hasRole."server" || config.thisMachine.hasRole."personal") {
+  config = lib.mkIf config.thisMachine.hasRole."ntfy" {
     age.secrets.ntfy-token.file = ../secrets/ntfy-token.age;
 
     systemd.services."ntfy-failure@" = {

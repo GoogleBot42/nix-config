@@ -18,6 +18,7 @@
     "linkwarden"
     "outline"
     "dns-challenge"
+    "ntfy"
   ];
 
   hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAwiXcUFtAvZCayhu4+AIcF+Ktrdgv9ee/mXSIhJbp4q";

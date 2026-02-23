@@ -8,6 +8,7 @@
   systemRoles = [
     "personal"
     "media-center"
+    "ntfy"
   ];
 
   hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHvdC1EiLqSNVmk5L1p7cWRIrrlelbK+NMj6tEBrwqIq";
