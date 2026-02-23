@@ -7,10 +7,8 @@ let
 in
 {
   imports = [
-    ./pia-openvpn.nix
-    ./pia-wireguard.nix
+    ./pia-vpn
     ./tailscale.nix
-    ./vpn.nix
     ./sandbox.nix
   ];
 

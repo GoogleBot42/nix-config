@@ -86,8 +86,16 @@ When adding or removing a web-facing service, update both:
 - Don't use `nix build --dry-run` unless you only need evaluation — it skips the actual build
 - Avoid `2>&1` on nix commands — it can cause error output to be missed
 
-## Git Worktree Requirement
+## Git Worktrees
 
-When instructed to work in a git worktree (e.g., via `isolation: "worktree"` or told to use a worktree), you **MUST** do so. If you are unable to create or use a git worktree, you **MUST** stop work immediately and report the failure to the user. Do not fall back to working in the main working tree.
+When the user asks you to "start a worktree" or work in a worktree, **do not create one manually** with `git worktree add`. Instead, tell the user to start a new session with:
+
+```bash
+claude --worktree <name>
+```
+
+This is the built-in Claude Code worktree workflow. It creates the worktree at `.claude/worktrees/<name>/` with a branch `worktree-<name>` and starts a new Claude session inside it. Cleanup is handled automatically on exit.
+
+When instructed to work in a git worktree (e.g., via `isolation: "worktree"` on a subagent), you **MUST** do so. If you are unable to create or use a git worktree, you **MUST** stop work immediately and report the failure to the user. Do not fall back to working in the main working tree.
 
 When applying work from a git worktree back to the main branch, commit in the worktree first, then use `git cherry-pick` from the main working tree to bring the commit over. Do not use `git checkout` or `git apply` to copy files directly. Do **not** automatically apply worktree work to the main branch — always ask the user for approval first.
