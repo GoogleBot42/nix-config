@@ -140,8 +140,11 @@ in
       local interfaceName=$2
 
       echo "Applying WireGuard config to $interfaceName..."
+      echo "Running: wg setconf $interfaceName $wgFile"
       wg setconf "$interfaceName" "$wgFile"
+      echo "Running: ip -4 address add $MY_IP dev $interfaceName"
       ip -4 address add "$MY_IP" dev "$interfaceName"
+      echo "Running: ip link set mtu 1420 up dev $interfaceName"
       ip link set mtu 1420 up dev "$interfaceName"
       echo "WireGuard interface $interfaceName is up with IP $MY_IP"
     }
