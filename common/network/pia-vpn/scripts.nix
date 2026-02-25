@@ -3,15 +3,15 @@ let
 in
 
 # Bash function library for PIA VPN WireGuard operations.
-# All PIA API calls accept an optional $proxy variable:
-#   proxy="http://10.100.0.1:8888" fetchPIAToken
-# When $proxy is set, curl uses --proxy "$proxy"; otherwise direct connection.
+  # All PIA API calls accept an optional $proxy variable:
+  #   proxy="http://10.100.0.1:8888" fetchPIAToken
+  # When $proxy is set, curl uses --proxy "$proxy"; otherwise direct connection.
 
-# Reference materials:
-#   https://serverlist.piaservers.net/vpninfo/servers/v6
-#   https://github.com/pia-foss/manual-connections
-#   https://github.com/thrnz/docker-wireguard-pia/blob/master/extra/wg-gen.sh
-#   https://www.wireguard.com/netns/#ordinary-containerization
+  # Reference materials:
+  #   https://serverlist.piaservers.net/vpninfo/servers/v6
+  #   https://github.com/pia-foss/manual-connections
+  #   https://github.com/thrnz/docker-wireguard-pia/blob/master/extra/wg-gen.sh
+  #   https://www.wireguard.com/netns/#ordinary-containerization
 
 {
   scriptCommon = ''
@@ -46,9 +46,6 @@ in
       curl -s $(proxy_args) \
         "https://serverlist.piaservers.net/vpninfo/servers/v6" > "$servers"
       head -n 1 "$servers" | tr -d '\n' > "$servers_json"
-
-      echo "Available location ids:"
-      jq '.regions | .[] | {name, id, port_forward}' "$servers_json"
 
       totalservers=$(jq -r \
         '.regions | .[] | select(.id=="'"$serverLocation"'") | .servers.wg | length' \
