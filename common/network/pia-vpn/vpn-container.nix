@@ -51,6 +51,9 @@ let
 in
 {
   config = mkIf cfg.enable {
+    # Give the container more time to boot (pia-vpn-setup retries can delay readiness)
+    systemd.services."container@pia-vpn".serviceConfig.TimeoutStartSec = "180s";
+
     containers.pia-vpn = {
       autoStart = true;
       ephemeral = true;
@@ -64,169 +67,169 @@ in
       };
 
       config = { config, pkgs, lib, ... }:
-      let
-        scriptPkgs = with pkgs; [ wireguard-tools iproute2 curl jq iptables coreutils ];
-      in
-      {
-        imports = allModules;
+        let
+          scriptPkgs = with pkgs; [ wireguard-tools iproute2 curl jq iptables coreutils ];
+        in
+        {
+          imports = allModules;
 
-        # Static IP on bridge — no gateway (VPN container routes via WG only)
-        networking.useNetworkd = true;
-        systemd.network.enable = true;
-        networking.useDHCP = false;
+          # Static IP on bridge — no gateway (VPN container routes via WG only)
+          networking.useNetworkd = true;
+          systemd.network.enable = true;
+          networking.useDHCP = false;
 
-        systemd.network.networks."20-eth0" = {
-          matchConfig.Name = "eth0";
-          networkConfig = {
-            Address = "${cfg.vpnAddress}/${cfg.subnetPrefixLen}";
-            DHCPServer = false;
-          };
-        };
-
-        # Ignore WG interface for wait-online (it's configured manually, not by networkd)
-        systemd.network.wait-online.ignoredInterfaces = [ cfg.interfaceName ];
-
-        # Enable forwarding so bridge traffic can go through WG
-        boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
-
-        # Trust bridge interface
-        networking.firewall.trustedInterfaces = [ "eth0" ];
-
-        # DNS: use systemd-resolved listening on bridge IP so service containers
-        # can use VPN container as DNS server (queries go through WG tunnel = no DNS leak)
-        services.resolved = {
-          enable = true;
-          settings.Resolve.DNSStubListenerExtra = cfg.vpnAddress;
-        };
-
-        # Don't use host resolv.conf — resolved manages DNS
-        networking.useHostResolvConf = false;
-
-        # State directory for PIA config files
-        systemd.tmpfiles.rules = [
-          "d /var/lib/pia-vpn 0700 root root -"
-        ];
-
-        # PIA VPN setup service — does all the PIA auth, WG config, and NAT setup
-        systemd.services.pia-vpn-setup = {
-          description = "PIA VPN WireGuard Setup";
-
-          wants = [ "network-online.target" ];
-          after = [ "network.target" "network-online.target" "systemd-networkd.service" ];
-          wantedBy = [ "multi-user.target" ];
-
-          path = scriptPkgs;
-
-          serviceConfig = {
-            Type = "simple";
-            Restart = "always";
-            RestartSec = "10s";
-            RuntimeMaxSec = "30d";
+          systemd.network.networks."20-eth0" = {
+            matchConfig.Name = "eth0";
+            networkConfig = {
+              Address = "${cfg.vpnAddress}/${cfg.subnetPrefixLen}";
+              DHCPServer = false;
+            };
           };
 
-          script = ''
-            set -euo pipefail
-            ${scripts.scriptCommon}
+          # Ignore WG interface for wait-online (it's configured manually, not by networkd)
+          systemd.network.wait-online.ignoredInterfaces = [ cfg.interfaceName ];
 
-            # Clean up stale state from previous attempts
-            ip -4 address flush dev ${cfg.interfaceName} 2>/dev/null || true
-            ip route del default dev ${cfg.interfaceName} 2>/dev/null || true
-            iptables -t nat -F 2>/dev/null || true
-            iptables -F FORWARD 2>/dev/null || true
+          # Enable forwarding so bridge traffic can go through WG
+          boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
 
-            proxy="${proxy}"
+          # Trust bridge interface
+          networking.firewall.trustedInterfaces = [ "eth0" ];
 
-            # 1. Authenticate with PIA via proxy (VPN container has no internet yet)
-            echo "Choosing PIA server in region '${cfg.serverLocation}'..."
-            choosePIAServer '${cfg.serverLocation}'
+          # DNS: use systemd-resolved listening on bridge IP so service containers
+          # can use VPN container as DNS server (queries go through WG tunnel = no DNS leak)
+          services.resolved = {
+            enable = true;
+            settings.Resolve.DNSStubListenerExtra = cfg.vpnAddress;
+          };
 
-            echo "Fetching PIA authentication token..."
-            fetchPIAToken
+          # Don't use host resolv.conf — resolved manages DNS
+          networking.useHostResolvConf = false;
 
-            # 2. Generate WG keys and authorize with PIA server
-            echo "Generating WireGuard keypair..."
-            generateWireguardKey
+          # State directory for PIA config files
+          systemd.tmpfiles.rules = [
+            "d /var/lib/pia-vpn 0700 root root -"
+          ];
 
-            echo "Authorizing key with PIA server $WG_HOSTNAME..."
-            authorizeKeyWithPIAServer
+          # PIA VPN setup service — does all the PIA auth, WG config, and NAT setup
+          systemd.services.pia-vpn-setup = {
+            description = "PIA VPN WireGuard Setup";
 
-            # 3. Configure WG interface (already created by host and moved into our namespace)
-            echo "Configuring WireGuard interface ${cfg.interfaceName}..."
-            writeWireguardQuickFile '${wgFile}' ${toString cfg.wireguardListenPort}
-            writeChosenServerToFile '${serverFile}'
-            connectToServer '${wgFile}' '${cfg.interfaceName}'
+            wants = [ "network-online.target" ];
+            after = [ "network.target" "network-online.target" "systemd-networkd.service" ];
+            wantedBy = [ "multi-user.target" ];
 
-            # 4. Default route through WG
-            ip route add default dev ${cfg.interfaceName}
-            echo "Default route set through ${cfg.interfaceName}"
+            path = scriptPkgs;
 
-            # 5. NAT: masquerade bridge → WG (so service containers' traffic appears to come from VPN IP)
-            echo "Setting up NAT masquerade..."
-            iptables -t nat -A POSTROUTING -o ${cfg.interfaceName} -j MASQUERADE
-            iptables -A FORWARD -i eth0 -o ${cfg.interfaceName} -j ACCEPT
-            iptables -A FORWARD -i ${cfg.interfaceName} -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+            serviceConfig = {
+              Type = "simple";
+              Restart = "always";
+              RestartSec = "10s";
+              RuntimeMaxSec = "30d";
+            };
 
-            ${optionalString portForwarding ''
-              # 6. Port forwarding setup
-              echo "Reserving port forward..."
-              reservePortForward
-              writePortRenewalFile '${portRenewalFile}'
+            script = ''
+              set -euo pipefail
+              ${scripts.scriptCommon}
 
-              # First bindPort triggers actual port allocation
-              echo "Binding port $PORT..."
+              # Clean up stale state from previous attempts
+              ip -4 address flush dev ${cfg.interfaceName} 2>/dev/null || true
+              ip route del default dev ${cfg.interfaceName} 2>/dev/null || true
+              iptables -t nat -F 2>/dev/null || true
+              iptables -F FORWARD 2>/dev/null || true
+
+              proxy="${proxy}"
+
+              # 1. Authenticate with PIA via proxy (VPN container has no internet yet)
+              echo "Choosing PIA server in region '${cfg.serverLocation}'..."
+              choosePIAServer '${cfg.serverLocation}'
+
+              echo "Fetching PIA authentication token..."
+              fetchPIAToken
+
+              # 2. Generate WG keys and authorize with PIA server
+              echo "Generating WireGuard keypair..."
+              generateWireguardKey
+
+              echo "Authorizing key with PIA server $WG_HOSTNAME..."
+              authorizeKeyWithPIAServer
+
+              # 3. Configure WG interface (already created by host and moved into our namespace)
+              echo "Configuring WireGuard interface ${cfg.interfaceName}..."
+              writeWireguardQuickFile '${wgFile}' ${toString cfg.wireguardListenPort}
+              writeChosenServerToFile '${serverFile}'
+              connectToServer '${wgFile}' '${cfg.interfaceName}'
+
+              # 4. Default route through WG
+              ip route replace default dev ${cfg.interfaceName}
+              echo "Default route set through ${cfg.interfaceName}"
+
+              # 5. NAT: masquerade bridge → WG (so service containers' traffic appears to come from VPN IP)
+              echo "Setting up NAT masquerade..."
+              iptables -t nat -A POSTROUTING -o ${cfg.interfaceName} -j MASQUERADE
+              iptables -A FORWARD -i eth0 -o ${cfg.interfaceName} -j ACCEPT
+              iptables -A FORWARD -i ${cfg.interfaceName} -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+              ${optionalString portForwarding ''
+                # 6. Port forwarding setup
+                echo "Reserving port forward..."
+                reservePortForward
+                writePortRenewalFile '${portRenewalFile}'
+
+                # First bindPort triggers actual port allocation
+                echo "Binding port $PORT..."
+                refreshPIAPort
+
+                echo "PIA assigned port: $PORT"
+
+                # DNAT rules to forward PIA port to target container
+                ${dnatSetupScript}
+              ''}
+
+              echo "PIA VPN setup complete"
+              exec sleep infinity
+            '';
+
+            preStop = ''
+              echo "Tearing down PIA VPN..."
+              ip -4 address flush dev ${cfg.interfaceName} 2>/dev/null || true
+              ip route del default dev ${cfg.interfaceName} 2>/dev/null || true
+              iptables -t nat -F POSTROUTING 2>/dev/null || true
+              iptables -F FORWARD 2>/dev/null || true
+              ${optionalString portForwarding ''
+                iptables -t nat -F PREROUTING 2>/dev/null || true
+              ''}
+            '';
+          };
+
+          # Port refresh timer (every 10 min) — keeps PIA port forwarding alive
+          systemd.services.pia-vpn-port-refresh = mkIf portForwarding {
+            description = "PIA VPN Port Forward Refresh";
+            after = [ "pia-vpn-setup.service" ];
+            requires = [ "pia-vpn-setup.service" ];
+
+            path = scriptPkgs;
+
+            serviceConfig.Type = "oneshot";
+
+            script = ''
+              set -euo pipefail
+              ${scripts.scriptCommon}
+              loadChosenServerFromFile '${serverFile}'
+              readPortRenewalFile '${portRenewalFile}'
+              echo "Refreshing PIA port forward..."
               refreshPIAPort
+            '';
+          };
 
-              echo "PIA assigned port: $PORT"
-
-              # DNAT rules to forward PIA port to target container
-              ${dnatSetupScript}
-            ''}
-
-            echo "PIA VPN setup complete"
-            exec sleep infinity
-          '';
-
-          preStop = ''
-            echo "Tearing down PIA VPN..."
-            ip -4 address flush dev ${cfg.interfaceName} 2>/dev/null || true
-            ip route del default dev ${cfg.interfaceName} 2>/dev/null || true
-            iptables -t nat -F POSTROUTING 2>/dev/null || true
-            iptables -F FORWARD 2>/dev/null || true
-            ${optionalString portForwarding ''
-              iptables -t nat -F PREROUTING 2>/dev/null || true
-            ''}
-          '';
-        };
-
-        # Port refresh timer (every 10 min) — keeps PIA port forwarding alive
-        systemd.services.pia-vpn-port-refresh = mkIf portForwarding {
-          description = "PIA VPN Port Forward Refresh";
-          after = [ "pia-vpn-setup.service" ];
-          requires = [ "pia-vpn-setup.service" ];
-
-          path = scriptPkgs;
-
-          serviceConfig.Type = "oneshot";
-
-          script = ''
-            set -euo pipefail
-            ${scripts.scriptCommon}
-            loadChosenServerFromFile '${serverFile}'
-            readPortRenewalFile '${portRenewalFile}'
-            echo "Refreshing PIA port forward..."
-            refreshPIAPort
-          '';
-        };
-
-        systemd.timers.pia-vpn-port-refresh = mkIf portForwarding {
-          partOf = [ "pia-vpn-port-refresh.service" ];
-          wantedBy = [ "timers.target" ];
-          timerConfig = {
-            OnCalendar = "*:0/10";
-            RandomizedDelaySec = "1m";
+          systemd.timers.pia-vpn-port-refresh = mkIf portForwarding {
+            partOf = [ "pia-vpn-port-refresh.service" ];
+            wantedBy = [ "timers.target" ];
+            timerConfig = {
+              OnCalendar = "*:0/10";
+              RandomizedDelaySec = "1m";
+            };
           };
         };
-      };
     };
   };
 }
