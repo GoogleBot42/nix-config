@@ -132,16 +132,11 @@ in
               ${scripts.scriptCommon}
 
               # Clean up stale state from previous attempts
-              echo "Cleanup: resetting WG listen port..."
               wg set ${cfg.interfaceName} listen-port 0 2>/dev/null || true
-              echo "Cleanup: flushing addresses on ${cfg.interfaceName}..."
               ip -4 address flush dev ${cfg.interfaceName} 2>/dev/null || true
-              echo "Cleanup: removing default route..."
               ip route del default dev ${cfg.interfaceName} 2>/dev/null || true
-              echo "Cleanup: flushing iptables..."
               iptables -t nat -F 2>/dev/null || true
               iptables -F FORWARD 2>/dev/null || true
-              echo "Cleanup done"
 
               proxy="${proxy}"
 

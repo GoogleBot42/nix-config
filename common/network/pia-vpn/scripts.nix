@@ -140,22 +140,15 @@ in
       local interfaceName=$2
 
       echo "Applying WireGuard config to $interfaceName..."
-      echo "Running: wg setconf $interfaceName $wgFile"
       wg setconf "$interfaceName" "$wgFile"
-      echo "Running: ip -4 address add $MY_IP dev $interfaceName"
       ip -4 address add "$MY_IP" dev "$interfaceName"
-      echo "Running: ip link set mtu 1420 up dev $interfaceName"
       ip link set mtu 1420 up dev "$interfaceName"
       echo "WireGuard interface $interfaceName is up with IP $MY_IP"
     }
 
     reservePortForward() {
       local payload_and_signature
-      if [[ -z "''${PIA_TOKEN:-}" ]]; then
-        echo "ERROR: PIA_TOKEN is empty" >&2
-        return 1
-      fi
-      echo "Requesting port forward signature from $WG_HOSTNAME (token length: ''${#PIA_TOKEN})..."
+      echo "Requesting port forward signature from $WG_HOSTNAME..."
       payload_and_signature=$(curl -s -m 5 \
         --connect-to "$WG_HOSTNAME::$WG_SERVER_IP:" \
         --cacert "${caPath}" \
