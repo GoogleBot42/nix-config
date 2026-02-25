@@ -175,8 +175,8 @@ in
     # Enable systemd-networkd for bridge management
     systemd.network.enable = true;
 
-    # Don't let systemd-networkd-wait-online block boot on bridge
-    systemd.network.wait-online.ignoredInterfaces = [ cfg.bridgeName ];
+    # TODO: re-enable once primary networking uses networkd
+    systemd.network.wait-online.enable = false;
 
     # Tell NetworkManager to ignore VPN bridge and container interfaces
     networking.networkmanager.unmanaged = mkIf config.networking.networkmanager.enable [

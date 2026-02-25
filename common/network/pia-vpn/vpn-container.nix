@@ -81,8 +81,10 @@ in
             Address = "${cfg.vpnAddress}/${cfg.subnetPrefixLen}";
             DHCPServer = false;
           };
-          linkConfig.RequiredForOnline = "no";
         };
+
+        # Ignore WG interface for wait-online (it's configured manually, not by networkd)
+        systemd.network.wait-online.ignoredInterfaces = [ cfg.interfaceName ];
 
         # Enable forwarding so bridge traffic can go through WG
         boot.kernel.sysctl."net.ipv4.ip_forward" = 1;

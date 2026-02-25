@@ -40,7 +40,6 @@ let
           Gateway = cfg.vpnAddress;
           DNS = [ cfg.vpnAddress ];
         };
-        linkConfig.RequiredForOnline = "no";
       };
 
       # DNS through VPN container (queries go through WG tunnel = no DNS leak)
