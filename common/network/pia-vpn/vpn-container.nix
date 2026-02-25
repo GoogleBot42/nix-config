@@ -132,6 +132,7 @@ in
               ${scripts.scriptCommon}
 
               # Clean up stale state from previous attempts
+              wg set ${cfg.interfaceName} listen-port 0 2>/dev/null || true
               ip -4 address flush dev ${cfg.interfaceName} 2>/dev/null || true
               ip route del default dev ${cfg.interfaceName} 2>/dev/null || true
               iptables -t nat -F 2>/dev/null || true
