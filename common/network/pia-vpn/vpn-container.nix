@@ -52,7 +52,7 @@ in
 {
   config = mkIf cfg.enable {
     # Give the container more time to boot (pia-vpn-setup retries can delay readiness)
-    systemd.services."container@pia-vpn".serviceConfig.TimeoutStartSec = "180s";
+    systemd.services."container@pia-vpn".serviceConfig.TimeoutStartSec = mkForce "180s";
 
     containers.pia-vpn = {
       autoStart = true;
