@@ -151,7 +151,11 @@ in
 
     reservePortForward() {
       local payload_and_signature
-      echo "Requesting port forward signature from $WG_HOSTNAME..."
+      if [[ -z "''${PIA_TOKEN:-}" ]]; then
+        echo "ERROR: PIA_TOKEN is empty" >&2
+        return 1
+      fi
+      echo "Requesting port forward signature from $WG_HOSTNAME (token length: ''${#PIA_TOKEN})..."
       payload_and_signature=$(curl -s -m 5 $(proxy_args) \
         --connect-to "$WG_HOSTNAME::$WG_SERVER_IP:" \
         --cacert "${caPath}" \
