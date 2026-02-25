@@ -120,12 +120,19 @@ in
           serviceConfig = {
             Type = "simple";
             Restart = "always";
+            RestartSec = "10s";
             RuntimeMaxSec = "30d";
           };
 
           script = ''
             set -euo pipefail
             ${scripts.scriptCommon}
+
+            # Clean up stale state from previous attempts
+            ip -4 address flush dev ${cfg.interfaceName} 2>/dev/null || true
+            ip route del default dev ${cfg.interfaceName} 2>/dev/null || true
+            iptables -t nat -F 2>/dev/null || true
+            iptables -F FORWARD 2>/dev/null || true
 
             proxy="${proxy}"
 
