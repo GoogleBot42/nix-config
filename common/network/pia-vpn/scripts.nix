@@ -156,7 +156,7 @@ in
         return 1
       fi
       echo "Requesting port forward signature from $WG_HOSTNAME (token length: ''${#PIA_TOKEN})..."
-      payload_and_signature=$(curl -s -m 5 $(proxy_args) \
+      payload_and_signature=$(curl -s -m 5 \
         --connect-to "$WG_HOSTNAME::$WG_SERVER_IP:" \
         --cacert "${caPath}" \
         -G --data-urlencode "token=$PIA_TOKEN" \
