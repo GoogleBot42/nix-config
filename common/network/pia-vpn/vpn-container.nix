@@ -44,8 +44,8 @@ let
       '';
     in
     ''
-      if [ "$PORT" -lt 1000 ]; then
-        echo "ERROR: PIA assigned privileged port $PORT (< 1000), refusing to set up DNAT" >&2
+      if [ "$PORT" -lt 10000 ]; then
+        echo "ERROR: PIA assigned low port $PORT (< 10000), refusing to set up DNAT" >&2
       else
         ${tcpRules}
         ${udpRules}

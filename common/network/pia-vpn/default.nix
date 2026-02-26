@@ -56,8 +56,8 @@ let
               default = null;
               description = ''
                 Target port to forward to. If null, forwards to the same PIA-assigned port.
-                PIA-assigned ports below 1000 are rejected to avoid accidentally
-                forwarding traffic to privileged services.
+                PIA-assigned ports below 10000 are rejected to avoid accidentally
+                forwarding traffic to other services.
               '';
             };
             protocol = mkOption {
