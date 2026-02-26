@@ -133,8 +133,15 @@ let
   };
 in
 {
-  config = mkIf (cfg.enable && vmWorkspaces != { }) {
-    # Convert VM workspace configs to microvm.nix format
-    microvm.vms = mapAttrs mkVmConfig vmWorkspaces;
-  };
+  config = mkMerge [
+    (mkIf (cfg.enable && vmWorkspaces != { }) {
+      # Convert VM workspace configs to microvm.nix format
+      microvm.vms = mapAttrs mkVmConfig vmWorkspaces;
+    })
+
+    # microvm.nixosModules.host enables KSM, but /sys is read-only in containers
+    (mkIf config.boot.isContainer {
+      hardware.ksm.enable = false;
+    })
+  ];
 }
