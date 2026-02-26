@@ -91,6 +91,9 @@ in
           # Ignore WG interface for wait-online (it's configured manually, not by networkd)
           systemd.network.wait-online.ignoredInterfaces = [ cfg.interfaceName ];
 
+          # Route ntfy alerts through the host proxy (VPN container has no gateway on eth0)
+          ntfy-alerts.curlExtraArgs = "--proxy http://${cfg.hostAddress}:${toString cfg.proxyPort}";
+
           # Enable forwarding so bridge traffic can go through WG
           boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
 

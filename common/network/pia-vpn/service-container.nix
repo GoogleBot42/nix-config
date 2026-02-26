@@ -47,6 +47,24 @@ let
       # DNS through VPN container (queries go through WG tunnel = no DNS leak)
       networking.nameservers = [ cfg.vpnAddress ];
 
+      # Wait for actual VPN connectivity before network-online.target.
+      # Without this, services start before the VPN tunnel is ready and failures
+      # can't be reported to ntfy (no outbound connectivity yet).
+      systemd.services.wait-for-vpn = {
+        description = "Wait for VPN connectivity";
+        before = [ "network-online.target" ];
+        wantedBy = [ "network-online.target" ];
+        after = [ "systemd-networkd-wait-online.service" ];
+        serviceConfig.Type = "oneshot";
+        path = [ pkgs.iputils ];
+        script = ''
+          until ping -c1 -W2 1.1.1.1 >/dev/null 2>&1; do
+            echo "Waiting for VPN connectivity..."
+            sleep 1
+          done
+        '';
+      };
+
       # Trust the bridge interface (host reaches us directly for nginx)
       networking.firewall.trustedInterfaces = [ "eth0" ];
 
