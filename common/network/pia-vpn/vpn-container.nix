@@ -24,16 +24,15 @@ let
     let
       fwd = forwardingContainer.receiveForwardedPort;
       targetIp = forwardingContainer.ip;
-      targetPort = toString fwd.port;
       tcpRules = optionalString (fwd.protocol == "tcp" || fwd.protocol == "both") ''
-        echo "Setting up TCP DNAT: port $PORT → ${targetIp}:${targetPort}"
-        iptables -t nat -A PREROUTING -i ${cfg.interfaceName} -p tcp --dport $PORT -j DNAT --to ${targetIp}:${targetPort}
-        iptables -A FORWARD -i ${cfg.interfaceName} -d ${targetIp} -p tcp --dport ${targetPort} -j ACCEPT
+        echo "Setting up TCP DNAT: port $PORT → ${targetIp}:$PORT"
+        iptables -t nat -A PREROUTING -i ${cfg.interfaceName} -p tcp --dport $PORT -j DNAT --to ${targetIp}
+        iptables -A FORWARD -i ${cfg.interfaceName} -d ${targetIp} -p tcp --dport $PORT -j ACCEPT
       '';
       udpRules = optionalString (fwd.protocol == "udp" || fwd.protocol == "both") ''
-        echo "Setting up UDP DNAT: port $PORT → ${targetIp}:${targetPort}"
-        iptables -t nat -A PREROUTING -i ${cfg.interfaceName} -p udp --dport $PORT -j DNAT --to ${targetIp}:${targetPort}
-        iptables -A FORWARD -i ${cfg.interfaceName} -d ${targetIp} -p udp --dport ${targetPort} -j ACCEPT
+        echo "Setting up UDP DNAT: port $PORT → ${targetIp}:$PORT"
+        iptables -t nat -A PREROUTING -i ${cfg.interfaceName} -p udp --dport $PORT -j DNAT --to ${targetIp}
+        iptables -A FORWARD -i ${cfg.interfaceName} -d ${targetIp} -p udp --dport $PORT -j ACCEPT
       '';
       onPortForwarded = optionalString (forwardingContainer.onPortForwarded != null) ''
         TARGET_IP="${targetIp}"
@@ -43,9 +42,13 @@ let
       '';
     in
     ''
-      ${tcpRules}
-      ${udpRules}
-      ${onPortForwarded}
+      if [ "$PORT" -lt 1000 ]; then
+        echo "ERROR: PIA assigned privileged port $PORT (< 1000), refusing to set up DNAT" >&2
+      else
+        ${tcpRules}
+        ${udpRules}
+        ${onPortForwarded}
+      fi
     ''
   );
 in

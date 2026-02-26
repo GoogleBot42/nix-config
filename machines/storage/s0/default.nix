@@ -63,17 +63,17 @@
       ip = "10.100.0.10";
       mounts."/var/lib".hostPath = "/var/lib";
       mounts."/data/samba/Public".hostPath = "/data/samba/Public";
-      receiveForwardedPort = { port = 51413; protocol = "both"; };
+      receiveForwardedPort = { protocol = "both"; };
       onPortForwarded = ''
         # Notify Transmission of the PIA-assigned peer port via RPC
         for i in $(seq 1 30); do
-          curlout=$(curl -s "http://$TARGET_IP:9091/transmission/rpc" 2>/dev/null) && break
+          curlout=$(curl -s "http://$TARGET_IP:80/transmission/rpc" 2>/dev/null) && break
           sleep 2
         done
         regex='X-Transmission-Session-Id: (\w*)'
         if [[ $curlout =~ $regex ]]; then
           sessionId=''${BASH_REMATCH[1]}
-          curl -s "http://$TARGET_IP:9091/transmission/rpc" \
+          curl -s "http://$TARGET_IP:80/transmission/rpc" \
             -d "{\"method\":\"session-set\",\"arguments\":{\"peer-port\":$PORT}}" \
             -H "X-Transmission-Session-Id: $sessionId"
         fi
@@ -91,6 +91,7 @@
             "incomplete-dir-enabled" = true;
 
             "rpc-enabled" = true;
+            "rpc-port" = 80;
             "rpc-bind-address" = "0.0.0.0";
             "rpc-whitelist" = "127.0.0.1,10.100.*.*,192.168.*.*";
             "rpc-host-whitelist-enabled" = false;
@@ -231,7 +232,7 @@
         (mkVirtualHost "lidarr.s0.neet.dev" "http://servarr.containers:8686")
         (mkVirtualHost "sonarr.s0.neet.dev" "http://servarr.containers:8989")
         (mkVirtualHost "prowlarr.s0.neet.dev" "http://servarr.containers:9696")
-        (mkVirtualHost "transmission.s0.neet.dev" "http://transmission.containers:9091")
+        (mkVirtualHost "transmission.s0.neet.dev" "http://transmission.containers:80")
         (mkVirtualHost "unifi.s0.neet.dev" "https://localhost:8443")
         (mkVirtualHost "music.s0.neet.dev" "http://localhost:4533")
         (mkVirtualHost "jellyfin.s0.neet.dev" "http://localhost:8096")
