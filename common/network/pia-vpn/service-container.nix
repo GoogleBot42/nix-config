@@ -42,6 +42,8 @@ let
         };
       };
 
+      networking.hosts = cfg.containerHosts;
+
       # DNS through VPN container (queries go through WG tunnel = no DNS leak)
       networking.nameservers = [ cfg.vpnAddress ];
 

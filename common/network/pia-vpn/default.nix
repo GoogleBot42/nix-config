@@ -153,6 +153,13 @@ in
       description = "Prefix length derived from subnet CIDR";
       readOnly = true;
     };
+
+    # Shared host entries for all containers (host + VPN + service containers)
+    containerHosts = mkOption {
+      type = types.attrsOf (types.listOf types.str);
+      internal = true;
+      readOnly = true;
+    };
   };
 
   config = mkIf cfg.enable {
@@ -252,9 +259,11 @@ in
     # Host entries for container hostnames — NixOS only auto-creates these for
     # hostAddress/localAddress containers, not hostBridge. Use the standard
     # {name}.containers convention.
-    networking.hosts =
+    pia-vpn.containerHosts =
       { ${cfg.vpnAddress} = [ "pia-vpn.containers" ]; }
       // mapAttrs' (name: ctr: nameValuePair ctr.ip [ "${name}.containers" ]) cfg.containers;
+
+    networking.hosts = cfg.containerHosts;
 
     # PIA login secret
     age.secrets."pia-login.conf".file = ../../../secrets/pia-login.age;

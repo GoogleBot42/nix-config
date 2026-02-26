@@ -73,6 +73,8 @@ in
         {
           imports = allModules;
 
+          networking.hosts = cfg.containerHosts;
+
           # Static IP on bridge — no gateway (VPN container routes via WG only)
           networking.useNetworkd = true;
           systemd.network.enable = true;
