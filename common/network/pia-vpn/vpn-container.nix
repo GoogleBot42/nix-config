@@ -24,15 +24,17 @@ let
     let
       fwd = forwardingContainer.receiveForwardedPort;
       targetIp = forwardingContainer.ip;
+      dnatTarget = if fwd.port != null then "${targetIp}:${toString fwd.port}" else targetIp;
+      targetPort = if fwd.port != null then toString fwd.port else "$PORT";
       tcpRules = optionalString (fwd.protocol == "tcp" || fwd.protocol == "both") ''
-        echo "Setting up TCP DNAT: port $PORT → ${targetIp}:$PORT"
-        iptables -t nat -A PREROUTING -i ${cfg.interfaceName} -p tcp --dport $PORT -j DNAT --to ${targetIp}
-        iptables -A FORWARD -i ${cfg.interfaceName} -d ${targetIp} -p tcp --dport $PORT -j ACCEPT
+        echo "Setting up TCP DNAT: port $PORT → ${targetIp}:${targetPort}"
+        iptables -t nat -A PREROUTING -i ${cfg.interfaceName} -p tcp --dport $PORT -j DNAT --to ${dnatTarget}
+        iptables -A FORWARD -i ${cfg.interfaceName} -d ${targetIp} -p tcp --dport ${targetPort} -j ACCEPT
       '';
       udpRules = optionalString (fwd.protocol == "udp" || fwd.protocol == "both") ''
-        echo "Setting up UDP DNAT: port $PORT → ${targetIp}:$PORT"
-        iptables -t nat -A PREROUTING -i ${cfg.interfaceName} -p udp --dport $PORT -j DNAT --to ${targetIp}
-        iptables -A FORWARD -i ${cfg.interfaceName} -d ${targetIp} -p udp --dport $PORT -j ACCEPT
+        echo "Setting up UDP DNAT: port $PORT → ${targetIp}:${targetPort}"
+        iptables -t nat -A PREROUTING -i ${cfg.interfaceName} -p udp --dport $PORT -j DNAT --to ${dnatTarget}
+        iptables -A FORWARD -i ${cfg.interfaceName} -d ${targetIp} -p udp --dport ${targetPort} -j ACCEPT
       '';
       onPortForwarded = optionalString (forwardingContainer.onPortForwarded != null) ''
         TARGET_IP="${targetIp}"

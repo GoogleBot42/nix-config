@@ -51,6 +51,15 @@ let
       receiveForwardedPort = mkOption {
         type = types.nullOr (types.submodule {
           options = {
+            port = mkOption {
+              type = types.nullOr types.port;
+              default = null;
+              description = ''
+                Target port to forward to. If null, forwards to the same PIA-assigned port.
+                PIA-assigned ports below 1000 are rejected to avoid accidentally
+                forwarding traffic to privileged services.
+              '';
+            };
             protocol = mkOption {
               type = types.enum [ "tcp" "udp" "both" ];
               default = "both";
