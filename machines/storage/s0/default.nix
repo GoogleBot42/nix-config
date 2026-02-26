@@ -67,13 +67,13 @@
       onPortForwarded = ''
         # Notify Transmission of the PIA-assigned peer port via RPC
         for i in $(seq 1 30); do
-          curlout=$(curl -s "http://$TARGET_IP:80/transmission/rpc" 2>/dev/null) && break
+          curlout=$(curl -s "http://transmission.containers:80/transmission/rpc" 2>/dev/null) && break
           sleep 2
         done
         regex='X-Transmission-Session-Id: (\w*)'
         if [[ $curlout =~ $regex ]]; then
           sessionId=''${BASH_REMATCH[1]}
-          curl -s "http://$TARGET_IP:80/transmission/rpc" \
+          curl -s "http://transmission.containers:80/transmission/rpc" \
             -d "{\"method\":\"session-set\",\"arguments\":{\"peer-port\":$PORT}}" \
             -H "X-Transmission-Session-Id: $sessionId"
         fi
