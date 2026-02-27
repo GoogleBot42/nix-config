@@ -135,6 +135,17 @@ in
       echo "Loaded server info from $serverFile: $WG_HOSTNAME ($WG_SERVER_IP:$WG_SERVER_PORT)"
     }
 
+    # Reset WG interface and tear down NAT/forwarding rules.
+    # Called on startup (clear stale state) and on exit via trap.
+    cleanupVpn() {
+      local interfaceName=$1
+      wg set "$interfaceName" listen-port 0 2>/dev/null || true
+      ip -4 address flush dev "$interfaceName" 2>/dev/null || true
+      ip route del default dev "$interfaceName" 2>/dev/null || true
+      iptables -t nat -F 2>/dev/null || true
+      iptables -F FORWARD 2>/dev/null || true
+    }
+
     connectToServer() {
       local wgFile=$1
       local interfaceName=$2

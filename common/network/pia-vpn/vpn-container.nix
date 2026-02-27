@@ -141,12 +141,8 @@ in
               set -euo pipefail
               ${scripts.scriptCommon}
 
-              # Clean up stale state from previous attempts
-              wg set ${cfg.interfaceName} listen-port 0 2>/dev/null || true
-              ip -4 address flush dev ${cfg.interfaceName} 2>/dev/null || true
-              ip route del default dev ${cfg.interfaceName} 2>/dev/null || true
-              iptables -t nat -F 2>/dev/null || true
-              iptables -F FORWARD 2>/dev/null || true
+              trap 'cleanupVpn ${cfg.interfaceName}' EXIT
+              cleanupVpn ${cfg.interfaceName}
 
               proxy="${proxy}"
 
@@ -200,16 +196,6 @@ in
               exec sleep infinity
             '';
 
-            preStop = ''
-              echo "Tearing down PIA VPN..."
-              ip -4 address flush dev ${cfg.interfaceName} 2>/dev/null || true
-              ip route del default dev ${cfg.interfaceName} 2>/dev/null || true
-              iptables -t nat -F POSTROUTING 2>/dev/null || true
-              iptables -F FORWARD 2>/dev/null || true
-              ${optionalString portForwarding ''
-                iptables -t nat -F PREROUTING 2>/dev/null || true
-              ''}
-            '';
           };
 
           # Port refresh timer (every 10 min) — keeps PIA port forwarding alive
