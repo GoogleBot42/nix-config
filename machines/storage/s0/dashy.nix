@@ -181,10 +181,20 @@
             statusCheck = true;
             id = "1_746_wireless";
           };
+          unifi = {
+            title = "Unifi";
+            description = "unifi.s0.neet.dev";
+            icon = "hl-unifi";
+            url = "https://unifi.s0.neet.dev";
+            target = "sametab";
+            statusCheck = false;
+            id = "2_746_unifi";
+          };
         };
         networkList = [
           networkItems.gateway
           networkItems.wireless
+          networkItems.unifi
         ];
       in
       {
@@ -259,14 +269,59 @@
             statusCheck = true;
             id = "6_836_roundcube";
           };
-          jitsimeet = {
-            title = "Jitsi Meet";
-            description = "meet.neet.space";
-            icon = "hl-jitsimeet";
-            url = "https://meet.neet.space";
+          ntfy = {
+            title = "ntfy";
+            description = "ntfy.neet.dev";
+            icon = "hl-ntfy";
+            url = "https://ntfy.neet.dev";
             target = "sametab";
             statusCheck = true;
-            id = "7_836_jitsimeet";
+            id = "7_836_ntfy";
+          };
+          librechat = {
+            title = "Librechat";
+            description = "chat.neet.dev";
+            icon = "hl-librechat";
+            url = "https://chat.neet.dev";
+            target = "sametab";
+            statusCheck = true;
+            id = "8_836_librechat";
+          };
+          owncast = {
+            title = "Owncast";
+            description = "live.neet.dev";
+            icon = "hl-owncast";
+            url = "https://live.neet.dev";
+            target = "sametab";
+            statusCheck = true;
+            id = "9_836_owncast";
+          };
+          navidrome-public = {
+            title = "Navidrome";
+            description = "navidrome.neet.cloud";
+            icon = "hl-navidrome";
+            url = "https://navidrome.neet.cloud";
+            target = "sametab";
+            statusCheck = true;
+            id = "10_836_navidrome-public";
+          };
+          collabora = {
+            title = "Collabora";
+            description = "collabora.runyan.org";
+            icon = "hl-collabora";
+            url = "https://collabora.runyan.org";
+            target = "sametab";
+            statusCheck = true;
+            id = "11_836_collabora";
+          };
+          gatus = {
+            title = "Gatus";
+            description = "status.neet.dev";
+            icon = "hl-gatus";
+            url = "https://status.neet.dev";
+            target = "sametab";
+            statusCheck = true;
+            id = "12_836_gatus";
           };
         };
         servicesList = [
@@ -276,7 +331,12 @@
           servicesItems.git
           servicesItems.nextcloud
           servicesItems.roundcube
-          servicesItems.jitsimeet
+          servicesItems.ntfy
+          servicesItems.librechat
+          servicesItems.owncast
+          servicesItems.navidrome-public
+          servicesItems.collabora
+          servicesItems.gatus
         ];
       in
       {
@@ -284,6 +344,170 @@
         icon = "fas fa-monitor-heart-rate";
         items = servicesList;
         filteredItems = servicesList;
+        displayData = {
+          sortBy = "default";
+          rows = 1;
+          cols = 1;
+          collapsed = false;
+          hideForGuests = false;
+        };
+      }
+    )
+
+    (
+      let
+        haItems = {
+          home-assistant = {
+            title = "Home Assistant";
+            description = "ha.s0.neet.dev";
+            icon = "hl-home-assistant";
+            url = "https://ha.s0.neet.dev";
+            target = "sametab";
+            statusCheck = false;
+            id = "0_4201_home-assistant";
+          };
+          esphome = {
+            title = "ESPHome";
+            description = "esphome.s0.neet.dev";
+            icon = "hl-esphome";
+            url = "https://esphome.s0.neet.dev";
+            target = "sametab";
+            statusCheck = false;
+            id = "1_4201_esphome";
+          };
+          zigbee2mqtt = {
+            title = "Zigbee2MQTT";
+            description = "zigbee.s0.neet.dev";
+            icon = "hl-zigbee2mqtt";
+            url = "https://zigbee.s0.neet.dev";
+            target = "sametab";
+            statusCheck = false;
+            id = "2_4201_zigbee2mqtt";
+          };
+          frigate = {
+            title = "Frigate";
+            description = "frigate.s0.neet.dev";
+            icon = "hl-frigate";
+            url = "https://frigate.s0.neet.dev";
+            target = "sametab";
+            statusCheck = false;
+            id = "3_4201_frigate";
+          };
+          valetudo = {
+            title = "Valetudo";
+            description = "vacuum.s0.neet.dev";
+            icon = "hl-valetudo";
+            url = "https://vacuum.s0.neet.dev";
+            target = "sametab";
+            statusCheck = false;
+            id = "4_4201_valetudo";
+          };
+          sandman = {
+            title = "Sandman";
+            description = "sandman.s0.neet.dev";
+            icon = "fas fa-bed";
+            url = "https://sandman.s0.neet.dev";
+            target = "sametab";
+            statusCheck = false;
+            id = "5_4201_sandman";
+          };
+        };
+        haList = [
+          haItems.home-assistant
+          haItems.esphome
+          haItems.zigbee2mqtt
+          haItems.frigate
+          haItems.valetudo
+          haItems.sandman
+        ];
+      in
+      {
+        name = "Home Automation";
+        icon = "fas fa-home";
+        items = haList;
+        filteredItems = haList;
+        displayData = {
+          sortBy = "default";
+          rows = 1;
+          cols = 1;
+          collapsed = false;
+          hideForGuests = false;
+        };
+      }
+    )
+
+    (
+      let
+        prodItems = {
+          vikunja = {
+            title = "Vikunja";
+            description = "todo.s0.neet.dev";
+            icon = "hl-vikunja";
+            url = "https://todo.s0.neet.dev";
+            target = "sametab";
+            statusCheck = false;
+            id = "0_5301_vikunja";
+          };
+          actual = {
+            title = "Actual Budget";
+            description = "budget.s0.neet.dev";
+            icon = "hl-actual-budget";
+            url = "https://budget.s0.neet.dev";
+            target = "sametab";
+            statusCheck = false;
+            id = "1_5301_actual";
+          };
+          linkwarden = {
+            title = "Linkwarden";
+            description = "linkwarden.s0.neet.dev";
+            icon = "hl-linkwarden";
+            url = "https://linkwarden.s0.neet.dev";
+            target = "sametab";
+            statusCheck = false;
+            id = "2_5301_linkwarden";
+          };
+          memos = {
+            title = "Memos";
+            description = "memos.s0.neet.dev";
+            icon = "hl-memos";
+            url = "https://memos.s0.neet.dev";
+            target = "sametab";
+            statusCheck = false;
+            id = "3_5301_memos";
+          };
+          outline = {
+            title = "Outline";
+            description = "outline.s0.neet.dev";
+            icon = "hl-outline";
+            url = "https://outline.s0.neet.dev";
+            target = "sametab";
+            statusCheck = false;
+            id = "4_5301_outline";
+          };
+          languagetool = {
+            title = "LanguageTool";
+            description = "languagetool.s0.neet.dev";
+            icon = "hl-languagetool";
+            url = "https://languagetool.s0.neet.dev";
+            target = "sametab";
+            statusCheck = false;
+            id = "5_5301_languagetool";
+          };
+        };
+        prodList = [
+          prodItems.vikunja
+          prodItems.actual
+          prodItems.linkwarden
+          prodItems.memos
+          prodItems.outline
+          prodItems.languagetool
+        ];
+      in
+      {
+        name = "Productivity";
+        icon = "fas fa-tasks";
+        items = prodList;
+        filteredItems = prodList;
         displayData = {
           sortBy = "default";
           rows = 1;

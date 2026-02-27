@@ -130,6 +130,226 @@ in
             ];
             alerts = [{ type = "ntfy"; }];
           }
+          {
+            name = "Roundcube";
+            group = "services";
+            url = "https://mail.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Collabora Online";
+            group = "services";
+            url = "https://collabora.runyan.org";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Jellyfin";
+            group = "s0";
+            url = "https://jellyfin.s0.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Sonarr";
+            group = "s0";
+            url = "https://sonarr.s0.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Radarr";
+            group = "s0";
+            url = "https://radarr.s0.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Lidarr";
+            group = "s0";
+            url = "https://lidarr.s0.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Prowlarr";
+            group = "s0";
+            url = "https://prowlarr.s0.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Bazarr";
+            group = "s0";
+            url = "https://bazarr.s0.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Transmission";
+            group = "s0";
+            url = "https://transmission.s0.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Home Assistant";
+            group = "s0";
+            url = "https://ha.s0.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "ESPHome";
+            group = "s0";
+            url = "https://esphome.s0.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Zigbee2MQTT";
+            group = "s0";
+            url = "https://zigbee.s0.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Frigate";
+            group = "s0";
+            url = "https://frigate.s0.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Valetudo";
+            group = "s0";
+            url = "https://vacuum.s0.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Sandman";
+            group = "s0";
+            url = "https://sandman.s0.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Vikunja";
+            group = "s0";
+            url = "https://todo.s0.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Actual Budget";
+            group = "s0";
+            url = "https://budget.s0.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Linkwarden";
+            group = "s0";
+            url = "https://linkwarden.s0.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Memos";
+            group = "s0";
+            url = "https://memos.s0.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Outline";
+            group = "s0";
+            url = "https://outline.s0.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "LanguageTool";
+            group = "s0";
+            url = "https://languagetool.s0.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Unifi";
+            group = "s0";
+            url = "https://unifi.s0.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
         ];
       };
     };
