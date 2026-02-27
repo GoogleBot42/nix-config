@@ -4,29 +4,7 @@ let
   cfg = config.ntfy-alerts;
 in
 {
-  options.ntfy-alerts = {
-    serverUrl = lib.mkOption {
-      type = lib.types.str;
-      default = "https://ntfy.neet.dev";
-      description = "Base URL of the ntfy server.";
-    };
-
-    topic = lib.mkOption {
-      type = lib.types.str;
-      default = "service-failures";
-      description = "ntfy topic to publish alerts to.";
-    };
-
-    curlExtraArgs = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      description = "Extra arguments to pass to curl (e.g. --proxy http://host:port).";
-    };
-  };
-
   config = lib.mkIf config.thisMachine.hasRole."ntfy" {
-    age.secrets.ntfy-token.file = ../secrets/ntfy-token.age;
-
     systemd.services."ntfy-failure@" = {
       description = "Send ntfy alert for failed unit %i";
       wants = [ "network-online.target" ];
@@ -36,7 +14,12 @@ in
         EnvironmentFile = "/run/agenix/ntfy-token";
         ExecStart = "${pkgs.writeShellScript "ntfy-failure-notify" ''
           unit="$1"
+          logfile=$(mktemp)
+          trap 'rm -f "$logfile"' EXIT
+          ${pkgs.systemd}/bin/journalctl -u "$unit" -n 50 --no-pager -o short > "$logfile" 2>/dev/null \
+            || echo "(no logs available)" > "$logfile"
           ${lib.getExe pkgs.curl} \
+            -T "$logfile" \
             --fail --silent --show-error \
             --max-time 30 --retry 3 \
             ${cfg.curlExtraArgs} \
@@ -44,8 +27,9 @@ in
             -H "Title: Service failure on ${config.networking.hostName}" \
             -H "Priority: high" \
             -H "Tags: rotating_light" \
-            -d "Unit $unit failed at $(date +%c)" \
-            "${cfg.serverUrl}/${cfg.topic}"
+            -H "Message: Unit $unit failed at $(date +%c)" \
+            -H "Filename: $unit.log" \
+            "${cfg.serverUrl}/service-failures"
         ''} %i";
       };
     };

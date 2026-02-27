@@ -53,7 +53,7 @@ let
         -H "Priority: urgent" \
         -H "Tags: warning" \
         -d "$message" \
-        "${cfg.serverUrl}/${cfg.topic}"
+        "${cfg.serverUrl}/service-failures"
 
       echo "$message" >&2
     fi
