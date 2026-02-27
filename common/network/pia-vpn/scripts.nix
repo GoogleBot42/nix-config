@@ -1,5 +1,6 @@
 let
   caPath = ./ca.rsa.4096.crt;
+  pubKeyPath = ./pubkey.pem;
 in
 
 # Bash function library for PIA VPN WireGuard operations.
@@ -21,6 +22,23 @@ in
       fi
     }
 
+    # Verify the server list RSA-SHA256 signature (line 1 = JSON, lines 3+ = base64 signature).
+    verifyServerList() {
+      local raw=$1
+      local sig_file
+      sig_file=$(mktemp)
+      echo "$raw" | tail -n +3 | base64 -d > "$sig_file"
+      if ! echo -n "$(echo "$raw" | head -n 1 | tr -d '\n')" | \
+           openssl dgst -sha256 -verify "${pubKeyPath}" \
+           -signature "$sig_file"; then
+        echo "ERROR: Server list signature verification failed" >&2
+        rm -f "$sig_file"
+        return 1
+      fi
+      echo "Server list signature verified"
+      rm -f "$sig_file"
+    }
+
     fetchPIAToken() {
       local PIA_USER PIA_PASS resp
       echo "Reading PIA credentials..."
@@ -39,20 +57,20 @@ in
 
     choosePIAServer() {
       local serverLocation=$1
-      local servers servers_json totalservers serverindex
-      servers=$(mktemp)
+      local raw servers_json totalservers serverindex
       servers_json=$(mktemp)
       echo "Fetching PIA server list..."
-      curl -s $(proxy_args) \
-        "https://serverlist.piaservers.net/vpninfo/servers/v6" > "$servers"
-      head -n 1 "$servers" | tr -d '\n' > "$servers_json"
+      raw=$(curl -s $(proxy_args) \
+        "https://serverlist.piaservers.net/vpninfo/servers/v6")
+      verifyServerList "$raw"
+      echo "$raw" | head -n 1 | tr -d '\n' > "$servers_json"
 
       totalservers=$(jq -r \
         '.regions | .[] | select(.id=="'"$serverLocation"'") | .servers.wg | length' \
         "$servers_json")
       if ! [[ "$totalservers" =~ ^[0-9]+$ ]] || [ "$totalservers" -eq 0 ] 2>/dev/null; then
         echo "ERROR: Location \"$serverLocation\" not found." >&2
-        rm -f "$servers_json" "$servers"
+        rm -f "$servers_json"
         return 1
       fi
       echo "Found $totalservers WireGuard servers in region '$serverLocation'"
@@ -66,7 +84,7 @@ in
         "$servers_json")
       WG_SERVER_PORT=$(jq -r '.groups.wg | .[0] | .ports | .[0]' "$servers_json")
 
-      rm -f "$servers_json" "$servers"
+      rm -f "$servers_json"
       echo "Selected server $serverindex/$totalservers: $WG_HOSTNAME ($WG_SERVER_IP:$WG_SERVER_PORT)"
     }
 

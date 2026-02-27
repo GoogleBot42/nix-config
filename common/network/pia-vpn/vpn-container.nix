@@ -73,7 +73,7 @@ in
 
       config = { config, pkgs, lib, ... }:
         let
-          scriptPkgs = with pkgs; [ wireguard-tools iproute2 curl jq iptables coreutils ];
+          scriptPkgs = with pkgs; [ wireguard-tools iproute2 curl jq iptables coreutils openssl ];
         in
         {
           imports = allModules;
@@ -133,7 +133,7 @@ in
             serviceConfig = {
               Type = "simple";
               Restart = "always";
-              RestartSec = "10s";
+              RestartSec = "5m";
               RuntimeMaxSec = "30d";
             };
 
