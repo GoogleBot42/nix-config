@@ -12,8 +12,6 @@ let
   # Hardcoded public ip of ponyo... I wish I didn't need this...
   public_ip_address = "147.135.114.130";
 
-  nixManagedApps = builtins.attrNames cfg.extraApps;
-  nixManagedAppsPattern = lib.concatStringsSep "|" nixManagedApps;
 in
 {
   config = lib.mkIf cfg.enable {
@@ -26,7 +24,6 @@ in
       config.adminpassFile = "/run/agenix/nextcloud-pw";
 
       # Apps
-      autoUpdateApps.enable = true;
       extraAppsEnable = true;
       extraApps = with config.services.nextcloud.package.packages.apps; {
         # Want
@@ -42,30 +39,6 @@ in
         # inherit bookmarks cookbook deck memories maps music news notes phonetrack polls forms;
       };
 
-      # Allows installing Apps from the UI (might remove later)
-      appstoreEnable = true;
-    };
-
-    # Nix-managed apps (extraApps) live in the read-only nix store. If Nextcloud
-    # downloads a newer version into store-apps/, both get loaded by PHP causing
-    # a fatal class redeclaration error and leaving NC stuck in maintenance mode.
-    # Fix: (1) clean store-apps/ of nix-managed duplicates before setup/upgrade,
-    # (2) skip nix-managed apps during auto-updates.
-    systemd.services.nextcloud-setup.preStart = lib.mkAfter ''
-      for app in ${lib.escapeShellArgs nixManagedApps}; do
-        if [ -d "${cfg.home}/store-apps/$app" ]; then
-          rm -rf "${cfg.home}/store-apps/$app"
-        fi
-      done
-    '';
-    systemd.services.nextcloud-update-plugins = {
-      path = [ config.services.nextcloud.occ ];
-      serviceConfig.ExecStart = lib.mkForce (toString (pkgs.writeShellScript "nextcloud-update-non-nix-apps" ''
-        apps=$(nextcloud-occ app:update --showonly | awk '{print $1}' | grep -vE '^(${nixManagedAppsPattern})$' || true)
-        for app in $apps; do
-          nextcloud-occ app:update "$app"
-        done
-      ''));
     };
     age.secrets.nextcloud-pw = {
       file = ../../secrets/nextcloud-pw.age;
