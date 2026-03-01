@@ -1,4 +1,4 @@
-{ lib, pkgs, modulesPath, ... }:
+{ modulesPath, ... }:
 
 {
   imports =
@@ -67,17 +67,17 @@
     dhcpcd.enable = false;
   };
 
-  # eth0 — native VLAN 5 (main), default route, internet
-  # useDHCP generates the base 40-eth0 networkd unit and drives initrd DHCP for LUKS unlock.
-  networking.interfaces."eth0".useDHCP = true;
-  systemd.network.networks."40-eth0" = {
-    dhcpV4Config.RouteMetric = 100; # prefer eth0 over VLAN interfaces for default route
-    linkConfig.RequiredForOnline = "routable"; # wait-online succeeds once eth0 has a route
+  # eno1 — native VLAN 5 (main), default route, internet
+  # useDHCP generates the base 40-eno1 networkd unit and drives initrd DHCP for LUKS unlock.
+  networking.interfaces."eno1".useDHCP = true;
+  systemd.network.networks."40-eno1" = {
+    dhcpV4Config.RouteMetric = 100; # prefer eno1 over VLAN interfaces for default route
+    linkConfig.RequiredForOnline = "routable"; # wait-online succeeds once eno1 has a route
   };
 
-  # eth1 — trunk port (no IP on the raw interface)
-  systemd.network.networks."10-eth1" = {
-    matchConfig.Name = "eth1";
+  # eno2 — trunk port (no IP on the raw interface)
+  systemd.network.networks."40-eno2" = {
+    matchConfig.Name = "eno2";
     networkConfig = {
       VLAN = [ "vlan-iot" "vlan-mgmt" ];
       LinkLocalAddressing = "no";
@@ -86,9 +86,9 @@
   };
 
   # VLAN 2 — IoT (cameras, smart home)
-  systemd.network.netdevs."20-vlan-iot".netdevConfig = { Name = "vlan-iot"; Kind = "vlan"; };
-  systemd.network.netdevs."20-vlan-iot".vlanConfig.Id = 2;
-  systemd.network.networks."20-vlan-iot" = {
+  systemd.network.netdevs."50-vlan-iot".netdevConfig = { Name = "vlan-iot"; Kind = "vlan"; };
+  systemd.network.netdevs."50-vlan-iot".vlanConfig.Id = 2;
+  systemd.network.networks."50-vlan-iot" = {
     matchConfig.Name = "vlan-iot";
     networkConfig.DHCP = "yes";
     dhcpV4Config = {
@@ -99,9 +99,9 @@
   };
 
   # VLAN 4 — Management
-  systemd.network.netdevs."20-vlan-mgmt".netdevConfig = { Name = "vlan-mgmt"; Kind = "vlan"; };
-  systemd.network.netdevs."20-vlan-mgmt".vlanConfig.Id = 4;
-  systemd.network.networks."20-vlan-mgmt" = {
+  systemd.network.netdevs."50-vlan-mgmt".netdevConfig = { Name = "vlan-mgmt"; Kind = "vlan"; };
+  systemd.network.netdevs."50-vlan-mgmt".vlanConfig.Id = 4;
+  systemd.network.networks."50-vlan-mgmt" = {
     matchConfig.Name = "vlan-mgmt";
     networkConfig.DHCP = "yes";
     dhcpV4Config = {
