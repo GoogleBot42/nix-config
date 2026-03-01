@@ -230,7 +230,14 @@ in
         Port = cfg.proxyPort;
       };
     };
-    systemd.services.tinyproxy.before = [ "container@pia-vpn.service" ];
+    systemd.services.tinyproxy = {
+      before = [ "container@pia-vpn.service" ];
+      after = [ "systemd-networkd.service" ];
+      requires = [ "systemd-networkd.service" ];
+      serviceConfig.ExecStartPre = [
+        "+${pkgs.systemd}/lib/systemd/systemd-networkd-wait-online --interface=${cfg.bridgeName}:no-carrier --timeout=60"
+      ];
+    };
 
     # WireGuard interface creation (host-side oneshot)
     # Creates the interface in the host namespace so encrypted UDP stays in host netns.
