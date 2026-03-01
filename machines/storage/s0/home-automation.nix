@@ -24,6 +24,10 @@
     # Music assistant (must be exposed so local devices can fetch the audio stream from it)
     8095
     8097
+
+    # Music assistant: Spotify Connect zeroconf discovery (one per librespot instance)
+    44200
+    44201
   ];
 
   services.zigbee2mqtt = {

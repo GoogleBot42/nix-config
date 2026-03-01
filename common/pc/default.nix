@@ -86,6 +86,9 @@ in
     services.gnome.gnome-keyring.enable = true;
     security.pam.services.googlebot.enableGnomeKeyring = true;
 
+    # Spotify Connect discovery
+    networking.firewall.allowedTCPPorts = [ 57621 ];
+
     # Mount personal SMB stores
     services.mount-samba.enable = true;
 

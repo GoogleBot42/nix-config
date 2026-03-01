@@ -15,4 +15,12 @@ in
   incus-lts = prev.incus-lts.overrideAttrs (old: {
     nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ prev.writableTmpDirAsHomeHook ];
   });
+
+  # Add --zeroconf-port support to Spotify Connect plugin so librespot
+  # binds to a fixed port that can be opened in the firewall.
+  music-assistant = prev.music-assistant.overrideAttrs (old: {
+    patches = (old.patches or [ ]) ++ [
+      ../patches/music-assistant-zeroconf-port.patch
+    ];
+  });
 }
