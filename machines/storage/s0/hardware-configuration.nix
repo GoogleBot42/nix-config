@@ -60,16 +60,55 @@
 
   ### networking ###
 
-  # systemd.network.enable = true;
+  systemd.network.enable = true;
   networking = {
-    # useNetworkd = true;
-    dhcpcd.enable = true;
-    interfaces."eth0".useDHCP = true;
-    interfaces."eth1".useDHCP = true;
+    useNetworkd = true;
+    useDHCP = false;
+    dhcpcd.enable = false;
+  };
 
-    defaultGateway = {
-      address = "192.168.1.1";
+  # eth0 — native VLAN 5 (main), default route, internet
+  # useDHCP generates the base 40-eth0 networkd unit and drives initrd DHCP for LUKS unlock.
+  networking.interfaces."eth0".useDHCP = true;
+  systemd.network.networks."40-eth0" = {
+    dhcpV4Config.RouteMetric = 100; # prefer eth0 over VLAN interfaces for default route
+    linkConfig.RequiredForOnline = "routable"; # wait-online succeeds once eth0 has a route
+  };
+
+  # eth1 — trunk port (no IP on the raw interface)
+  systemd.network.networks."10-eth1" = {
+    matchConfig.Name = "eth1";
+    networkConfig = {
+      VLAN = [ "vlan-iot" "vlan-mgmt" ];
+      LinkLocalAddressing = "no";
     };
+    linkConfig.RequiredForOnline = "carrier";
+  };
+
+  # VLAN 2 — IoT (cameras, smart home)
+  systemd.network.netdevs."20-vlan-iot".netdevConfig = { Name = "vlan-iot"; Kind = "vlan"; };
+  systemd.network.netdevs."20-vlan-iot".vlanConfig.Id = 2;
+  systemd.network.networks."20-vlan-iot" = {
+    matchConfig.Name = "vlan-iot";
+    networkConfig.DHCP = "yes";
+    dhcpV4Config = {
+      UseGateway = false;
+      RouteMetric = 200;
+    };
+    linkConfig.RequiredForOnline = "no";
+  };
+
+  # VLAN 4 — Management
+  systemd.network.netdevs."20-vlan-mgmt".netdevConfig = { Name = "vlan-mgmt"; Kind = "vlan"; };
+  systemd.network.netdevs."20-vlan-mgmt".vlanConfig.Id = 4;
+  systemd.network.networks."20-vlan-mgmt" = {
+    matchConfig.Name = "vlan-mgmt";
+    networkConfig.DHCP = "yes";
+    dhcpV4Config = {
+      UseGateway = false;
+      RouteMetric = 300;
+    };
+    linkConfig.RequiredForOnline = "no";
   };
 
   powerManagement.cpuFreqGovernor = "schedutil";

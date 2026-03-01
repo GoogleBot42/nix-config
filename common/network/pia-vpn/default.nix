@@ -187,8 +187,7 @@ in
     # Enable systemd-networkd for bridge management
     systemd.network.enable = true;
 
-    # TODO: re-enable once primary networking uses networkd
-    systemd.network.wait-online.enable = false;
+    systemd.network.wait-online.anyInterface = true;
 
     # Tell NetworkManager to ignore VPN bridge and container interfaces
     networking.networkmanager.unmanaged = mkIf config.networking.networkmanager.enable [
