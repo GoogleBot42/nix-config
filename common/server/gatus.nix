@@ -121,16 +121,6 @@ in
             alerts = [{ type = "ntfy"; }];
           }
           {
-            name = "Navidrome";
-            group = "services";
-            url = "https://navidrome.neet.cloud";
-            interval = "5m";
-            conditions = [
-              "[STATUS] == 200"
-            ];
-            alerts = [{ type = "ntfy"; }];
-          }
-          {
             name = "Roundcube";
             group = "services";
             url = "https://mail.neet.dev";

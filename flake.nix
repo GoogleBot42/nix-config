@@ -137,6 +137,7 @@
                 src = nixpkgs;
                 patches = [
                   ./patches/dont-break-nix-serve.patch
+                  ./patches/libreoffice-noto-fonts-subset.patch
                 ];
               };
               patchedNixpkgs = nixpkgs.lib.fix (self: (import "${patchedNixpkgsSrc}/flake.nix").outputs { self = nixpkgs; });

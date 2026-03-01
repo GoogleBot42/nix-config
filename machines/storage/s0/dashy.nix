@@ -115,15 +115,6 @@
             statusCheck = false;
             id = "5_1956_bazarr";
           };
-          navidrome = {
-            title = "Navidrome";
-            description = "Play Music";
-            icon = "hl-navidrome";
-            url = "https://music.s0.neet.dev";
-            target = "sametab";
-            statusCheck = false;
-            id = "6_1956_navidrome";
-          };
           transmission = {
             title = "Transmission";
             description = "Torrenting";
@@ -142,7 +133,6 @@
           mediaItems.lidarr
           mediaItems.prowlarr
           mediaItems.bazarr
-          mediaItems.navidrome
           mediaItems.transmission
         ];
       in

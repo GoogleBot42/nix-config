@@ -41,16 +41,6 @@
   # samba
   services.samba.enable = true;
 
-  # navidrome
-  services.navidrome = {
-    enable = true;
-    settings = {
-      Address = "0.0.0.0";
-      Port = 4533;
-      MusicFolder = "/data/samba/Public/Media/Music";
-    };
-  };
-
   # allow access to transmisson data
   users.users.googlebot.extraGroups = [ "transmission" ];
   users.groups.transmission.gid = config.ids.gids.transmission;
@@ -234,7 +224,6 @@
         (mkVirtualHost "prowlarr.s0.neet.dev" "http://servarr.containers:9696")
         (mkVirtualHost "transmission.s0.neet.dev" "http://transmission.containers:8080")
         (mkVirtualHost "unifi.s0.neet.dev" "https://localhost:8443")
-        (mkVirtualHost "music.s0.neet.dev" "http://localhost:4533")
         (mkVirtualHost "jellyfin.s0.neet.dev" "http://localhost:8096")
         (mkStaticHost "s0.neet.dev" config.services.dashy.finalDrv)
         {
@@ -275,7 +264,6 @@
         "prowlarr.s0.neet.dev"
         "transmission.s0.neet.dev"
         "unifi.s0.neet.dev"
-        # "music.s0.neet.dev" # messes up navidrome
         "jellyfin.s0.neet.dev"
         "s0.neet.dev"
         # "ha.s0.neet.dev" # messes up home assistant

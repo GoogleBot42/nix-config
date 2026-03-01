@@ -1,0 +1,16 @@
+Fix notoSubset glob for noto-fonts >= 2026.02.01.
+
+noto-fonts switched from variable fonts (NotoSansArabic[wdth,wght].ttf)
+to static fonts (NotoSansArabic.ttf). The old glob pattern only matched
+files with brackets in the name, causing the cp to fail.
+
+--- a/pkgs/applications/office/libreoffice/default.nix
++++ b/pkgs/applications/office/libreoffice/default.nix
+@@ -191,7 +191,7 @@
+     runCommand "noto-fonts-subset" { } ''
+       mkdir -p "$out/share/fonts/noto/"
+       ${concatMapStrings (x: ''
+-        cp "${noto-fonts}/share/fonts/noto/NotoSans${x}["*.[ot]tf "$out/share/fonts/noto/"
++        cp "${noto-fonts}/share/fonts/noto/NotoSans${x}"*.[ot]tf "$out/share/fonts/noto/"
+       '') suffixes}
+     '';

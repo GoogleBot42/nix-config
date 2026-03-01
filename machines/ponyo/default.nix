@@ -79,12 +79,6 @@
 
   # proxied web services
   services.nginx.enable = true;
-  services.nginx.virtualHosts."navidrome.neet.cloud" = {
-    enableACME = true;
-    forceSSL = true;
-    locations."/".proxyPass = "http://s0.koi-bebop.ts.net:4533";
-  };
-
   # TODO replace with a proper file hosting service
   services.nginx.virtualHosts."tmp.neet.dev" = {
     enableACME = true;

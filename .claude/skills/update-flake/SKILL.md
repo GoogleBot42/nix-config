@@ -1,6 +1,6 @@
 ---
 name: update-flake
-description: Update nix flake inputs to latest versions, fix build breakage from upstream changes, build all NixOS machines, and run garbage collection. Use when the user wants to update nixpkgs, update flake inputs, upgrade packages, or refresh the flake lockfile.
+description: Update nix flake inputs to latest versions, fix build breakage from upstream changes, and build all NixOS machines. Use when the user wants to update nixpkgs, update flake inputs, upgrade packages, or refresh the flake lockfile.
 ---
 
 # Update Flake
@@ -35,12 +35,6 @@ nix build .#nixosConfigurations.<hostname>.config.system.build.toplevel --no-lin
 
 Fix any build failures before continuing.
 
-### 4. Garbage Collection
-
-```bash
-nix store gc
-```
-
-### 5. Summary
+### 4. Summary
 
 Report: inputs updated, fixes applied, nextcloud changes, and anything needing user attention.
