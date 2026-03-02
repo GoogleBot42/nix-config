@@ -17,7 +17,7 @@ in
   config = lib.mkIf cfg.enable {
     services.nextcloud = {
       https = true;
-      package = pkgs.nextcloud32;
+      package = pkgs.nextcloud33;
       hostName = nextcloudHostname;
       config.dbtype = "sqlite";
       config.adminuser = "jeremy";
