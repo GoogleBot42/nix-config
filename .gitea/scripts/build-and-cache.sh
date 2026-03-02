@@ -26,4 +26,4 @@ paths=$(echo "$toplevels" \
       and .value.narSize >= 524288
     ) | .key] | unique[]')
 echo "Pushing $(echo "$paths" | wc -l) unique paths to cache"
-echo "$paths" | xargs attic push local:nixos
+echo "$paths" | xargs attic push -j 1 local:nixos
