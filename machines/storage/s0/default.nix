@@ -341,6 +341,8 @@
     enable = true;
     settings.MEMOS_PORT = "57643";
   };
+  # ReadWritePaths doesn't work with ProtectSystem=strict on ZFS submounts (/var/lib is a separate dataset)
+  systemd.services.memos.serviceConfig.ProtectSystem = lib.mkForce "full";
 
   services.outline = {
     enable = true;
