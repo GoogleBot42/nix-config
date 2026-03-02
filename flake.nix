@@ -115,6 +115,8 @@
                 ];
 
                 networking.hostName = hostname;
+                # Query with: nixos-version --configuration-revision
+                system.configurationRevision = self.rev or self.dirtyRev or "unknown";
 
                 home-manager.useGlobalPkgs = true;
                 home-manager.useUserPackages = true;
