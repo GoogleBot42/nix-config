@@ -16,6 +16,14 @@ in
     nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ prev.writableTmpDirAsHomeHook ];
   });
 
+  # Retry on push failure to work around hyper connection pool race condition.
+  # https://github.com/zhaofengli/attic/pull/246
+  attic-client = prev.attic-client.overrideAttrs (old: {
+    patches = (old.patches or [ ]) ++ [
+      ../patches/attic-client-push-retry.patch
+    ];
+  });
+
   # Add --zeroconf-port support to Spotify Connect plugin so librespot
   # binds to a fixed port that can be opened in the firewall.
   music-assistant = prev.music-assistant.overrideAttrs (old: {
