@@ -235,7 +235,7 @@ in
       after = [ "systemd-networkd.service" ];
       requires = [ "systemd-networkd.service" ];
       serviceConfig.ExecStartPre = [
-        "+${pkgs.systemd}/lib/systemd/systemd-networkd-wait-online --interface=${cfg.bridgeName}:no-carrier --timeout=60"
+        "+${pkgs.systemd}/lib/systemd/systemd-networkd-wait-online --interface=${cfg.bridgeName}:no-carrier --timeout=180"
       ];
     };
 
