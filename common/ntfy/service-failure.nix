@@ -14,6 +14,12 @@ in
         EnvironmentFile = "/run/agenix/ntfy-token";
         ExecStart = "${pkgs.writeShellScript "ntfy-failure-notify" ''
           unit="$1"
+          ignored_units=(${lib.concatMapStringsSep " " (u: lib.escapeShellArg u) cfg.ignoredUnits})
+          for ignored in "''${ignored_units[@]}"; do
+            if [[ "$unit" == "$ignored" ]]; then
+              exit 0
+            fi
+          done
           logfile=$(mktemp)
           trap 'rm -f "$logfile"' EXIT
           ${pkgs.systemd}/bin/journalctl -u "$unit" -n 50 --no-pager -o short > "$logfile" 2>/dev/null \

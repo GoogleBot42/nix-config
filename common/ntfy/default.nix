@@ -19,6 +19,12 @@
       default = "";
       description = "Extra arguments to pass to curl (e.g. --proxy http://host:port).";
     };
+
+    ignoredUnits = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "Unit names to skip failure notifications for.";
+    };
   };
 
   config = lib.mkIf config.thisMachine.hasRole."ntfy" {

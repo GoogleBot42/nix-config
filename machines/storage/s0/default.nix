@@ -9,6 +9,8 @@
 
   networking.hostName = "s0";
 
+  ntfy-alerts.ignoredUnits = [ "logrotate" ];
+
   # system.autoUpgrade.enable = true;
 
   nix.gc.automatic = lib.mkForce false; # allow the nix store to serve as a build cache
