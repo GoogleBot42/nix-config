@@ -14,6 +14,8 @@ in
         EnvironmentFile = "/run/agenix/ntfy-token";
         ExecStart = "${pkgs.writeShellScript "ntfy-failure-notify" ''
           unit="$1"
+          # Prevent infinite recursion if this service itself fails
+          [[ "$unit" == ntfy-failure@* ]] && exit 0
           ignored_units=(${lib.concatMapStringsSep " " (u: lib.escapeShellArg u) cfg.ignoredUnits})
           for ignored in "''${ignored_units[@]}"; do
             if [[ "$unit" == "$ignored" ]]; then
