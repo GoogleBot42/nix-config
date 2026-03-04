@@ -8,6 +8,7 @@
 
 let
   thisMachineIsARunner = config.thisMachine.hasRole."gitea-actions-runner";
+  hostOverlays = config.nixpkgs.overlays;
   containerName = "gitea-runner";
   giteaRunnerUid = 991;
   giteaRunnerGid = 989;
@@ -32,6 +33,7 @@ in
 
       config = { config, lib, pkgs, ... }: {
         system.stateVersion = "25.11";
+        nixpkgs.overlays = hostOverlays;
 
         services.gitea-actions-runner.instances.inst = {
           enable = true;
