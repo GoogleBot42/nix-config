@@ -46,7 +46,7 @@ in
         mkdir -p $out/lib/systemd/system/service.d
         cat > $out/lib/systemd/system/service.d/ntfy-on-failure.conf <<'EOF'
         [Unit]
-        OnFailure=ntfy-failure@%p.service
+        OnFailure=ntfy-failure@%N.service
         EOF
       '')
     ];
