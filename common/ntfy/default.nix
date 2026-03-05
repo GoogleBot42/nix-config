@@ -5,6 +5,7 @@
     ./service-failure.nix
     ./ssh-login.nix
     ./zfs.nix
+    ./dimm-temp.nix
   ];
 
   options.ntfy-alerts = {
