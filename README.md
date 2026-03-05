@@ -1,16 +1,26 @@
 # NixOS Configuration
 
-A NixOS flake managing multiple machines with role-based configuration, agenix secrets, and sandboxed dev workspaces.
+A NixOS flake managing multiple machines with role-based configuration, agenix secrets, sandboxed dev workspaces, and self-hosted services.
 
 ## Layout
 
 - `/common` - shared configuration imported by all machines
   - `/boot` - bootloaders, CPU microcode, remote LUKS unlock over Tor
-  - `/network` - Tailscale, VPN tunneling via PIA
+  - `/network` - Tailscale, PIA VPN with leak-proof containers, sandbox networking
   - `/pc` - desktop/graphical config (enabled by the `personal` role)
-  - `/server` - service definitions and extensions
+  - `/server` - self-hosted service definitions (Gitea, Matrix, Nextcloud, media stack, etc.)
   - `/sandboxed-workspace` - isolated dev environments (VM, container, or Incus)
+  - `/ntfy` - push notification integration (service failures, SSH logins, ZFS alerts)
+  - `binary-cache.nix` - nix binary cache configuration (nixos.org, cachix, self-hosted atticd)
+  - `nix-builder.nix` - distributed build delegation across machines
+  - `backups.nix` - snapshot-aware restic backups to Backblaze B2
 - `/machines` - per-machine config (`default.nix`, `hardware-configuration.nix`, `properties.nix`)
+  - `fry` - personal desktop
+  - `howl` - personal laptop
+  - `ponyo` - web/mail server (Gitea, Nextcloud, LibreChat, mail)
+  - `storage/s0` - storage/media server (Jellyfin, Home Assistant, monitoring, productivity apps)
+  - `zoidberg` - media center
+  - `ephemeral` - minimal config for building install ISOs and kexec images
 - `/secrets` - agenix-encrypted secrets, decryptable by machines based on their roles
 - `/home` - Home Manager user config
 - `/lib` - custom library functions extending nixpkgs lib
@@ -25,8 +35,14 @@ A NixOS flake managing multiple machines with role-based configuration, agenix s
 
 **Remote LUKS unlock over Tor** — Machines with encrypted root disks can be unlocked remotely via SSH. An embedded Tor hidden service starts in the initrd so the machine is reachable even without a known IP, using a separate SSH host key for the boot environment.
 
-**VPN containers** — A `vpn-container` module spins up an ephemeral NixOS container with a PIA WireGuard tunnel. The host creates the WireGuard interface and authenticates with PIA, then hands it off to the container's network namespace. This ensures that the container can **never** have direct internet access. Leakage is impossible.
+**VPN containers** — A `pia-vpn` module provides leak-proof VPN networking for containers. The host creates a WireGuard interface and runs tinyproxy on a bridge network for PIA API bootstrap. A dedicated VPN container authenticates with PIA via the proxy, configures WireGuard, and masquerades bridge traffic through the tunnel. Service containers default-route exclusively through the VPN container — leakage is impossible by network topology. Supports port forwarding with automatic port assignment.
 
-**Sandboxed workspaces** — Isolated dev environments backed by microVMs (cloud-hypervisor), systemd-nspawn containers, or Incus. Each workspace gets a static IP on a NAT'd bridge, auto-generated SSH host keys, shell aliases for management, and comes pre-configured with Claude Code. The sandbox network blocks access to the local LAN while allowing internet.
+**Sandboxed workspaces** — Isolated dev environments backed by microVMs (cloud-hypervisor), systemd-nspawn containers, or Incus. Each workspace gets a static IP on a NAT'd bridge (`192.168.83.0/24`), auto-generated SSH host keys, shell aliases for management, and comes pre-configured with Claude Code. The sandbox network blocks access to the local LAN while allowing internet.
 
 **Snapshot-aware backups** — Restic backups to Backblaze B2 automatically create ZFS snapshots or btrfs read-only snapshots before backing up, using mount namespaces to bind-mount frozen data over the original paths so restic records correct paths. Each backup group gets a `restic_<group>` CLI wrapper. Supports `.nobackup` marker files.
+
+**Self-hosted services** — Comprehensive service stack across ponyo and s0: Gitea (git hosting + CI), Nextcloud (files/calendar), Matrix (chat), mail server, Jellyfin/Sonarr/Radarr/Lidarr (media), Home Assistant/Zigbee2MQTT/Frigate (home automation), LibreChat (AI), Gatus (monitoring), and productivity tools (Vikunja, Actual Budget, Outline, Linkwarden, Memos).
+
+**Push notifications** — ntfy integration alerts on systemd service failures, SSH logins, and ZFS pool issues. Gatus monitors all web-facing services and sends alerts via ntfy.
+
+**Remote deployment** — deploy-rs handles remote machine deployments with boot-only or immediate activation modes. A Makefile wraps common operations (`make deploy <host>`, `make deploy-activate <host>`).
