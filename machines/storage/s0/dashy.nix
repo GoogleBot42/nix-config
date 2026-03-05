@@ -474,15 +474,6 @@
             statusCheck = false;
             id = "4_5301_outline";
           };
-          languagetool = {
-            title = "LanguageTool";
-            description = "languagetool.s0.neet.dev";
-            icon = "hl-languagetool";
-            url = "https://languagetool.s0.neet.dev";
-            target = "sametab";
-            statusCheck = false;
-            id = "5_5301_languagetool";
-          };
         };
         prodList = [
           prodItems.vikunja
@@ -490,7 +481,6 @@
           prodItems.linkwarden
           prodItems.memos
           prodItems.outline
-          prodItems.languagetool
         ];
       in
       {

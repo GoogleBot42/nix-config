@@ -320,16 +320,7 @@ in
             ];
             alerts = [{ type = "ntfy"; }];
           }
-          {
-            name = "LanguageTool";
-            group = "s0";
-            url = "https://languagetool.s0.neet.dev";
-            interval = "5m";
-            conditions = [
-              "[STATUS] == 200"
-            ];
-            alerts = [{ type = "ntfy"; }];
-          }
+
           {
             name = "Unifi";
             group = "s0";
