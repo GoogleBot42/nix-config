@@ -271,6 +271,16 @@ in
             alerts = [{ type = "ntfy"; }];
           }
           {
+            name = "Music Assistant";
+            group = "s0";
+            url = "http://s0.koi-bebop.ts.net:8095";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
             name = "Vikunja";
             group = "s0";
             url = "https://todo.s0.neet.dev";

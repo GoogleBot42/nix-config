@@ -401,6 +401,15 @@
             statusCheck = false;
             id = "5_4201_sandman";
           };
+          music-assistant = {
+            title = "Music Assistant";
+            description = "s0:8095";
+            icon = "hl-music-assistant";
+            url = "http://s0.koi-bebop.ts.net:8095";
+            target = "sametab";
+            statusCheck = false;
+            id = "6_4201_music-assistant";
+          };
         };
         haList = [
           haItems.home-assistant
@@ -409,6 +418,7 @@
           haItems.frigate
           haItems.valetudo
           haItems.sandman
+          haItems.music-assistant
         ];
       in
       {
