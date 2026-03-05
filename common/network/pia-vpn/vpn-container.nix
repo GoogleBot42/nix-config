@@ -226,6 +226,57 @@ in
               RandomizedDelaySec = "1m";
             };
           };
+
+          # Periodic VPN connectivity check — fails if VPN or internet is down,
+          # triggering ntfy alert via the OnFailure drop-in
+          systemd.services.pia-vpn-check = {
+            description = "Check PIA VPN connectivity";
+            after = [ "pia-vpn-setup.service" ];
+            requires = [ "pia-vpn-setup.service" ];
+
+            path = with pkgs; [ wireguard-tools iputils coreutils gawk ];
+
+            unitConfig = {
+              StartLimitBurst = 3;
+              StartLimitIntervalSec = "1d";
+            };
+
+            serviceConfig.Type = "oneshot";
+
+            script = ''
+              set -euo pipefail
+
+              # Check that WireGuard has a peer with a recent handshake (within 3 minutes)
+              handshake=$(wg show ${cfg.interfaceName} latest-handshakes | awk '{print $2}')
+              if [ -z "$handshake" ] || [ "$handshake" -eq 0 ]; then
+                echo "No WireGuard handshake recorded" >&2
+                exit 1
+              fi
+              now=$(date +%s)
+              age=$((now - handshake))
+              if [ "$age" -gt 180 ]; then
+                echo "WireGuard handshake is stale (''${age}s ago)" >&2
+                exit 1
+              fi
+
+              # Verify internet connectivity through VPN tunnel
+              if ! ping -c1 -W10 1.1.1.1 >/dev/null 2>&1; then
+                echo "Cannot reach internet through VPN" >&2
+                exit 1
+              fi
+
+              echo "PIA VPN connectivity OK (handshake ''${age}s ago)"
+            '';
+          };
+
+          systemd.timers.pia-vpn-check = {
+            description = "Periodic PIA VPN connectivity check";
+            wantedBy = [ "timers.target" ];
+            timerConfig = {
+              OnCalendar = "*:0/5";
+              RandomizedDelaySec = "30s";
+            };
+          };
         };
     };
   };
