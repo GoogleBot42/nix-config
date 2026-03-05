@@ -10,6 +10,7 @@
   networking.hostName = "s0";
 
   ntfy-alerts.ignoredUnits = [ "logrotate" ];
+  ntfy-alerts.dimmTempCheck.enable = true;
 
   # system.autoUpgrade.enable = true;
 
