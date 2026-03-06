@@ -9,6 +9,7 @@ let
 
     threshold=55
     hot=""
+    summary=""
 
     while IFS= read -r line; do
       case "$line" in
@@ -18,12 +19,15 @@ let
         *temp1_input:*)
           temp="''${line##*: }"
           whole="''${temp%%.*}"
+          summary="''${summary:+$summary, }$chip: ''${temp}°C"
           if [ "$whole" -ge "$threshold" ]; then
             hot="$hot"$'\n'"  $chip: ''${temp}°C"
           fi
           ;;
       esac
     done < <(sensors -u 'spd5118-*' 2>/dev/null)
+
+    echo "$summary"
 
     if [ -n "$hot" ]; then
       message="DIMM temperature above ''${threshold}°C on ${config.networking.hostName}:$hot"
