@@ -143,30 +143,6 @@
         services.lidarr.enable = true;
         services.lidarr.user = "public_data";
         services.lidarr.group = "public_data";
-        services.recyclarr = {
-          enable = true;
-          configuration = {
-            radarr.radarr_main = {
-              api_key = {
-                _secret = "/run/credentials/recyclarr.service/radarr-api-key";
-              };
-              base_url = "http://localhost:7878";
-              quality_definition.type = "movie";
-            };
-            sonarr.sonarr_main = {
-              api_key = {
-                _secret = "/run/credentials/recyclarr.service/sonarr-api-key";
-              };
-              base_url = "http://localhost:8989";
-              quality_definition.type = "series";
-            };
-          };
-        };
-
-        systemd.services.recyclarr.serviceConfig.LoadCredential = [
-          "radarr-api-key:/run/agenix/radarr-api-key"
-          "sonarr-api-key:/run/agenix/sonarr-api-key"
-        ];
 
         users.groups.public_data.gid = 994;
         users.users.public_data = {
@@ -177,8 +153,6 @@
       };
     };
   };
-  age.secrets.radarr-api-key.file = ../../../secrets/radarr-api-key.age;
-  age.secrets.sonarr-api-key.file = ../../../secrets/sonarr-api-key.age;
 
   # jellyfin
   # jellyfin cannot run in the vpn container and use hardware encoding
