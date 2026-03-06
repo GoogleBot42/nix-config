@@ -228,44 +228,73 @@ in
           };
 
           # Periodic VPN connectivity check — fails if VPN or internet is down,
-          # triggering ntfy alert via the OnFailure drop-in
+          # triggering ntfy alert via the OnFailure drop-in.
+          # Tracks failures with a counter file so only the first 3 failures per
+          # day trigger an alert (subsequent failures exit 0 to suppress noise).
           systemd.services.pia-vpn-check = {
             description = "Check PIA VPN connectivity";
             after = [ "pia-vpn-setup.service" ];
             requires = [ "pia-vpn-setup.service" ];
 
-            path = with pkgs; [ wireguard-tools iputils coreutils gawk ];
-
-            unitConfig = {
-              StartLimitBurst = 3;
-              StartLimitIntervalSec = "1d";
-            };
+            path = with pkgs; [ wireguard-tools iputils coreutils gawk jq ];
 
             serviceConfig.Type = "oneshot";
 
             script = ''
               set -euo pipefail
 
-              # Check that WireGuard has a peer with a recent handshake (within 3 minutes)
-              handshake=$(wg show ${cfg.interfaceName} latest-handshakes | awk '{print $2}')
-              if [ -z "$handshake" ] || [ "$handshake" -eq 0 ]; then
-                echo "No WireGuard handshake recorded" >&2
-                exit 1
-              fi
-              now=$(date +%s)
-              age=$((now - handshake))
-              if [ "$age" -gt 180 ]; then
-                echo "WireGuard handshake is stale (''${age}s ago)" >&2
-                exit 1
+              COUNTER_FILE="/var/lib/pia-vpn/check-fail-count.json"
+              MAX_ALERTS=3
+
+              check_vpn() {
+                # Check that WireGuard has a peer with a recent handshake (within 3 minutes)
+                handshake=$(wg show ${cfg.interfaceName} latest-handshakes | awk '{print $2}')
+                if [ -z "$handshake" ] || [ "$handshake" -eq 0 ]; then
+                  echo "No WireGuard handshake recorded" >&2
+                  return 1
+                fi
+                now=$(date +%s)
+                age=$((now - handshake))
+                if [ "$age" -gt 180 ]; then
+                  echo "WireGuard handshake is stale (''${age}s ago)" >&2
+                  return 1
+                fi
+
+                # Verify internet connectivity through VPN tunnel
+                if ! ping -c1 -W10 1.1.1.1 >/dev/null 2>&1; then
+                  echo "Cannot reach internet through VPN" >&2
+                  return 1
+                fi
+
+                echo "PIA VPN connectivity OK (handshake ''${age}s ago)"
+                return 0
+              }
+
+              if check_vpn; then
+                rm -f "$COUNTER_FILE"
+                exit 0
               fi
 
-              # Verify internet connectivity through VPN tunnel
-              if ! ping -c1 -W10 1.1.1.1 >/dev/null 2>&1; then
-                echo "Cannot reach internet through VPN" >&2
-                exit 1
+              # Failed — read and update counter (reset if from a previous day)
+              today=$(date +%Y-%m-%d)
+              count=0
+              if [ -f "$COUNTER_FILE" ]; then
+                stored=$(jq -r '.date // ""' "$COUNTER_FILE")
+                if [ "$stored" = "$today" ]; then
+                  count=$(jq -r '.count // 0' "$COUNTER_FILE")
+                fi
               fi
+              count=$((count + 1))
+              jq -n --arg date "$today" --argjson count "$count" \
+                '{"date": $date, "count": $count}' > "$COUNTER_FILE"
 
-              echo "PIA VPN connectivity OK (handshake ''${age}s ago)"
+              if [ "$count" -le "$MAX_ALERTS" ]; then
+                echo "Failure $count/$MAX_ALERTS today — alerting" >&2
+                exit 1
+              else
+                echo "Failure $count today — suppressing alert (already sent $MAX_ALERTS)" >&2
+                exit 0
+              fi
             '';
           };
 
