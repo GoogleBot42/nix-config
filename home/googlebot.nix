@@ -8,6 +8,7 @@ let
   thisMachineIsPersonal = osConfig.thisMachine.hasRole."personal";
 in
 {
+  imports = [ ./hyprland.nix ];
   home.username = "googlebot";
   home.homeDirectory = "/home/googlebot";
 

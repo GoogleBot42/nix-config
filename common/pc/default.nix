@@ -6,6 +6,7 @@ in
 {
   imports = [
     ./kde.nix
+    ./hyprland.nix
     ./yubikey.nix
     ./chromium.nix
     ./firefox.nix
