@@ -18,7 +18,7 @@
   boot.extraModulePackages = [ ];
 
   # thunderbolt
-  services.hardware.bolt.enable = true;
+  services.hardware.bolt.enable = false;
 
   # firmware
   firmware.x86_64.enable = true;
