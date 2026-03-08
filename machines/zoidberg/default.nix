@@ -35,7 +35,7 @@
     "L+    /opt/rocm/hip   -    -    -     -    ${pkgs.rocmPackages.clr}"
   ];
 
-  services.displayManager.defaultSession = "plasma";
+  services.displayManager.defaultSession = "plasma-bigscreen-wayland";
 
   users.users.cris = {
     isNormalUser = true;
@@ -54,10 +54,10 @@
     uid = 1002;
   };
 
-  # Auto login into Plasma in john zoidberg account
+  # Auto login into Plasma Bigscreen in john zoidberg account
   services.displayManager.sddm.settings = {
     Autologin = {
-      Session = "plasma";
+      Session = "plasma-bigscreen-wayland";
       User = "john";
     };
   };

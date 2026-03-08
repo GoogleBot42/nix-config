@@ -9,6 +9,14 @@ in
     services.displayManager.sddm.wayland.enable = true;
     services.desktopManager.plasma6.enable = true;
 
+    services.displayManager.sessionPackages = [
+      pkgs.plasma-bigscreen
+    ];
+
+    # Bigscreen binaries must be on PATH for autostart services, KCMs, and
+    # internal plasmashell launches (settings, input handler, envmanager, etc.)
+    environment.systemPackages = [ pkgs.plasma-bigscreen ];
+
     # kde apps
     users.users.googlebot.packages = with pkgs; [
       # akonadi

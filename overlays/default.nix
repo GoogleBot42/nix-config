@@ -31,4 +31,12 @@ in
       ../patches/music-assistant-zeroconf-port.patch
     ];
   });
+
+  # Plasma Bigscreen: TV-optimized KDE shell (not yet packaged in nixpkgs)
+  plasma-bigscreen = import ./plasma-bigscreen.nix {
+    inherit (prev.kdePackages)
+      mkKdeDerivation plasma-workspace plasma-wayland-protocols
+      qtmultimedia qtwayland qtwebengine qcoro;
+    inherit (prev) lib fetchFromGitLab pkg-config sdl3 libcec wayland;
+  };
 }
