@@ -18,6 +18,7 @@ in
       auth-default-access = "deny-all";
       behind-proxy = true;
       enable-login = true;
+      attachment-expiry-duration = "48h";
     };
 
     # backups
