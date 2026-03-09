@@ -270,10 +270,17 @@ in
                 return 0
               }
 
-              if check_vpn; then
-                rm -f "$COUNTER_FILE"
-                exit 0
-              fi
+              MAX_RETRIES=4
+              for attempt in $(seq 1 $MAX_RETRIES); do
+                if check_vpn; then
+                  rm -f "$COUNTER_FILE"
+                  exit 0
+                fi
+                if [ "$attempt" -lt "$MAX_RETRIES" ]; then
+                  echo "Attempt $attempt/$MAX_RETRIES failed, retrying in 5 minutes..." >&2
+                  sleep 300
+                fi
+              done
 
               # Failed — read and update counter (reset if from a previous day)
               today=$(date +%Y-%m-%d)
@@ -302,7 +309,7 @@ in
             description = "Periodic PIA VPN connectivity check";
             wantedBy = [ "timers.target" ];
             timerConfig = {
-              OnCalendar = "*:0/5";
+              OnCalendar = "*:0/30";
               RandomizedDelaySec = "30s";
             };
           };
