@@ -5,10 +5,6 @@
     ./hardware-configuration.nix
   ];
 
-  # Login DE Option: Steam
-  programs.steam.gamescopeSession.enable = true;
-  # programs.gamescope.capSysNice = true;
-
   # Login DE Option: Kodi
   services.xserver.desktopManager.kodi.enable = true;
   services.xserver.desktopManager.kodi.package =
