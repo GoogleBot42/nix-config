@@ -26,6 +26,12 @@
       default = [ ];
       description = "Unit names to skip failure notifications for.";
     };
+
+    hostLabel = lib.mkOption {
+      type = lib.types.str;
+      default = config.networking.hostName;
+      description = "Label used in ntfy alert titles to identify this host/container.";
+    };
   };
 
   config = lib.mkIf config.thisMachine.hasRole."ntfy" {

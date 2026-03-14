@@ -6,6 +6,7 @@ with lib;
 
 let
   cfg = config.pia-vpn;
+  hostName = config.networking.hostName;
   scripts = import ./scripts.nix;
 
   # Port forwarding derived state
@@ -98,6 +99,8 @@ in
 
           # Route ntfy alerts through the host proxy (VPN container has no gateway on eth0)
           ntfy-alerts.curlExtraArgs = "--proxy http://${cfg.hostAddress}:${toString cfg.proxyPort}";
+          ntfy-alerts.ignoredUnits = [ "logrotate" ];
+          ntfy-alerts.hostLabel = "${hostName}/pia-vpn";
 
           # Enable forwarding so bridge traffic can go through WG
           boot.kernel.sysctl."net.ipv4.ip_forward" = 1;

@@ -11,6 +11,7 @@ with lib;
 
 let
   cfg = config.pia-vpn;
+  hostName = config.networking.hostName;
 
   mkContainer = name: ctr: {
     autoStart = true;
@@ -27,6 +28,9 @@ let
 
     config = { config, pkgs, lib, ... }: {
       imports = allModules ++ [ ctr.config ];
+
+      ntfy-alerts.ignoredUnits = [ "logrotate" ];
+      ntfy-alerts.hostLabel = "${hostName}/${name}";
 
       # Static IP with gateway pointing to VPN container
       networking.useNetworkd = true;

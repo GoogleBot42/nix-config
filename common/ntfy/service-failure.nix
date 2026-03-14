@@ -32,7 +32,7 @@ in
             --max-time 30 --retry 3 \
             ${cfg.curlExtraArgs} \
             -H "Authorization: Bearer $NTFY_TOKEN" \
-            -H "Title: Service failure on ${config.networking.hostName}" \
+            -H "Title: Service failure on ${cfg.hostLabel}" \
             -H "Priority: high" \
             -H "Tags: rotating_light" \
             -H "Message: Unit $unit failed at $(date +%c)" \

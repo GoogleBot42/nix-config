@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, lib, allModules, ... }:
 
 # Gitea Actions Runner inside a NixOS container.
 # The container shares the host's /nix/store (read-only) and nix-daemon socket,
@@ -9,6 +9,7 @@
 let
   thisMachineIsARunner = config.thisMachine.hasRole."gitea-actions-runner";
   hostOverlays = config.nixpkgs.overlays;
+  hostName = config.networking.hostName;
   containerName = "gitea-runner";
   giteaRunnerUid = 991;
   giteaRunnerGid = 989;
@@ -32,8 +33,11 @@ in
       };
 
       config = { config, lib, pkgs, ... }: {
-        system.stateVersion = "25.11";
+        imports = allModules;
         nixpkgs.overlays = hostOverlays;
+
+        ntfy-alerts.ignoredUnits = [ "logrotate" ];
+        ntfy-alerts.hostLabel = "${hostName}/${containerName}";
 
         services.gitea-actions-runner.instances.inst = {
           enable = true;
