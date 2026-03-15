@@ -19,6 +19,15 @@ in
         "--hdr-itm-enabled"
         "--adaptive-sync"
       ];
+      steamArgs = [
+        "-steamos3"
+        "-gamepadui"
+        "-pipewire-dmabuf"
+      ];
+      env = {
+        STEAM_ENABLE_VOLUME_HANDLER = "1";
+        STEAM_DISABLE_AUDIO_DEVICE_SWITCHING = "1";
+      };
     };
     environment.systemPackages = [ pkgs.gamescope-wsi ];
 

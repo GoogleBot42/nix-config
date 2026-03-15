@@ -8,7 +8,6 @@
 
 let
   thisMachineIsARunner = config.thisMachine.hasRole."gitea-actions-runner";
-  hostOverlays = config.nixpkgs.overlays;
   hostName = config.networking.hostName;
   containerName = "gitea-runner";
   giteaRunnerUid = 991;
@@ -34,7 +33,6 @@ in
 
       config = { config, lib, pkgs, ... }: {
         imports = allModules;
-        nixpkgs.overlays = hostOverlays;
 
         ntfy-alerts.ignoredUnits = [ "logrotate" ];
         ntfy-alerts.hostLabel = "${hostName}/${containerName}";
