@@ -25,7 +25,7 @@
 
     # Mail Server
     simple-nixos-mailserver = {
-      url = "gitlab:simple-nixos-mailserver/nixos-mailserver/master";
+      url = "gitlab:simple-nixos-mailserver/nixos-mailserver";
       inputs = {
         nixpkgs.follows = "nixpkgs";
         flake-compat.follows = "flake-compat";
@@ -44,7 +44,7 @@
 
     # Dailybot
     dailybot = {
-      url = "git+https://git.neet.dev/zuckerberg/dailybot.git";
+      url = "github:GoogleBot42/dailybot";
       inputs = {
         nixpkgs.follows = "nixpkgs";
         flake-utils.follows = "flake-utils";

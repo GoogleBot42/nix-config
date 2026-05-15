@@ -75,7 +75,7 @@
   # Get wildcard cert
   security.acme.certs."fry.neet.dev" = {
     dnsProvider = "digitalocean";
-    credentialsFile = "/run/agenix/digitalocean-dns-credentials";
+    environmentFile = "/run/agenix/digitalocean-dns-credentials";
     extraDomainNames = [ "*.fry.neet.dev" ];
     group = "nginx";
     dnsResolver = "1.1.1.1:53";

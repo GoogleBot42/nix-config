@@ -43,7 +43,13 @@
     ];
 
   # Ensures that dhcp is active during initrd (Network Manager is used post boot)
-  boot.initrd.network.udhcpc.enable = true;
+  boot.initrd.systemd.network = {
+    enable = true;
+    networks."10-default" = {
+      matchConfig.Type = "ether";
+      networkConfig.DHCP = "yes";
+    };
+  };
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;

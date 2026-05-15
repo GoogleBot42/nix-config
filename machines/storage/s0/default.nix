@@ -259,7 +259,7 @@
   # Get wildcard cert
   security.acme.certs."s0.neet.dev" = {
     dnsProvider = "digitalocean";
-    credentialsFile = "/run/agenix/digitalocean-dns-credentials";
+    environmentFile = "/run/agenix/digitalocean-dns-credentials";
     extraDomainNames = [ "*.s0.neet.dev" ];
     group = "nginx";
     dnsResolver = "1.1.1.1:53";

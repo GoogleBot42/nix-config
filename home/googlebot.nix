@@ -59,7 +59,7 @@ in
     enable = thisMachineIsPersonal;
   };
 
-  programs.vscode = {
+  programs.vscodium = {
     enable = thisMachineIsPersonal;
     # Must use fhs version for vscode-lldb
     package = pkgs.vscodium-fhs;

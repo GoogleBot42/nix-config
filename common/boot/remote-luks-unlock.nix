@@ -45,52 +45,57 @@ in
       authorizedKeys = cfg.sshAuthorizedKeys;
     };
 
-    boot.initrd.postDeviceCommands = ''
-      echo 'waiting for root device to be opened...'
-      mkfifo /crypt-ramfs/passphrase
-      echo /crypt-ramfs/passphrase >> /dev/null
-    '';
+    # Use systemd-tty-ask-password-agent for interactive LUKS passphrase entry over SSH
+    boot.initrd.systemd.users.root.shell = "/bin/systemd-tty-ask-password-agent --watch";
 
+    # Tor hidden service for remote unlock over onion
     boot.initrd.secrets = lib.mkIf cfg.enableTorUnlock {
       "/etc/tor/onion/bootup" = cfg.onionConfig;
     };
-    boot.initrd.extraUtilsCommands = lib.mkIf cfg.enableTorUnlock ''
-      copy_bin_and_libs ${pkgs.tor}/bin/tor
-      copy_bin_and_libs ${pkgs.haveged}/bin/haveged
-    '';
-    boot.initrd.network.postCommands = lib.mkMerge [
-      (
-        ''
-          # Add nice prompt for giving LUKS passphrase over ssh
-          echo 'read -s -p "Unlock Passphrase: " passphrase && echo $passphrase > /crypt-ramfs/passphrase && exit' >> /root/.profile
-        ''
-      )
 
-      (
-        let torRc = (pkgs.writeText "tor.rc" ''
-          DataDirectory /etc/tor
-          SOCKSPort 127.0.0.1:9050 IsolateDestAddr
-          SOCKSPort 127.0.0.1:9063
-          HiddenServiceDir /etc/tor/onion/bootup
-          HiddenServicePort 22 127.0.0.1:22
-        ''); in
-        lib.mkIf cfg.enableTorUnlock ''
-          echo "tor: preparing onion folder"
-          # have to do this otherwise tor does not want to start
+    boot.initrd.systemd.storePaths = lib.mkIf cfg.enableTorUnlock [
+      "${pkgs.tor}/bin/tor"
+      "${pkgs.haveged}/bin/haveged"
+    ];
+
+    boot.initrd.systemd.services.tor-unlock = lib.mkIf cfg.enableTorUnlock {
+      description = "Tor Hidden Service for Boot Unlock";
+      wantedBy = [ "initrd.target" ];
+      after = [ "network.target" "sshd.service" ];
+      wants = [ "network.target" ];
+
+      unitConfig.DefaultDependencies = false;
+
+      serviceConfig = {
+        Type = "forking";
+        RemainAfterExit = true;
+      };
+
+      script =
+        let
+          torRc = pkgs.writeText "tor.rc" ''
+            DataDirectory /etc/tor
+            SOCKSPort 127.0.0.1:9050 IsolateDestAddr
+            SOCKSPort 127.0.0.1:9063
+            HiddenServiceDir /etc/tor/onion/bootup
+            HiddenServicePort 22 127.0.0.1:22
+          '';
+        in
+        ''
+          # Fix permissions for tor
           chmod -R 700 /etc/tor
 
-          echo "make sure localhost is up"
-          ip a a 127.0.0.1/8 dev lo
+          # Ensure loopback is up
+          ip a a 127.0.0.1/8 dev lo 2>/dev/null || true
           ip link set lo up
 
-          echo "haveged: starting haveged"
-          haveged -F &
+          # Start haveged for entropy
+          ${pkgs.haveged}/bin/haveged -F &
 
-          echo "tor: starting tor"
-          tor -f ${torRc} --verify-config
-          tor -f ${torRc} &
-        ''
-      )
-    ];
+          # Verify and start tor
+          ${pkgs.tor}/bin/tor -f ${torRc} --verify-config
+          ${pkgs.tor}/bin/tor -f ${torRc} &
+        '';
+    };
   };
 }
