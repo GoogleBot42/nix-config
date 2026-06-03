@@ -81,6 +81,19 @@
         flake-utils.follows = "flake-utils";
       };
     };
+
+    # Hermes agent (Nous Research)
+    hermes-agent = {
+      url = "github:NousResearch/hermes-agent";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        # Collapse duplicate copies of pyproject-nix and uv2nix that the
+        # hermes-agent flake otherwise pulls in at multiple revs.
+        pyproject-build-systems.inputs.pyproject-nix.follows = "hermes-agent/pyproject-nix";
+        pyproject-build-systems.inputs.uv2nix.follows = "hermes-agent/uv2nix";
+        uv2nix.inputs.pyproject-nix.follows = "hermes-agent/pyproject-nix";
+      };
+    };
   };
 
   outputs = { self, nixpkgs, ... }@inputs:

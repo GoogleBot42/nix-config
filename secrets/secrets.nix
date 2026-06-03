@@ -55,6 +55,9 @@ with roles;
   # Librechat
   "librechat-env-file.age".publicKeys = librechat;
 
+  # Hermes agent
+  "hermes-env.age".publicKeys = personal;
+
   # For ACME DNS Challenge
   "digitalocean-dns-credentials.age".publicKeys = dns-challenge;
 

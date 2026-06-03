@@ -23,6 +23,31 @@
       ip = "192.168.83.90";
       hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL0SNSy/MdW38NqKzLr1SG8WKrs8XkrqibacaJtJPzgW";
     };
+    workspaces.hermes = {
+      type = "incus";
+      autoStart = true;
+      config = ./workspaces/hermes.nix;
+      ip = "192.168.83.91";
+      extraMounts = {
+        hermes-state = {
+          hostPath = "/home/googlebot/sandboxed/hermes/hermes-state";
+          containerPath = "/var/lib/hermes";
+        };
+        hermes-env = {
+          hostPath = "/run/agenix/hermes-env";
+          containerPath = "/etc/hermes-env";
+          createHostPath = false; # managed by agenix
+          shift = false; # /run is tmpfs; idmapping not supported
+        };
+      };
+    };
+  };
+  # Bind-mounted into the hermes workspace with shift=false (tmpfs can't be
+  # idmapped). Mode 0444 lets systemd inside the container read it via the
+  # "other" bits — the file shows up as nobody:nogroup over an un-shifted mount.
+  age.secrets.hermes-env = {
+    file = ../../secrets/hermes-env.age;
+    mode = "0444";
   };
 
   environment.systemPackages = with pkgs; [

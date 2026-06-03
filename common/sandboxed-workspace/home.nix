@@ -16,6 +16,14 @@
   programs.starship.enableFishIntegration = true;
   programs.starship.settings.container.disabled = true;
 
+  # Land in ~/workspace on interactive login. Skipped if the dir doesn't exist
+  # (e.g. before the bind mount is wired) so we don't error on shell startup.
+  programs.fish.loginShellInit = ''
+    if test -d $HOME/workspace
+        cd $HOME/workspace
+    end
+  '';
+
   # Basic command-line tools
   programs.btop.enable = true;
   programs.ripgrep.enable = true;
