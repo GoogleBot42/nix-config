@@ -43,6 +43,16 @@
       };
       toolsets = [ "all" ];
       terminal.backend = "local";
+
+      # Self-hosted memory: pure SQLite in-process, no external services or
+      # API keys. db file lives under HERMES_HOME (= /var/lib/hermes/.hermes),
+      # which is on the persisted bind-mount.
+      memory.provider = "holographic";
+      plugins.hermes-memory-store = {
+        db_path = "/var/lib/hermes/.hermes/memory_store.db";
+        auto_extract = true;
+        default_trust = 0.5;
+      };
     };
   };
 
