@@ -267,6 +267,22 @@
         "type": "github"
       }
     },
+    "hindsight-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1780589667,
+        "narHash": "sha256-Zb8zIdlnm9spUiVbGdByGKE/V/5q+RKjbuSbayNIDxY=",
+        "owner": "vectorize-io",
+        "repo": "hindsight",
+        "rev": "7683f29004ab9d88e0ef3f0f18b8ffe6fc741905",
+        "type": "github"
+      },
+      "original": {
+        "owner": "vectorize-io",
+        "repo": "hindsight",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -441,6 +457,7 @@
         "flake-compat": "flake-compat",
         "flake-utils": "flake-utils",
         "hermes-agent": "hermes-agent",
+        "hindsight-src": "hindsight-src",
         "home-manager": "home-manager",
         "microvm": "microvm",
         "nix-index-database": "nix-index-database",

@@ -94,6 +94,13 @@
         uv2nix.inputs.pyproject-nix.follows = "hermes-agent/pyproject-nix";
       };
     };
+
+    # Hindsight memory server (vectorize-io). No upstream flake; consumed as a
+    # bare source tree and packaged via the uv2nix toolchain from hermes-agent.
+    hindsight-src = {
+      url = "github:vectorize-io/hindsight";
+      flake = false;
+    };
   };
 
   outputs = { self, nixpkgs, ... }@inputs:

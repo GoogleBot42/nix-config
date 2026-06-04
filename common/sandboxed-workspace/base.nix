@@ -31,6 +31,7 @@ in
   ];
 
   nixpkgs.overlays = [
+    hostConfig.inputs.self.overlays.default
     hostConfig.inputs.claude-code-nix.overlays.default
   ];
 

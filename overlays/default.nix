@@ -52,4 +52,13 @@ in
       qtmultimedia qtwayland qtwebengine qcoro;
     inherit (prev) lib fetchFromGitLab pkg-config sdl3 libcec wayland;
   };
+
+  # Hindsight agent-memory server. Built via uv2nix against the upstream
+  # workspace; uses hermes-agent's toolchain pin to avoid duplicating uv2nix.
+  hindsight-api = prev.callPackage ../pkgs/hindsight {
+    hindsight-src = inputs.hindsight-src;
+    uv2nix = inputs.hermes-agent.inputs.uv2nix;
+    pyproject-nix = inputs.hermes-agent.inputs.pyproject-nix;
+    pyproject-build-systems = inputs.hermes-agent.inputs.pyproject-build-systems;
+  };
 }
