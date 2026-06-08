@@ -86,6 +86,12 @@ in
       toolsets = [ "all" ];
       terminal.backend = "local";
 
+      # Auto-approve every tool/command. The hermes container is itself a
+      # sandbox (incus instance, codex `danger-full-access` already on), so
+      # the prompt-gate doesn't add a meaningful boundary — it just stalls
+      # the agent waiting for a human. `off` matches `--yolo` / HERMES_YOLO_MODE.
+      approvals.mode = "off";
+
       # NOTE on codex integration: we deliberately do NOT set
       # `model.openai_runtime = "codex_app_server"`. That mode lets a
       # codex subprocess own the entire turn loop, and Hermes' bridge
