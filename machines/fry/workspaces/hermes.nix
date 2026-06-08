@@ -152,20 +152,30 @@ in
   # daemon's process environment.
   environment.etc."hermes-himalaya-config.toml".text = ''
     [accounts.agent]
+    email = "agent@neet.dev"
+    display-name = "Hermes Agent"
     default = true
 
-    imap.server = "imaps://mail.neet.dev:993"
-    imap.sasl.plain.username = "agent@neet.dev"
-    imap.sasl.plain.password.command = "cat /etc/agent-email-pw"
+    backend.type = "imap"
+    backend.host = "mail.neet.dev"
+    backend.port = 993
+    backend.encryption.type = "tls"
+    backend.login = "agent@neet.dev"
+    backend.auth.type = "password"
+    backend.auth.cmd = "cat /etc/agent-email-pw"
 
-    smtp.server = "smtps://mail.neet.dev:465"
-    smtp.sasl.plain.username = "agent@neet.dev"
-    smtp.sasl.plain.password.command = "cat /etc/agent-email-pw"
+    message.send.backend.type = "smtp"
+    message.send.backend.host = "mail.neet.dev"
+    message.send.backend.port = 465
+    message.send.backend.encryption.type = "tls"
+    message.send.backend.login = "agent@neet.dev"
+    message.send.backend.auth.type = "password"
+    message.send.backend.auth.cmd = "cat /etc/agent-email-pw"
 
-    mailbox.alias.inbox = "INBOX"
-    mailbox.alias.sent = "Sent"
-    mailbox.alias.drafts = "Drafts"
-    mailbox.alias.trash = "Trash"
+    folder.aliases.inbox = "INBOX"
+    folder.aliases.sent = "Sent"
+    folder.aliases.drafts = "Drafts"
+    folder.aliases.trash = "Trash"
   '';
 
   systemd.tmpfiles.rules = [
