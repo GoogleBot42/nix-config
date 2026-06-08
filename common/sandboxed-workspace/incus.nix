@@ -66,6 +66,7 @@ let
         incus config device add ${containerName} workspace disk source=/home/googlebot/sandboxed/${name}/workspace path=/home/googlebot/workspace shift=true
         incus config device add ${containerName} ssh-keys disk source=/home/googlebot/sandboxed/${name}/ssh-host-keys path=/etc/ssh-host-keys shift=true
         incus config device add ${containerName} claude-config disk source=/home/googlebot/sandboxed/${name}/claude-config path=/home/googlebot/claude-config shift=true
+        incus config device add ${containerName} attic-netrc disk source=/run/agenix/attic-netrc path=/etc/attic-netrc shift=false
         ${lib.concatStrings (lib.mapAttrsToList (mountName: m: ''
           incus config device add ${containerName} ${mountName} disk source=${m.hostPath} path=${m.containerPath} shift=${lib.boolToString m.shift}
         '') ws.extraMounts)}

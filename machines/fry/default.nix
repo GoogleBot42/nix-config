@@ -59,6 +59,7 @@
     file = ../../secrets/agent-email-pw.age;
     mode = "0444";
   };
+  age.secrets.attic-netrc.mode = "0444";
 
   environment.systemPackages = with pkgs; [
     system76-keyboard-configurator
