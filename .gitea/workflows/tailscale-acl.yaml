@@ -4,24 +4,34 @@ on:
   push:
     branches:
       - master
+  pull_request:
+    branches:
+      - master
   workflow_dispatch: {}
-
-env:
-  DEBIAN_FRONTEND: noninteractive
-  PATH: /run/current-system/sw/bin/
-  TAILSCALE_TAILNET: koi-bebop.ts.net
 
 jobs:
   sync-tailscale-acl:
     runs-on: nixos
+    env:
+      TAILSCALE_API_KEY: ${{ secrets.TAILSCALE_API_KEY }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
+
+      - name: Test checked-in Tailscale ACL
+        if: github.event_name == 'pull_request' && env.TAILSCALE_API_KEY != ''
+        uses: tailscale/gitops-acl-action@v1
         with:
-          fetch-depth: 0
+          api-key: ${{ env.TAILSCALE_API_KEY }}
+          tailnet: koi-bebop.ts.net
+          policy-file: common/network/tailscale-acl.hujson
+          action: test
 
       - name: Apply checked-in Tailscale ACL
-        env:
-          XDG_CONFIG_HOME: ${{ runner.temp }}/.config
-          TAILSCALE_API_KEY: ${{ secrets.TAILSCALE_API_KEY }}
-        run: bash .gitea/scripts/apply-tailscale-acl.sh
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        uses: tailscale/gitops-acl-action@v1
+        with:
+          api-key: ${{ env.TAILSCALE_API_KEY }}
+          tailnet: koi-bebop.ts.net
+          policy-file: common/network/tailscale-acl.hujson
+          action: apply
