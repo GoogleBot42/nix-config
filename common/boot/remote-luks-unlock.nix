@@ -22,7 +22,10 @@ in
     };
     sshAuthorizedKeys = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      default = config.users.users.googlebot.openssh.authorizedKeys.keys;
+      default = lib.unique (
+        config.users.users.root.openssh.authorizedKeys.keys
+        ++ config.users.users.googlebot.openssh.authorizedKeys.keys
+      );
     };
     onionConfig = lib.mkOption {
       type = lib.types.path;
