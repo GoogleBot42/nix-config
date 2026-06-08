@@ -83,6 +83,7 @@ in
       ANONYMIZED_TELEMETRY = "False";
       DO_NOT_TRACK = "True";
       SCARF_NO_ANALYTICS = "True";
+      ENABLE_FORWARD_USER_INFO_HEADERS = "True";
       OLLAMA_API_BASE_URL = "http://localhost:${toString config.services.ollama.port}";
       OPENAI_API_BASE_URL = "http://${hermesWorkspaceIp}:8642/v1";
     };
