@@ -1,5 +1,8 @@
 { config, pkgs, lib, ... }:
 
+let
+  hermesWorkspaceIp = config.sandboxed-workspace.workspaces.hermes.ip;
+in
 {
   imports = [
     ./hardware-configuration.nix
@@ -75,11 +78,13 @@
     enable = true;
     host = "127.0.0.1"; # nginx proxy
     port = 12831;
+    environmentFile = "/run/agenix/hermes-env";
     environment = {
       ANONYMIZED_TELEMETRY = "False";
       DO_NOT_TRACK = "True";
       SCARF_NO_ANALYTICS = "True";
       OLLAMA_API_BASE_URL = "http://localhost:${toString config.services.ollama.port}";
+      OPENAI_API_BASE_URL = "http://${hermesWorkspaceIp}:8642/v1";
     };
   };
 

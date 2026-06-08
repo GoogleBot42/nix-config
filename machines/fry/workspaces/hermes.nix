@@ -41,6 +41,10 @@ in
     environment = {
       SIGNAL_HTTP_URL = "http://127.0.0.1:8080";
       CODEX_HOME = "${hermesStateDir}/.codex";
+      API_SERVER_ENABLED = "true";
+      API_SERVER_HOST = "0.0.0.0";
+      API_SERVER_PORT = "8642";
+      API_SERVER_MODEL_NAME = "hermes";
       XDG_CONFIG_HOME = "${hermesStateDir}/.config";
       HINDSIGHT_MODE = "local_external";
       HINDSIGHT_API_URL = "http://127.0.0.1:8888";
