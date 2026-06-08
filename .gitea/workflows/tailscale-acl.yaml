@@ -13,25 +13,28 @@ jobs:
   sync-tailscale-acl:
     runs-on: nixos
     env:
-      TAILSCALE_API_KEY: ${{ secrets.TAILSCALE_API_KEY }}
+      TAILSCALE_OAUTH_CLIENT_ID: ${{ secrets.TAILSCALE_OAUTH_CLIENT_ID }}
+      TAILSCALE_OAUTH_SECRET: ${{ secrets.TAILSCALE_OAUTH_SECRET }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
 
       - name: Test checked-in Tailscale ACL
-        if: github.event_name == 'pull_request' && env.TAILSCALE_API_KEY != ''
+        if: github.event_name == 'pull_request' && env.TAILSCALE_OAUTH_CLIENT_ID != '' && env.TAILSCALE_OAUTH_SECRET != ''
         uses: tailscale/gitops-acl-action@v1
         with:
-          api-key: ${{ env.TAILSCALE_API_KEY }}
+          oauth-client-id: ${{ env.TAILSCALE_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ env.TAILSCALE_OAUTH_SECRET }}
           tailnet: koi-bebop.ts.net
           policy-file: common/network/tailscale-acl.hujson
           action: test
 
       - name: Apply checked-in Tailscale ACL
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && env.TAILSCALE_OAUTH_CLIENT_ID != '' && env.TAILSCALE_OAUTH_SECRET != ''
         uses: tailscale/gitops-acl-action@v1
         with:
-          api-key: ${{ env.TAILSCALE_API_KEY }}
+          oauth-client-id: ${{ env.TAILSCALE_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ env.TAILSCALE_OAUTH_SECRET }}
           tailnet: koi-bebop.ts.net
           policy-file: common/network/tailscale-acl.hujson
           action: apply
