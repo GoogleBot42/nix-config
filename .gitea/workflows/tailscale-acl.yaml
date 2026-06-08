@@ -19,8 +19,16 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@v4
 
+      - name: Add tar and gzip from nixpkgs to PATH
+        shell: bash
+        run: |
+          nix shell nixpkgs#gnutar nixpkgs#gzip --command bash -lc "
+            dirname \"\$(command -v tar)\"
+            dirname \"\$(command -v gzip)\"
+          " | sort -u >> "$GITHUB_PATH"
+
       - name: Test checked-in Tailscale ACL
-        if: github.event_name == 'pull_request' && env.TAILSCALE_OAUTH_CLIENT_ID != '' && env.TAILSCALE_OAUTH_SECRET != ''
+        if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch') && env.TAILSCALE_OAUTH_CLIENT_ID != '' && env.TAILSCALE_OAUTH_SECRET != ''
         uses: tailscale/gitops-acl-action@v1
         with:
           oauth-client-id: ${{ env.TAILSCALE_OAUTH_CLIENT_ID }}
