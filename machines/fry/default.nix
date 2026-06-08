@@ -39,6 +39,12 @@
           createHostPath = false; # managed by agenix
           shift = false; # /run is tmpfs; idmapping not supported
         };
+        agent-email-pw = {
+          hostPath = "/run/agenix/agent-email-pw";
+          containerPath = "/etc/agent-email-pw";
+          createHostPath = false; # managed by agenix
+          shift = false; # /run is tmpfs; idmapping not supported
+        };
       };
     };
   };
@@ -47,6 +53,10 @@
   # "other" bits — the file shows up as nobody:nogroup over an un-shifted mount.
   age.secrets.hermes-env = {
     file = ../../secrets/hermes-env.age;
+    mode = "0444";
+  };
+  age.secrets.agent-email-pw = {
+    file = ../../secrets/agent-email-pw.age;
     mode = "0444";
   };
 

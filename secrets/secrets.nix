@@ -20,6 +20,7 @@ with roles;
   "cris-hashed-email-pw.age".publicKeys = email-server;
   "sasl_relay_passwd.age".publicKeys = email-server;
   "hashed-robots-email-pw.age".publicKeys = email-server;
+  "hashed-agent-email-pw.age".publicKeys = email-server;
   "robots-email-pw.age".publicKeys = gitea ++ outline;
 
   # nix binary cache
@@ -57,6 +58,7 @@ with roles;
 
   # Hermes agent
   "hermes-env.age".publicKeys = personal;
+  "agent-email-pw.age".publicKeys = personal;
 
   # For ACME DNS Challenge
   "digitalocean-dns-credentials.age".publicKeys = dns-challenge;

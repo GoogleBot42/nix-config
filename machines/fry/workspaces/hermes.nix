@@ -50,7 +50,7 @@ in
     # to this dir.
     workingDirectory = "/home/googlebot/workspace";
 
-    extraPackages = with pkgs; [ nix git ripgrep fd jq codex ];
+    extraPackages = with pkgs; [ nix git ripgrep fd jq codex himalaya ];
 
     # Pulls in hindsight-client (the HTTP client lib the memory plugin uses).
     extraDependencyGroups = [ "hindsight" ];
@@ -58,6 +58,11 @@ in
     environment = {
       SIGNAL_HTTP_URL = "http://127.0.0.1:8080";
       CODEX_HOME = "/var/lib/hermes/.codex";
+
+      # Himalaya looks up config under $XDG_CONFIG_HOME/himalaya/config.toml.
+      # Point it at the persisted /var/lib/hermes bind mount so the file is
+      # seeded by tmpfiles below and survives container recreation.
+      XDG_CONFIG_HOME = "/var/lib/hermes/.config";
 
       # Hindsight memory plugin reads config from $HERMES_HOME/hindsight/config.json
       # first, then falls back to env vars (defaulting mode=cloud). We have no
@@ -133,11 +138,38 @@ in
   environment.etc."hermes-config.yaml".text =
     builtins.toJSON config.services.hermes-agent.settings;
 
+  # Himalaya CLI config — read by the bundled `email-himalaya` skill. The
+  # password is read from /etc/agent-email-pw, which is bind-mounted from
+  # /run/agenix/agent-email-pw on the host (see fry/default.nix). Keeping the
+  # password in its own agenix secret (not lumped into hermes-env) means it
+  # can be rotated and audited independently, and it never lands in the
+  # daemon's process environment.
+  environment.etc."hermes-himalaya-config.toml".text = ''
+    [accounts.agent]
+    default = true
+
+    imap.server = "imaps://mail.neet.dev:993"
+    imap.sasl.plain.username = "agent@neet.dev"
+    imap.sasl.plain.password.command = "cat /etc/agent-email-pw"
+
+    smtp.server = "smtps://mail.neet.dev:465"
+    smtp.sasl.plain.username = "agent@neet.dev"
+    smtp.sasl.plain.password.command = "cat /etc/agent-email-pw"
+
+    mailbox.alias.inbox = "INBOX"
+    mailbox.alias.sent = "Sent"
+    mailbox.alias.drafts = "Drafts"
+    mailbox.alias.trash = "Trash"
+  '';
+
   systemd.tmpfiles.rules = [
     "d /var/lib/hermes/.codex 0700 googlebot users -"
     "C+ /var/lib/hermes/.codex/config.toml 0644 googlebot users - /etc/hermes-codex-config.toml"
     "d /var/lib/hermes/hindsight 0700 googlebot users -"
     "C+ /var/lib/hermes/.hermes/config.yaml 0640 googlebot users - /etc/hermes-config.yaml"
+    "d /var/lib/hermes/.config 0700 googlebot users -"
+    "d /var/lib/hermes/.config/himalaya 0700 googlebot users -"
+    "C+ /var/lib/hermes/.config/himalaya/config.toml 0600 googlebot users - /etc/hermes-himalaya-config.toml"
   ];
 
   # The dataDir lives on a /var/lib/hermes bind mount owned by googlebot.

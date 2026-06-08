@@ -48,6 +48,10 @@ in
           sendOnly = true;
           hashedPasswordFile = "/run/agenix/hashed-robots-email-pw";
         };
+        "agent@neet.dev" = {
+          hashedPasswordFile = "/run/agenix/hashed-agent-email-pw";
+          quota = "1G";
+        };
       };
       rejectRecipients = [
         "george@runyan.org"
@@ -69,6 +73,7 @@ in
     age.secrets.hashed-email-pw.file = ../../secrets/hashed-email-pw.age;
     age.secrets.cris-hashed-email-pw.file = ../../secrets/cris-hashed-email-pw.age;
     age.secrets.hashed-robots-email-pw.file = ../../secrets/hashed-robots-email-pw.age;
+    age.secrets.hashed-agent-email-pw.file = ../../secrets/hashed-agent-email-pw.age;
 
     # Get let's encrypt cert
     services.nginx = {
@@ -100,6 +105,19 @@ in
         (concatStringsSep "\n" (map (domain: "@${domain} ${relayHost}") domains));
     services.postfix.mapFiles.sasl_relay_passwd = "/run/agenix/sasl_relay_passwd";
     age.secrets.sasl_relay_passwd.file = ../../secrets/sasl_relay_passwd.age;
+
+    # Restrict certain recipients to mail from internal (authenticated) accounts only.
+    # Any account that can authenticate to this server's submission port is "internal".
+    services.postfix.settings.main = {
+      smtpd_restriction_classes = "internal_only";
+      internal_only = "permit_sasl_authenticated,permit_mynetworks,reject";
+      smtpd_recipient_restrictions = lib.mkBefore [
+        "check_recipient_access hash:/var/lib/postfix/conf/protected_recipients"
+      ];
+    };
+    services.postfix.mapFiles.protected_recipients = pkgs.writeText "protected_recipients" ''
+      agent@neet.dev internal_only
+    '';
 
     # webmail
     services.roundcube = {
