@@ -1,0 +1,27 @@
+name: Sync Tailscale ACL
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch: {}
+
+env:
+  DEBIAN_FRONTEND: noninteractive
+  PATH: /run/current-system/sw/bin/
+  TAILSCALE_TAILNET: koi-bebop.ts.net
+
+jobs:
+  sync-tailscale-acl:
+    runs-on: nixos
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply checked-in Tailscale ACL
+        env:
+          XDG_CONFIG_HOME: ${{ runner.temp }}/.config
+          TAILSCALE_API_KEY: ${{ secrets.TAILSCALE_API_KEY }}
+        run: bash .gitea/scripts/apply-tailscale-acl.sh

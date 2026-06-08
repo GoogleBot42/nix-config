@@ -1,0 +1,293 @@
+{
+	// ┌────────────────────┬─────────────┬──────────┬────────┬─────┐
+	// │      Service       │ workstation │ external │ server │ iot │
+	// ├────────────────────┼─────────────┼──────────┼────────┼─────┤
+	// │ Web (server)       │ ✓           │ ✓        │ ✓      │ ✗   │
+	// ├────────────────────┼─────────────┼──────────┼────────┼─────┤
+	// │ SSH (server)       │ ✓           │ ✗        │ ✗      │ ✗   │
+	// ├────────────────────┼─────────────┼──────────┼────────┼─────┤
+	// │ SSH (workstation)  │ ✓           │ ✗        │ ✗      │ ✗   │
+	// ├────────────────────┼─────────────┼──────────┼────────┼─────┤
+	// │ Mosh (server)      │ ✓           │ ✗        │ ✗      │ ✗   │
+	// ├────────────────────┼─────────────┼──────────┼────────┼─────┤
+	// │ Mosh (workstation) │ ✓           │ ✗        │ ✗      │ ✗   │
+	// ├────────────────────┼─────────────┼──────────┼────────┼─────┤
+	// │ Samba              │ ✓           │ ✓        │ ✗      │ ✗   │
+	// ├────────────────────┼─────────────┼──────────┼────────┼─────┤
+	// │ iperf3             │ ✓           │ ✗        │ ✗      │ ✗   │
+	// ├────────────────────┼─────────────┼──────────┼────────┼─────┤
+	// │ nix-serve          │ ✓           │ ✗        │ ✓      │ ✗   │
+	// ├────────────────────┼─────────────┼──────────┼────────┼─────┤
+	// │ IoT control        │ ✓           │ ✗        │ ✓      │ ✗   │
+	// └────────────────────┴─────────────┴──────────┴────────┴─────┘
+
+	"tagOwners": {
+		"tag:workstation": ["mrunyan7@gmail.com"],
+		"tag:server":      ["mrunyan7@gmail.com"],
+		"tag:external":    ["mrunyan7@gmail.com"],
+		"tag:iot":         ["mrunyan7@gmail.com"],
+	},
+
+	"grants": [
+		// ===========================================
+		// WEB (80, 443)
+		// ===========================================
+		{
+			"src": ["tag:workstation", "tag:external", "tag:server"],
+			"dst": ["tag:server"],
+			"ip":  ["80", "443"],
+		},
+		// ===========================================
+		// SSH (22), MOSH (UDP 60000-61000)
+		// ===========================================
+		{
+			"src": ["tag:workstation"],
+			"dst": ["tag:server", "tag:workstation"],
+			"ip":  ["22", "60000-61000"],
+		},
+		// ===========================================
+		// SAMBA (139, 445)
+		// ===========================================
+		{
+			"src": ["tag:workstation", "tag:external"],
+			"dst": ["tag:server"],
+			"ip":  ["139", "445"],
+		},
+		// ===========================================
+		// DEV TOOLS
+		// iperf3 (5201) - workstations only
+		// nix-serve, attic (5000, 28338) - workstations and servers
+		// ===========================================
+		{
+			"src": ["tag:workstation"],
+			"dst": ["tag:server", "tag:workstation"],
+			"ip":  ["5201"],
+		},
+		{
+			"src": ["tag:workstation", "tag:server", "tag:external"],
+			"dst": ["tag:server"],
+			"ip":  ["5000", "28338"],
+		},
+		// ===========================================
+		// Music Assistant (8095)
+		// ===========================================
+		{
+			"src": ["tag:workstation", "tag:server", "tag:external"],
+			"dst": ["tag:server"],
+			"ip":  ["8095"],
+		},
+		// ===========================================
+		// KDE CONNECT
+		// ===========================================
+		{
+			"src": ["tag:workstation", "tag:external"],
+			"dst": ["tag:workstation", "tag:external"],
+			"ip":  ["1714-1764"],
+		},
+		// ===========================================
+		// IoT CONTROL
+		// ===========================================
+		{
+			"src": ["tag:server", "tag:workstation"],
+			"dst": ["tag:iot"],
+			"ip":  ["*"],
+		},
+		// ===========================================
+		// EXIT NODE
+		// ===========================================
+		{
+			"src": ["autogroup:member"],
+			"dst": ["autogroup:internet"],
+			"ip":  ["*"],
+		},
+	],
+
+	"tests": [
+		// ===========================================
+		// WEB TESTS
+		// ===========================================
+		{
+			"src":    "tag:workstation",
+			"accept": ["tag:server:80", "tag:server:443"],
+		},
+		{
+			"src":    "tag:external",
+			"accept": ["tag:server:80", "tag:server:443"],
+		},
+		{
+			"src":    "tag:server",
+			"accept": ["tag:server:80", "tag:server:443"],
+		},
+		{
+			"src":  "tag:iot",
+			"deny": ["tag:server:80", "tag:server:443"],
+		},
+		// ===========================================
+		// SSH TESTS
+		// ===========================================
+		{
+			"src":    "tag:workstation",
+			"accept": ["tag:server:22", "tag:workstation:22"],
+		},
+		{
+			"src":  "tag:external",
+			"deny": ["tag:server:22", "tag:workstation:22"],
+		},
+		{
+			"src":  "tag:iot",
+			"deny": ["tag:server:22", "tag:workstation:22"],
+		},
+		{
+			"src":  "tag:server",
+			"deny": ["tag:server:22", "tag:workstation:22"],
+		},
+		// ===========================================
+		// MOSH TESTS
+		// ===========================================
+		{
+			"src":    "tag:workstation",
+			"accept": ["tag:server:60000", "tag:server:60500", "tag:workstation:60000"],
+		},
+		{
+			"src":  "tag:external",
+			"deny": ["tag:server:60000", "tag:workstation:60000"],
+		},
+		{
+			"src":  "tag:iot",
+			"deny": ["tag:server:60000", "tag:workstation:60000"],
+		},
+		{
+			"src":  "tag:server",
+			"deny": ["tag:server:60000", "tag:workstation:60000"],
+		},
+		// ===========================================
+		// SAMBA TESTS
+		// ===========================================
+		{
+			"src":    "tag:workstation",
+			"accept": ["tag:server:139", "tag:server:445"],
+		},
+		{
+			"src":    "tag:external",
+			"accept": ["tag:server:139", "tag:server:445"],
+		},
+		{
+			"src":  "tag:iot",
+			"deny": ["tag:server:139", "tag:server:445"],
+		},
+		{
+			"src":  "tag:server",
+			"deny": ["tag:server:139", "tag:server:445"],
+		},
+		// ===========================================
+		// DEV TOOLS TESTS
+		// ===========================================
+		// iperf3 - workstations only
+		{
+			"src":    "tag:workstation",
+			"accept": ["tag:server:5201", "tag:workstation:5201"],
+		},
+		{
+			"src":  "tag:external",
+			"deny": ["tag:server:5201"],
+		},
+		{
+			"src":  "tag:iot",
+			"deny": ["tag:server:5201"],
+		},
+		{
+			"src":  "tag:server",
+			"deny": ["tag:server:5201"],
+		},
+		// nix-serve - workstations, servers, and external
+		{
+			"src":    "tag:workstation",
+			"accept": ["tag:server:5000", "tag:server:28338"],
+		},
+		{
+			"src":    "tag:server",
+			"accept": ["tag:server:5000", "tag:server:28338"],
+		},
+		{
+			"src":    "tag:external",
+			"accept": ["tag:server:5000", "tag:server:28338"],
+		},
+		{
+			"src":  "tag:iot",
+			"deny": ["tag:server:5000", "tag:server:28338"],
+		},
+		// ===========================================
+		// MUSIC ASSISTANT TESTS
+		// ===========================================
+		{
+			"src":    "tag:workstation",
+			"accept": ["tag:server:8095"],
+		},
+		{
+			"src":    "tag:external",
+			"accept": ["tag:server:8095"],
+		},
+		{
+			"src":    "tag:server",
+			"accept": ["tag:server:8095"],
+		},
+		{
+			"src":  "tag:iot",
+			"deny": ["tag:server:8095"],
+		},
+		// ===========================================
+		// WORKSTATION ISOLATION TESTS
+		// (workstations can only SSH/mosh to each other, nothing else)
+		// ===========================================
+		{
+			"src":  "tag:workstation",
+			"deny": ["tag:workstation:80", "tag:workstation:443", "tag:workstation:5000"],
+		},
+		{
+			"src":  "tag:external",
+			"deny": ["tag:workstation:80", "tag:workstation:443"],
+		},
+		{
+			"src":  "tag:server",
+			"deny": ["tag:workstation:80", "tag:workstation:443"],
+		},
+		// ===========================================
+		// IoT CONTROL TESTS
+		// ===========================================
+		{
+			"src":    "tag:server",
+			"accept": ["tag:iot:80", "tag:iot:443", "tag:iot:8080"],
+		},
+		{
+			"src":    "tag:workstation",
+			"accept": ["tag:iot:80", "tag:iot:443", "tag:iot:8080"],
+		},
+		{
+			"src":  "tag:external",
+			"deny": ["tag:iot:80", "tag:iot:443"],
+		},
+		{
+			"src":  "tag:iot",
+			"deny": ["tag:external:22", "tag:external:80"],
+		},
+		// ===========================================
+		// DATABASE TESTS (always denied)
+		// ===========================================
+		{
+			"src":  "tag:workstation",
+			"deny": ["tag:server:5432", "tag:server:3306", "tag:server:27017"],
+		},
+		{
+			"src":  "tag:external",
+			"deny": ["tag:server:5432", "tag:server:3306", "tag:server:27017"],
+		},
+		{
+			"src":  "tag:iot",
+			"deny": ["tag:server:5432", "tag:server:3306", "tag:server:27017"],
+		},
+		{
+			"src":  "tag:server",
+			"deny": ["tag:server:5432", "tag:server:3306", "tag:server:27017"],
+		},
+	],
+}
