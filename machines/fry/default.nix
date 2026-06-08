@@ -111,6 +111,7 @@ in
       in
       lib.mkMerge [
         (mkVirtualHost "chat.fry.neet.dev" "http://localhost:${toString config.services.open-webui.port}")
+        (mkVirtualHost "hooks.fry.neet.dev" "http://${hermesWorkspaceIp}:8644")
       ];
   };
 

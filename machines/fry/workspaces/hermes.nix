@@ -46,6 +46,7 @@ in
       API_SERVER_PORT = "8642";
       API_SERVER_MODEL_NAME = "hermes";
       XDG_CONFIG_HOME = "${hermesStateDir}/.config";
+
       HINDSIGHT_MODE = "local_external";
       HINDSIGHT_API_URL = "http://127.0.0.1:8888";
       HINDSIGHT_BANK_ID = "hermes";
@@ -60,6 +61,13 @@ in
       };
       toolsets = [ "all" ];
       terminal.backend = "local";
+      platforms.webhook = {
+        enabled = true;
+        extra = {
+          host = "0.0.0.0";
+          port = 8644;
+        };
+      };
       approvals.mode = "off";
       memory.provider = "hindsight";
     };
