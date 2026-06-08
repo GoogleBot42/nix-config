@@ -24,13 +24,13 @@ in
 
     mailserver = {
       fqdn = "mail.neet.dev";
-      dkimKeyBits = 2048;
+      dkim.defaults.keyLength = 2048;
       indexDir = "/var/lib/mailindex";
       enableManageSieve = true;
       fullTextSearch.enable = true;
       fullTextSearch.memoryLimit = 500;
       inherit domains;
-      loginAccounts = {
+      accounts = {
         "jeremy@runyan.org" = {
           hashedPasswordFile = "/run/agenix/hashed-email-pw";
           # catchall for all domains
@@ -133,7 +133,7 @@ in
 
     # backups
     backup.group."email".paths = [
-      config.mailserver.mailDirectory
+      config.mailserver.storage.path
     ];
   };
 }

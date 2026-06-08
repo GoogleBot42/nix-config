@@ -24,6 +24,7 @@
   boot.kernelParams = [
     "console=ttyS0,115200" # enable serial console
   ];
+  boot.zfs.forceImportRoot = false;
   # boot.kernelPackages = pkgs.linuxPackages_latest;
 
   system.stateVersion = "21.11";

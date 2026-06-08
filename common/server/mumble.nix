@@ -14,9 +14,9 @@ in
     networking.firewall.allowedUDPPorts = [ cfg.port ];
 
     services.murmur = {
-      sslCa = "${certs.${cfg.domain}.directory}/chain.pem";
-      sslKey = "${certs.${cfg.domain}.directory}/key.pem";
-      sslCert = "${certs.${cfg.domain}.directory}/fullchain.pem";
+      tls.caPath = "${certs.${cfg.domain}.directory}/chain.pem";
+      tls.keyPath = "${certs.${cfg.domain}.directory}/key.pem";
+      tls.certPath = "${certs.${cfg.domain}.directory}/fullchain.pem";
       welcometext = "Welcome to ${cfg.domain}";
     };
 

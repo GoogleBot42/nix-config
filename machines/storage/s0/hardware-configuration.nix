@@ -22,6 +22,7 @@
   # zfs
   networking.hostId = "5e6791f0";
   boot.supportedFilesystems = [ "zfs" ];
+  boot.zfs.forceImportRoot = false;
 
   # luks
   remoteLuksUnlock.enable = true;

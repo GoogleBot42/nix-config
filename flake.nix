@@ -220,7 +220,8 @@
             mkDeploy hostname cfg.arch (builtins.head cfg.hostNames))
           machineHosts;
 
-      checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) inputs.deploy-rs.lib;
+      checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy)
+        (nixpkgs.lib.filterAttrs (system: _: nixpkgs.lib.hasSuffix "-linux" system) inputs.deploy-rs.lib);
 
       lib = nixpkgs.lib.extend (final: prev: import ./lib { lib = nixpkgs.lib; });
     };
