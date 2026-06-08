@@ -50,7 +50,7 @@ in
     # to this dir.
     workingDirectory = "/home/googlebot/workspace";
 
-    extraPackages = with pkgs; [ nix git ripgrep fd jq codex himalaya ];
+    extraPackages = with pkgs; [ nix git ripgrep fd jq codex himalaya tea ];
 
     # Pulls in hindsight-client (the HTTP client lib the memory plugin uses).
     extraDependencyGroups = [ "hindsight" ];
@@ -119,7 +119,7 @@ in
     CODEX_HOME = "/var/lib/hermes/.codex";
   };
 
-  home-manager.users.googlebot.home.packages = with pkgs; [ codex signal-cli ];
+  home-manager.users.googlebot.home.packages = with pkgs; [ codex signal-cli tea ];
 
   # Declarative codex CLI defaults — seeded into $CODEX_HOME on first boot,
   # then codex owns the file (it rewrites config.toml on `codex login`, project
