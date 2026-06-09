@@ -1,4 +1,4 @@
-{ modulesPath, ... }:
+{ config, lib, modulesPath, ... }:
 
 {
   imports =
@@ -61,55 +61,87 @@
 
   ### networking ###
 
-  systemd.network.enable = true;
   networking = {
     useNetworkd = true;
     useDHCP = false;
     dhcpcd.enable = false;
   };
 
-  # eno1 — native VLAN 5 (main), default route, internet
-  # useDHCP generates the base 40-eno1 networkd unit and drives initrd DHCP for LUKS unlock.
-  networking.interfaces."eno1".useDHCP = true;
-  systemd.network.networks."40-eno1" = {
-    dhcpV4Config.RouteMetric = 100; # prefer eno1 over VLAN interfaces for default route
-    linkConfig.RequiredForOnline = "routable"; # wait-online succeeds once eno1 has a route
+  # During initrd, only bring up the tagged "main" VLAN needed for internet access
+  # and remote LUKS unlock. Ignore the other VLANs until the full system boots.
+  boot.initrd.systemd.network = {
+    enable = true;
+
+    netdevs."40-vlan-main" = {
+      netdevConfig = {
+        Name = "vlan-main";
+        Kind = "vlan";
+      };
+      vlanConfig.Id = 5;
+    };
+
+    networks."40-eno1" = {
+      matchConfig.Name = "eno1";
+      networkConfig = {
+        VLAN = [ "vlan-main" ];
+        LinkLocalAddressing = "no";
+      };
+      linkConfig.RequiredForOnline = "carrier";
+    };
+
+    networks."50-vlan-main" = {
+      matchConfig.Name = "vlan-main";
+      networkConfig.DHCP = "yes";
+      dhcpV4Config.RouteMetric = 100;
+      linkConfig.RequiredForOnline = "routable";
+    };
   };
 
-  # eno2 — trunk port (no IP on the raw interface)
-  systemd.network.networks."40-eno2" = {
-    matchConfig.Name = "eno2";
-    networkConfig = {
-      VLAN = [ "vlan-iot" "vlan-mgmt" ];
-      LinkLocalAddressing = "no";
+  systemd.network = {
+    enable = config.boot.initrd.systemd.network.enable;
+    netdevs = config.boot.initrd.systemd.network.netdevs // {
+      "50-vlan-iot" = {
+        netdevConfig = {
+          Name = "vlan-iot";
+          Kind = "vlan";
+        };
+        vlanConfig.Id = 2;
+      };
+      "50-vlan-mgmt" = {
+        netdevConfig = {
+          Name = "vlan-mgmt";
+          Kind = "vlan";
+        };
+        vlanConfig.Id = 4;
+      };
     };
-    linkConfig.RequiredForOnline = "carrier";
-  };
 
-  # VLAN 2 — IoT (cameras, smart home)
-  systemd.network.netdevs."50-vlan-iot".netdevConfig = { Name = "vlan-iot"; Kind = "vlan"; };
-  systemd.network.netdevs."50-vlan-iot".vlanConfig.Id = 2;
-  systemd.network.networks."50-vlan-iot" = {
-    matchConfig.Name = "vlan-iot";
-    networkConfig.DHCP = "yes";
-    dhcpV4Config = {
-      UseGateway = false;
-      RouteMetric = 200;
-    };
-    linkConfig.RequiredForOnline = "no";
-  };
+    networks = lib.recursiveUpdate config.boot.initrd.systemd.network.networks {
+      # eno1 — trunk port carrying all VLANs after boot (no IP on the raw interface)
+      "40-eno1".networkConfig.VLAN = [ "vlan-main" "vlan-iot" "vlan-mgmt" ];
 
-  # VLAN 4 — Management
-  systemd.network.netdevs."50-vlan-mgmt".netdevConfig = { Name = "vlan-mgmt"; Kind = "vlan"; };
-  systemd.network.netdevs."50-vlan-mgmt".vlanConfig.Id = 4;
-  systemd.network.networks."50-vlan-mgmt" = {
-    matchConfig.Name = "vlan-mgmt";
-    networkConfig.DHCP = "yes";
-    dhcpV4Config = {
-      UseGateway = false;
-      RouteMetric = 300;
+      # VLAN 2 — IoT (cameras, smart home)
+      "50-vlan-iot" = {
+        matchConfig.Name = "vlan-iot";
+        networkConfig.DHCP = "yes";
+        dhcpV4Config = {
+          UseGateway = false;
+          RouteMetric = 200;
+        };
+        linkConfig.RequiredForOnline = "no";
+      };
+
+      # VLAN 4 — Management
+      "50-vlan-mgmt" = {
+        matchConfig.Name = "vlan-mgmt";
+        networkConfig.DHCP = "yes";
+        dhcpV4Config = {
+          UseGateway = false;
+          RouteMetric = 300;
+        };
+        linkConfig.RequiredForOnline = "no";
+      };
     };
-    linkConfig.RequiredForOnline = "no";
   };
 
   powerManagement.cpuFreqGovernor = "schedutil";
