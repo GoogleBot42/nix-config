@@ -3,6 +3,7 @@
 let
   cfg = config.services.matrix;
   certs = config.security.acme.certs;
+  turnCertHost = if cfg.turn.useACMEHost != null then cfg.turn.useACMEHost else cfg.turn.host;
 in
 {
   options.services.matrix = {
@@ -25,6 +26,16 @@ in
       host = lib.mkOption {
         type = lib.types.str;
         description = "the https host to serve";
+      };
+      useACMEHost = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = "Existing ACME certificate host to reuse for TURN TLS instead of issuing a dedicated cert for the TURN hostname.";
+      };
+      openFirewall = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Whether to expose TURN listener and relay ports on the firewall.";
       };
       port = lib.mkOption {
         type = lib.types.int;
@@ -49,6 +60,11 @@ in
     host = lib.mkOption {
       type = lib.types.str;
       description = "name of the matrix-synapse server";
+    };
+    publicFederation = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Whether to expose the Matrix federation listener on TCP 8448.";
     };
     enable_registration = lib.mkEnableOption "enable new user signup";
     port = lib.mkOption {
@@ -89,8 +105,8 @@ in
       use-auth-secret = true;
       static-auth-secret = cfg.turn.secret;
       realm = cfg.turn.host;
-      cert = "${certs.${cfg.turn.host}.directory}/full.pem";
-      pkey = "${certs.${cfg.turn.host}.directory}/key.pem";
+      cert = "${certs.${turnCertHost}.directory}/full.pem";
+      pkey = "${certs.${turnCertHost}.directory}/key.pem";
       extraConfig = ''
         # ban private IP ranges
         denied-peer-ip=10.0.0.0-10.255.255.255
@@ -103,17 +119,18 @@ in
       '';
     };
 
-    networking.firewall.allowedUDPPorts = [ cfg.turn.port ];
-    networking.firewall.allowedTCPPorts = [ cfg.turn.port 8448 ];
-    networking.firewall.allowedUDPPortRanges = [
+    networking.firewall.allowedUDPPorts = lib.optionals cfg.turn.openFirewall [ cfg.turn.port ];
+    networking.firewall.allowedTCPPorts = lib.optionals cfg.turn.openFirewall [ cfg.turn.port ]
+      ++ lib.optionals cfg.publicFederation [ 8448 ];
+    networking.firewall.allowedUDPPortRanges = lib.optionals cfg.turn.openFirewall [
       { from = cfg.turn.min-port; to = cfg.turn.max-port; }
     ];
-    networking.firewall.allowedTCPPortRanges = [
+    networking.firewall.allowedTCPPortRanges = lib.optionals cfg.turn.openFirewall [
       { from = cfg.turn.min-port; to = cfg.turn.max-port; }
     ];
 
     users.users.nginx.extraGroups = [ "turnserver" ];
-    security.acme.certs.${cfg.turn.host} = {
+    security.acme.certs.${turnCertHost} = {
       postRun = "systemctl restart coturn.service";
       group = "turnserver";
     };
@@ -122,9 +139,9 @@ in
       enable = true;
 
       virtualHosts.${cfg.host} = {
-        enableACME = true;
+        enableACME = lib.mkDefault true;
         forceSSL = true;
-        listen = [
+        listen = lib.mkIf cfg.publicFederation [
           {
             addr = "0.0.0.0";
             port = 8448;
@@ -140,12 +157,12 @@ in
       };
       virtualHosts.${cfg.turn.host} = {
         # get TLS cert for TURN server
-        enableACME = true;
+        enableACME = lib.mkDefault true;
         forceSSL = true;
       };
 
       virtualHosts.${cfg.element-web.host} = lib.mkIf cfg.element-web.enable {
-        enableACME = true;
+        enableACME = lib.mkDefault true;
         forceSSL = true;
         locations."/".root = pkgs.element-web.override {
           conf = {

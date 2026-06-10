@@ -205,60 +205,6 @@
     (
       let
         servicesItems = {
-          matrix = {
-            title = "Matrix";
-            description = "";
-            icon = "hl-matrix";
-            url = "https://chat.neet.space";
-            target = "sametab";
-            statusCheck = true;
-            id = "0_836_matrix";
-          };
-          mumble = {
-            title = "Mumble";
-            description = "voice.neet.space";
-            icon = "hl-mumble";
-            url = "https://voice.neet.space";
-            target = "sametab";
-            statusCheck = false;
-            id = "2_836_mumble";
-          };
-          irc = {
-            title = "IRC";
-            description = "irc.neet.dev";
-            icon = "hl-thelounge";
-            url = "https://irc.neet.dev";
-            target = "sametab";
-            statusCheck = true;
-            id = "3_836_irc";
-          };
-          git = {
-            title = "Git";
-            description = "git.neet.dev";
-            icon = "hl-gitea";
-            url = "https://git.neet.dev";
-            target = "sametab";
-            statusCheck = true;
-            id = "4_836_git";
-          };
-          nextcloud = {
-            title = "Nextcloud";
-            description = "neet.cloud";
-            icon = "hl-nextcloud";
-            url = "https://neet.cloud";
-            target = "sametab";
-            statusCheck = true;
-            id = "5_836_nextcloud";
-          };
-          roundcube = {
-            title = "Roundcube";
-            description = "mail.neet.dev";
-            icon = "hl-roundcube";
-            url = "https://mail.neet.dev";
-            target = "sametab";
-            statusCheck = true;
-            id = "6_836_roundcube";
-          };
           ntfy = {
             title = "ntfy";
             description = "ntfy.neet.dev";
@@ -267,24 +213,6 @@
             target = "sametab";
             statusCheck = true;
             id = "7_836_ntfy";
-          };
-          librechat = {
-            title = "Librechat";
-            description = "chat.neet.dev";
-            icon = "hl-librechat";
-            url = "https://chat.neet.dev";
-            target = "sametab";
-            statusCheck = true;
-            id = "8_836_librechat";
-          };
-          owncast = {
-            title = "Owncast";
-            description = "live.neet.dev";
-            icon = "hl-owncast";
-            url = "https://live.neet.dev";
-            target = "sametab";
-            statusCheck = true;
-            id = "9_836_owncast";
           };
           navidrome-public = {
             title = "Navidrome";
@@ -295,38 +223,10 @@
             statusCheck = true;
             id = "10_836_navidrome-public";
           };
-          collabora = {
-            title = "Collabora";
-            description = "collabora.runyan.org";
-            icon = "hl-collabora";
-            url = "https://collabora.runyan.org";
-            target = "sametab";
-            statusCheck = true;
-            id = "11_836_collabora";
-          };
-          gatus = {
-            title = "Gatus";
-            description = "status.neet.dev";
-            icon = "hl-gatus";
-            url = "https://status.neet.dev";
-            target = "sametab";
-            statusCheck = true;
-            id = "12_836_gatus";
-          };
         };
         servicesList = [
-          servicesItems.matrix
-          servicesItems.mumble
-          servicesItems.irc
-          servicesItems.git
-          servicesItems.nextcloud
-          servicesItems.roundcube
           servicesItems.ntfy
-          servicesItems.librechat
-          servicesItems.owncast
           servicesItems.navidrome-public
-          servicesItems.collabora
-          servicesItems.gatus
         ];
       in
       {

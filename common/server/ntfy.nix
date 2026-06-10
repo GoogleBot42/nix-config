@@ -28,7 +28,7 @@ in
 
     services.nginx.enable = true;
     services.nginx.virtualHosts.${cfg.hostname} = {
-      enableACME = true;
+      enableACME = lib.mkDefault true;
       forceSSL = true;
       locations."/" = {
         proxyPass = "http://127.0.0.1:2586";

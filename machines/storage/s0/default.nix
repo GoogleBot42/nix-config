@@ -256,17 +256,6 @@
     };
   };
 
-  # Get wildcard cert
-  security.acme.certs."s0.neet.dev" = {
-    dnsProvider = "digitalocean";
-    environmentFile = "/run/agenix/digitalocean-dns-credentials";
-    extraDomainNames = [ "*.s0.neet.dev" ];
-    group = "nginx";
-    dnsResolver = "1.1.1.1:53";
-    dnsPropagationCheck = false; # sadly this erroneously fails
-  };
-  age.secrets.digitalocean-dns-credentials.file = ../../../secrets/digitalocean-dns-credentials.age;
-
   virtualisation.oci-containers.backend = "podman";
   virtualisation.podman.dockerSocket.enable = true; # TODO needed?
   services.dashy = {

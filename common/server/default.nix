@@ -4,7 +4,6 @@
   imports = [
     ./nginx.nix
     ./thelounge.nix
-    ./mumble.nix
     ./matrix.nix
     ./gitea.nix
     ./samba.nix

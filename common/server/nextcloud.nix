@@ -51,7 +51,7 @@ in
     ];
 
     services.nginx.virtualHosts.${config.services.nextcloud.hostName} = {
-      enableACME = true;
+      enableACME = lib.mkDefault true;
       forceSSL = true;
     };
 
@@ -83,7 +83,7 @@ in
       };
     };
     services.nginx.virtualHosts.${config.services.collabora-online.settings.server_name} = {
-      enableACME = true;
+      enableACME = lib.mkDefault true;
       forceSSL = true;
       locations."/" = {
         proxyPass = "http://localhost:${toString config.services.collabora-online.port}";
@@ -142,7 +142,7 @@ in
     };
     age.secrets.whiteboard-server-jwt-secret.file = ../../secrets/whiteboard-server-jwt-secret.age;
     services.nginx.virtualHosts.${whiteboardHostname} = {
-      enableACME = true;
+      enableACME = lib.mkDefault true;
       forceSSL = true;
       locations."/" = {
         proxyPass = "http://localhost:${toString whiteboardPort}";

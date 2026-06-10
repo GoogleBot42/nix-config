@@ -67,7 +67,7 @@ in
           "cris@runyan.org"
         ];
       };
-      x509.useACMEHost = config.mailserver.fqdn; # use let's encrypt for certs
+      x509.useACMEHost = "neet.dev";
       stateVersion = 3;
     };
     age.secrets.hashed-email-pw.file = ../../secrets/hashed-email-pw.age;
@@ -80,7 +80,7 @@ in
       enable = true;
       virtualHosts."${config.mailserver.fqdn}" = {
         forceSSL = true;
-        enableACME = true;
+        enableACME = lib.mkDefault true;
       };
     };
 

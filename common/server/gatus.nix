@@ -41,99 +41,9 @@ in
 
         endpoints = [
           {
-            name = "Gitea";
-            group = "services";
-            url = "https://git.neet.dev";
-            interval = "5m";
-            conditions = [
-              "[STATUS] == 200"
-            ];
-            alerts = [{ type = "ntfy"; }];
-          }
-          {
-            name = "The Lounge";
-            group = "services";
-            url = "https://irc.neet.dev";
-            interval = "5m";
-            conditions = [
-              "[STATUS] == 200"
-            ];
-            alerts = [{ type = "ntfy"; }];
-          }
-          {
             name = "ntfy";
             group = "services";
             url = "https://ntfy.neet.dev/v1/health";
-            interval = "5m";
-            conditions = [
-              "[STATUS] == 200"
-            ];
-            alerts = [{ type = "ntfy"; }];
-          }
-          {
-            name = "Librechat";
-            group = "services";
-            url = "https://chat.neet.dev";
-            interval = "5m";
-            conditions = [
-              "[STATUS] == 200"
-            ];
-            alerts = [{ type = "ntfy"; }];
-          }
-          {
-            name = "Owncast";
-            group = "services";
-            url = "https://live.neet.dev";
-            interval = "5m";
-            conditions = [
-              "[STATUS] == 200"
-            ];
-            alerts = [{ type = "ntfy"; }];
-          }
-          {
-            name = "Nextcloud";
-            group = "services";
-            url = "https://neet.cloud";
-            interval = "5m";
-            conditions = [
-              "[STATUS] == any(200, 302)"
-            ];
-            alerts = [{ type = "ntfy"; }];
-          }
-          {
-            name = "Element Web";
-            group = "services";
-            url = "https://chat.neet.space";
-            interval = "5m";
-            conditions = [
-              "[STATUS] == 200"
-            ];
-            alerts = [{ type = "ntfy"; }];
-          }
-          {
-            name = "Mumble";
-            group = "services";
-            url = "tcp://voice.neet.space:23563";
-            interval = "5m";
-            conditions = [
-              "[CONNECTED] == true"
-            ];
-            alerts = [{ type = "ntfy"; }];
-          }
-          {
-            name = "Roundcube";
-            group = "services";
-            url = "https://mail.neet.dev";
-            interval = "5m";
-            conditions = [
-              "[STATUS] == 200"
-            ];
-            alerts = [{ type = "ntfy"; }];
-          }
-          {
-            name = "Collabora Online";
-            group = "services";
-            url = "https://collabora.runyan.org";
             interval = "5m";
             conditions = [
               "[STATUS] == 200"
@@ -346,7 +256,7 @@ in
     };
     services.nginx.enable = true;
     services.nginx.virtualHosts.${cfg.hostname} = {
-      enableACME = true;
+      enableACME = lib.mkDefault true;
       forceSSL = true;
       locations."/" = {
         proxyPass = "http://127.0.0.1:${toString port}";

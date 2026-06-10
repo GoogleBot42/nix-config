@@ -115,14 +115,4 @@ in
       ];
   };
 
-  # Get wildcard cert
-  security.acme.certs."fry.neet.dev" = {
-    dnsProvider = "digitalocean";
-    environmentFile = "/run/agenix/digitalocean-dns-credentials";
-    extraDomainNames = [ "*.fry.neet.dev" ];
-    group = "nginx";
-    dnsResolver = "1.1.1.1:53";
-    dnsPropagationCheck = false; # sadly this erroneously fails
-  };
-  age.secrets.digitalocean-dns-credentials.file = ../../secrets/digitalocean-dns-credentials.age;
 }

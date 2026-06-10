@@ -49,7 +49,7 @@ in
 
     # the lounge client
     services.nginx.virtualHosts.${cfg.host} = {
-      enableACME = true;
+      enableACME = lib.mkDefault true;
       forceSSL = true;
       locations."/" = {
         proxyPass = "http://localhost:${toString config.services.thelounge.port}";
@@ -59,7 +59,7 @@ in
 
     # the lounge files
     services.nginx.virtualHosts.${cfg.fileHost.host} = {
-      enableACME = true;
+      enableACME = lib.mkDefault true;
       forceSSL = true;
       locations.${cfg.fileHost.path} = {
         proxyPass = "http://localhost:${toString config.services.thelounge.port}/uploads";

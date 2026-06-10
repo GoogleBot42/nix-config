@@ -58,7 +58,7 @@ in
     ];
 
     services.nginx.virtualHosts.${cfg.host} = {
-      enableACME = true;
+      enableACME = lib.mkDefault true;
       forceSSL = true;
       locations."/" = {
         proxyPass = "http://localhost:${toString cfg.port}";

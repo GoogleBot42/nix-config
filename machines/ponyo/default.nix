@@ -10,7 +10,8 @@
   # p2p mesh network
   services.tailscale.exitNode = true;
 
-  services.iperf3.enable = true;
+  # Tailscale-only nginx virtual hosts bind to ponyo's stable tailnet address.
+  services.nginx.tailscaleListenAddress = "100.76.85.13";
 
   # email server
   mailserver.enable = true;
@@ -36,13 +37,6 @@
     };
   };
 
-  # mumble
-  services.murmur = {
-    enable = true;
-    port = 23563;
-    domain = "voice.neet.space";
-  };
-
   # IRC bot
   services.drastikbot = {
     enable = true;
@@ -60,6 +54,7 @@
   services.matrix = {
     enable = true;
     host = "neet.space";
+    publicFederation = false;
     enable_registration = false;
     element-web = {
       enable = true;
@@ -71,6 +66,8 @@
     };
     turn = {
       host = "turn.neet.space";
+      useACMEHost = "neet.space";
+      openFirewall = false;
       secret = "a8369a0e96922abf72494bb888c85831b";
     };
   };
@@ -79,29 +76,21 @@
 
   # proxied web services
   services.nginx.enable = true;
+
   # TODO replace with a proper file hosting service
   services.nginx.virtualHosts."tmp.neet.dev" = {
-    enableACME = true;
+    useACMEHost = "neet.dev";
     forceSSL = true;
     root = "/var/www/tmp";
   };
 
-  # redirect neet.cloud to nextcloud instance on runyan.org
-  services.nginx.virtualHosts."neet.cloud" = {
-    enableACME = true;
+  services.nginx.virtualHosts."chat.neet.dev" = {
+    useACMEHost = "neet.dev";
     forceSSL = true;
     extraConfig = ''
-      return 302 https://runyan.org$request_uri;
+      return 302 https://chat.fry.neet.dev$request_uri;
     '';
   };
-
-  # owncast live streaming
-  services.owncast.enable = true;
-  services.owncast.hostname = "live.neet.dev";
-
-  # librechat
-  services.librechat-container.enable = true;
-  services.librechat-container.host = "chat.neet.dev";
 
   # push notifications
   services.ntfy-sh.enable = true;
@@ -110,4 +99,50 @@
   # uptime monitoring
   services.gatus.enable = true;
   services.gatus.hostname = "status.neet.dev";
+
+  # Keep public web listeners open overall, but pin selected vhosts to the tailnet address.
+  services.nginx.virtualHosts."runyan.org" = {
+    tailscaleOnly = true;
+    useACMEHost = "runyan.org";
+  };
+  services.nginx.virtualHosts."collabora.runyan.org" = {
+    tailscaleOnly = true;
+    useACMEHost = "runyan.org";
+  };
+  services.nginx.virtualHosts."whiteboard.runyan.org" = {
+    tailscaleOnly = true;
+    useACMEHost = "runyan.org";
+  };
+  services.nginx.virtualHosts."git.neet.dev" = {
+    tailscaleOnly = true;
+    useACMEHost = "neet.dev";
+  };
+  services.nginx.virtualHosts."irc.neet.dev" = {
+    tailscaleOnly = true;
+    useACMEHost = "neet.dev";
+  };
+  services.nginx.virtualHosts."neet.space" = {
+    tailscaleOnly = true;
+    useACMEHost = "neet.space";
+  };
+  services.nginx.virtualHosts."chat.neet.space" = {
+    tailscaleOnly = true;
+    useACMEHost = "neet.space";
+  };
+  services.nginx.virtualHosts."turn.neet.space" = {
+    tailscaleOnly = true;
+    useACMEHost = "neet.space";
+  };
+  services.nginx.virtualHosts."mail.neet.dev" = {
+    tailscaleOnly = true;
+    useACMEHost = "neet.dev";
+  };
+  services.nginx.virtualHosts."status.neet.dev" = {
+    tailscaleOnly = true;
+    useACMEHost = "neet.dev";
+  };
+  services.nginx.virtualHosts."ntfy.neet.dev" = {
+    useACMEHost = "neet.dev";
+  };
+
 }
