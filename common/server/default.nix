@@ -7,7 +7,6 @@
     ./matrix.nix
     ./gitea.nix
     ./samba.nix
-    ./owncast.nix
     ./mailserver.nix
     ./nextcloud.nix
     ./gitea-actions-runner.nix
