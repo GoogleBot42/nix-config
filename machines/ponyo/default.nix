@@ -133,10 +133,6 @@
     tailscaleOnly = true;
     useACMEHost = "neet.space";
   };
-  services.nginx.virtualHosts."mail.neet.dev" = {
-    tailscaleOnly = true;
-    useACMEHost = "neet.dev";
-  };
   services.nginx.virtualHosts."status.neet.dev" = {
     tailscaleOnly = true;
     useACMEHost = "neet.dev";
