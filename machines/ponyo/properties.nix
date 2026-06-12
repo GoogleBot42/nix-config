@@ -14,7 +14,6 @@
     "nextcloud"
     "dailybot"
     "gitea"
-    "librechat"
     "ntfy"
   ];
 

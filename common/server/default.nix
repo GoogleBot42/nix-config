@@ -11,7 +11,6 @@
     ./nextcloud.nix
     ./gitea-actions-runner.nix
     ./atticd.nix
-    ./librechat.nix
     ./actualbudget.nix
     ./unifi.nix
     ./ntfy.nix

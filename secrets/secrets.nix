@@ -53,9 +53,6 @@ with roles;
   # gitea actions runner
   "gitea-actions-runner-token.age".publicKeys = gitea-actions-runner;
 
-  # Librechat
-  "librechat-env-file.age".publicKeys = librechat;
-
   # Hermes agent
   "hermes-env.age".publicKeys = personal;
   "agent-email-pw.age".publicKeys = personal;
