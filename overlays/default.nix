@@ -53,6 +53,12 @@ in
     inherit (prev) lib fetchFromGitLab pkg-config sdl3 libcec wayland;
   };
 
+  # Keep Logseq building after nixpkgs updates until upstream moves off
+  # electron_39, which is now blocked as insecure.
+  logseq = prev.logseq.override {
+    electron_39 = final.electron_41;
+  };
+
   # Hindsight agent-memory server. Built via uv2nix against the upstream
   # workspace; uses hermes-agent's toolchain pin to avoid duplicating uv2nix.
   hindsight-api = prev.callPackage ../pkgs/hindsight {
