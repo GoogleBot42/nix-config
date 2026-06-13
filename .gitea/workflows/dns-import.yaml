@@ -1,0 +1,76 @@
+name: Import DigitalOcean DNS
+
+on:
+  workflow_dispatch: {}
+
+env:
+  DEBIAN_FRONTEND: noninteractive
+  PATH: /run/current-system/sw/bin/
+  XDG_CONFIG_HOME: ${{ runner.temp }}/.config
+
+jobs:
+  import-live-dns:
+    runs-on: nixos
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: stage
+          token: ${{ secrets.PUSH_TOKEN }}
+
+      - name: Configure git identity
+        run: |
+          git config user.name "gitea-runner"
+          git config user.email "gitea-runner@neet.dev"
+
+      - name: Create import branch
+        id: branch
+        run: |
+          branch="dns/import-live-${{ gitea.run_number }}"
+          git switch -c "$branch"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+
+      - name: Import live DNS from DigitalOcean
+        env:
+          DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+        run: |
+          test -n "$DIGITALOCEAN_TOKEN"
+          nix shell nixpkgs#python3 -c python .gitea/scripts/import-digitalocean-dns.py
+
+      - name: Commit imported zones
+        id: commit
+        run: |
+          if git diff --quiet -- dns/zones.nix; then
+            echo "No DNS changes detected"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git add dns/zones.nix
+          git commit -m "dns: import live DigitalOcean records"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Push import branch
+        if: steps.commit.outputs.changed == 'true'
+        run: git push --set-upstream origin "${{ steps.branch.outputs.branch }}"
+
+      - name: Open pull request
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          PUSH_TOKEN: ${{ secrets.PUSH_TOKEN }}
+        run: |
+          test -n "$PUSH_TOKEN"
+          api_url="${{ gitea.server_url }}/api/v1/repos/${{ gitea.repository }}/pulls"
+          curl -fsS \
+            -H "Authorization: token $PUSH_TOKEN" \
+            -H "Content-Type: application/json" \
+            -X POST \
+            -d @- \
+            "$api_url" <<EOF
+          {
+            "base": "stage",
+            "head": "${{ steps.branch.outputs.branch }}",
+            "title": "dns: import live DigitalOcean records",
+            "body": "This PR was opened automatically by the Import DigitalOcean DNS workflow. Review the generated dns/zones.nix snapshot before merging."
+          }
+          EOF

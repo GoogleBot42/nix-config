@@ -1,0 +1,13 @@
+[
+  "av1.zip"
+  "bsd.ninja"
+  "bsd.rocks"
+  "neet.cloud"
+  "neet.dev"
+  "neet.space"
+  "runyan.org"
+  "runyan.rocks"
+  "tar.ninja"
+  "thunderhex.com"
+  "zstd.zip"
+]

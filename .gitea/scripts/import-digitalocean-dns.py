@@ -1,0 +1,180 @@
+#!/usr/bin/env python3
+import json
+import os
+import pathlib
+import sys
+import urllib.error
+import urllib.parse
+import urllib.request
+
+ROOT = pathlib.Path(__file__).resolve().parents[2]
+DOMAINS_PATH = ROOT / "dns" / "domains.nix"
+OUTPUT_PATH = ROOT / "dns" / "zones.nix"
+API_BASE = "https://api.digitalocean.com/v2"
+TOKEN = os.environ.get("DIGITALOCEAN_TOKEN")
+
+if not TOKEN:
+    raise SystemExit("DIGITALOCEAN_TOKEN is required")
+
+
+def parse_domains() -> list[str]:
+    text = DOMAINS_PATH.read_text()
+    domains = []
+    for line in text.splitlines():
+        line = line.strip()
+        if line.startswith('"') and line.endswith('"'):
+            domains.append(json.loads(line))
+    return domains
+
+
+def api_get(path: str, query: dict[str, object] | None = None) -> dict:
+    url = f"{API_BASE}{path}"
+    if query:
+        url = f"{url}?{urllib.parse.urlencode(query)}"
+    req = urllib.request.Request(url)
+    req.add_header("Authorization", f"Bearer {TOKEN}")
+    req.add_header("Content-Type", "application/json")
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            return json.load(resp)
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode("utf-8", errors="replace")
+        raise SystemExit(f"DigitalOcean API request failed: {exc.code} {exc.reason}\n{body}") from exc
+
+
+def ensure_trailing_dot(value: str, zone: str) -> str:
+    if value == "." or value.endswith("."):
+        return value
+    if value == zone or value.endswith(f".{zone}") or value.startswith("ns") and value.endswith("digitalocean.com"):
+        return f"{value}."
+    return value
+
+
+def normalize_record(zone: str, raw: dict) -> tuple[str | None, dict | None]:
+    rtype = raw["type"]
+    name = raw["name"]
+    ttl = int(raw.get("ttl") or 0)
+
+    if rtype == "SOA":
+        return None, None
+
+    if rtype == "NS" and name == "@":
+        return "nameserver", {"target": ensure_trailing_dot(raw["data"], zone)}
+
+    record = {"name": name, "type": rtype, "ttl": ttl}
+    data = raw.get("data", "")
+
+    if rtype in {"A", "AAAA", "TXT"}:
+        record["value"] = data
+    elif rtype in {"CNAME", "NS"}:
+        record["target"] = ensure_trailing_dot(data, zone)
+    elif rtype == "MX":
+        record["priority"] = int(raw.get("priority") or 0)
+        record["target"] = ensure_trailing_dot(data, zone)
+    elif rtype == "SRV":
+        record["priority"] = int(raw.get("priority") or 0)
+        record["weight"] = int(raw.get("weight") or 0)
+        record["port"] = int(raw.get("port") or 0)
+        record["target"] = ensure_trailing_dot(data, zone)
+    elif rtype == "CAA":
+        record["flags"] = int(raw.get("flags") or 0)
+        record["tag"] = raw.get("tag", "")
+        record["value"] = data
+    else:
+        raise SystemExit(f"Unsupported DigitalOcean record type {rtype} in zone {zone}")
+
+    return "record", record
+
+
+def fetch_zone(zone: str) -> dict:
+    page = 1
+    records = []
+    nameservers = []
+    while True:
+        payload = api_get(f"/domains/{zone}/records", {"page": page, "per_page": 200})
+        chunk = payload.get("domain_records", [])
+        for raw in chunk:
+            kind, item = normalize_record(zone, raw)
+            if kind == "record" and item is not None:
+                records.append(item)
+            elif kind == "nameserver" and item is not None:
+                nameservers.append(item["target"])
+        links = payload.get("links") or {}
+        pages = links.get("pages") or {}
+        if not pages.get("next"):
+            break
+        page += 1
+    nameservers = sorted(set(nameservers))
+    records.sort(key=lambda r: (r["name"], r["type"], json.dumps(r, sort_keys=True)))
+    return {"nameservers": nameservers, "records": records}
+
+
+def nix_string(value: str) -> str:
+    return json.dumps(value)
+
+
+def emit_record(record: dict) -> str:
+    ordered = [("name", record["name"]), ("type", record["type"]) ]
+    if record["type"] in {"A", "AAAA", "TXT"}:
+        ordered.append(("value", record["value"]))
+    elif record["type"] in {"CNAME", "NS"}:
+        ordered.append(("target", record["target"]))
+    elif record["type"] == "MX":
+        ordered.extend([("priority", record["priority"]), ("target", record["target"])])
+    elif record["type"] == "SRV":
+        ordered.extend([
+            ("priority", record["priority"]),
+            ("weight", record["weight"]),
+            ("port", record["port"]),
+            ("target", record["target"]),
+        ])
+    elif record["type"] == "CAA":
+        ordered.extend([("flags", record["flags"]), ("tag", record["tag"]), ("value", record["value"])])
+    ordered.append(("ttl", record["ttl"]))
+
+    parts = []
+    for key, value in ordered:
+        if isinstance(value, str):
+            rendered = nix_string(value)
+        else:
+            rendered = str(value)
+        parts.append(f"{key} = {rendered};")
+    return "{ " + " ".join(parts) + " }"
+
+
+def emit(zones: dict[str, dict]) -> str:
+    lines = [
+        "# Generated by .gitea/scripts/import-digitalocean-dns.py",
+        "# Review carefully before merging; this is intended as a bootstrap snapshot.",
+        "{",
+    ]
+    for zone in sorted(zones):
+        data = zones[zone]
+        lines.append(f"  \"{zone}\" = {{")
+        ns = " ".join(nix_string(v) for v in data["nameservers"])
+        lines.append(f"    nameservers = [ {ns} ];")
+        lines.append("    records = [")
+        for record in data["records"]:
+            lines.append(f"      {emit_record(record)}")
+        lines.append("    ];")
+        lines.append("  };")
+    lines.append("}")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def main() -> int:
+    domains = parse_domains()
+    if not domains:
+        raise SystemExit("No domains found in dns/domains.nix")
+    zones = {domain: fetch_zone(domain) for domain in domains}
+    OUTPUT_PATH.write_text(emit(zones))
+    print(f"Wrote {OUTPUT_PATH}")
+    for domain in domains:
+        zone = zones[domain]
+        print(f"- {domain}: {len(zone['nameservers'])} nameservers, {len(zone['records'])} managed records")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
