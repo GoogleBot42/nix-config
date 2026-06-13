@@ -84,14 +84,6 @@
     root = "/var/www/tmp";
   };
 
-  services.nginx.virtualHosts."chat.neet.dev" = {
-    useACMEHost = "neet.dev";
-    forceSSL = true;
-    extraConfig = ''
-      return 302 https://chat.fry.neet.dev$request_uri;
-    '';
-  };
-
   # push notifications
   services.ntfy-sh.enable = true;
   services.ntfy-sh.hostname = "ntfy.neet.dev";
