@@ -68,7 +68,7 @@ in
         ];
       };
       x509.useACMEHost = config.mailserver.fqdn; # use let's encrypt for certs
-      stateVersion = 3;
+      stateVersion = 5;
     };
     age.secrets.hashed-email-pw.file = ../../secrets/hashed-email-pw.age;
     age.secrets.cris-hashed-email-pw.file = ../../secrets/cris-hashed-email-pw.age;
