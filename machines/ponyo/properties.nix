@@ -14,6 +14,7 @@
     "nextcloud"
     "dailybot"
     "gitea"
+    "dns-challenge"
     "ntfy"
   ];
 
