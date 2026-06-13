@@ -1,0 +1,35 @@
+name: Preview DigitalOcean DNS
+
+on:
+  workflow_dispatch: {}
+
+concurrency:
+  group: digitalocean-dns-preview
+  cancel-in-progress: false
+
+env:
+  DEBIAN_FRONTEND: noninteractive
+  PATH: /run/current-system/sw/bin/
+  XDG_CONFIG_HOME: .gitea/hermes-gitea-config
+  DNSCONFIG_PATH: dnsconfig.js
+
+jobs:
+  preview-live-diff:
+    runs-on: nixos
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: master
+
+      - name: Render dnscontrol config
+        run: bash .gitea/scripts/dns/render-dnscontrol.sh "$DNSCONFIG_PATH"
+
+      - name: Write creds.json
+        env:
+          DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+        run: bash .gitea/scripts/dns/write-creds-json.sh creds.json
+
+      - name: Preview live DigitalOcean diff
+        run: nix shell nixpkgs#dnscontrol -c dnscontrol preview --creds creds.json

@@ -1,0 +1,71 @@
+name: DigitalOcean DNS
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - dns/**
+      - .gitea/workflows/dns-validation.yaml
+      - .gitea/workflows/dns-preview.yaml
+      - .gitea/workflows/dns-push.yaml
+      - .gitea/scripts/dns/**
+  push:
+    branches: [master]
+    paths:
+      - dns/**
+      - .gitea/workflows/dns-validation.yaml
+      - .gitea/workflows/dns-preview.yaml
+      - .gitea/workflows/dns-push.yaml
+      - .gitea/scripts/dns/**
+
+concurrency:
+  group: digitalocean-dns-validation
+  cancel-in-progress: true
+
+env:
+  DEBIAN_FRONTEND: noninteractive
+  PATH: /run/current-system/sw/bin/
+  XDG_CONFIG_HOME: .gitea/hermes-gitea-config
+  DNSCONFIG_PATH: dnsconfig.js
+
+jobs:
+  validate:
+    runs-on: nixos
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Render dnscontrol config
+        run: bash .gitea/scripts/dns/render-dnscontrol.sh "$DNSCONFIG_PATH"
+
+      - name: Check rendered DNS zones
+        run: |
+          test -s "$DNSCONFIG_PATH"
+          grep -F 'D("runyan.org", REG_NONE,' "$DNSCONFIG_PATH"
+          grep -F 'D("neet.dev", REG_NONE,' "$DNSCONFIG_PATH"
+          grep -F 'MX("@", 10, "mail.neet.dev."' "$DNSCONFIG_PATH"
+
+      - name: Show before/after dnscontrol diff
+        if: github.event_name == 'pull_request'
+        run: |
+          cp "$DNSCONFIG_PATH" dnsconfig.after.js
+          git worktree add ../dns-before "${{ github.event.pull_request.base.sha }}"
+          if test -f ../dns-before/dns/zones.nix; then
+            echo "Rendering the pull request base's dns/zones.nix with this PR's renderer for a semantic diff."
+            cp dns/zones.nix dns/zones.after.nix
+            trap 'mv -f dns/zones.after.nix dns/zones.nix' EXIT
+            cp ../dns-before/dns/zones.nix dns/zones.nix
+            bash .gitea/scripts/dns/render-dnscontrol.sh ../dnsconfig.before.js
+            mv dns/zones.after.nix dns/zones.nix
+            trap - EXIT
+          else
+            echo "Pull request base does not have DNS data that can be rendered yet; showing the rendered config as newly added."
+            : > ../dnsconfig.before.js
+          fi
+          if nix shell nixpkgs#diffutils -c diff -u ../dnsconfig.before.js dnsconfig.after.js > dnsconfig.diff; then
+            echo "No rendered dnscontrol changes relative to the pull request base."
+          else
+            cat dnsconfig.diff
+          fi

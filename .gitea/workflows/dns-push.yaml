@@ -1,0 +1,40 @@
+name: Push DigitalOcean DNS
+
+on:
+  workflow_dispatch: {}
+
+concurrency:
+  group: digitalocean-dns-push
+  cancel-in-progress: false
+
+env:
+  DEBIAN_FRONTEND: noninteractive
+  PATH: /run/current-system/sw/bin/
+  XDG_CONFIG_HOME: .gitea/hermes-gitea-config
+  DNSCONFIG_PATH: dnsconfig.js
+
+jobs:
+  push-live-dns:
+    runs-on: nixos
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: master
+
+      - name: Confirm preview/review prerequisite
+        run: |
+          echo "This workflow performs dnscontrol push against DigitalOcean."
+          echo "Run the separate 'Preview DigitalOcean DNS' workflow first and review its dnscontrol preview log before dispatching this workflow."
+
+      - name: Render dnscontrol config
+        run: bash .gitea/scripts/dns/render-dnscontrol.sh "$DNSCONFIG_PATH"
+
+      - name: Write creds.json
+        env:
+          DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+        run: bash .gitea/scripts/dns/write-creds-json.sh creds.json
+
+      - name: Push DNS changes
+        run: nix shell nixpkgs#dnscontrol -c dnscontrol push --creds creds.json

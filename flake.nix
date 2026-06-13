@@ -188,24 +188,36 @@
       # https://github.com/nix-community/nixos-generators/blob/master/formats/kexec.nix#L60
       packages =
         let
-          mkEphemeral = system: nixpkgs.lib.nixosSystem {
+          supportedSystems = import inputs.systems;
+
+          pkgsFor = system: import nixpkgs {
             inherit system;
+            overlays = [ self.overlays.default ];
+          };
+
+          mkEphemeral = pkgsForSystem: nixpkgs.lib.nixosSystem {
+            system = pkgsForSystem.stdenv.hostPlatform.system;
             modules = [
+              { nixpkgs.pkgs = pkgsForSystem; }
               ./machines/ephemeral/minimal.nix
               inputs.nix-index-database.nixosModules.default
             ];
           };
+
+          mkPackages = system:
+            let
+              pkgs = pkgsFor system;
+              ephemeral = mkEphemeral pkgs;
+            in
+            {
+              dnscontrolConfig = import ./dns/render.nix { inherit pkgs; };
+            }
+            // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
+              kexec = ephemeral.config.system.build.images.kexec;
+              iso = ephemeral.config.system.build.images.iso;
+            };
         in
-        {
-          "x86_64-linux" = {
-            kexec = (mkEphemeral "x86_64-linux").config.system.build.images.kexec;
-            iso = (mkEphemeral "x86_64-linux").config.system.build.images.iso;
-          };
-          # "aarch64-linux" = {
-          #   kexec = (mkEphemeral "aarch64-linux").config.system.build.images.kexec;
-          #   iso = (mkEphemeral "aarch64-linux").config.system.build.images.iso;
-          # };
-        };
+        nixpkgs.lib.genAttrs supportedSystems mkPackages;
 
       overlays.default = import ./overlays { inherit inputs; };
       nixosModules.kernel-modules = import ./overlays/kernel-modules;
