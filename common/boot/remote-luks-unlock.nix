@@ -4,6 +4,9 @@
 
 let
   cfg = config.remoteLuksUnlock;
+  askPasswordShell = pkgs.writeShellScript "initrd-ask-password-shell" ''
+    exec /bin/systemd-tty-ask-password-agent --watch
+  '';
 in
 {
   options.remoteLuksUnlock = {
@@ -48,8 +51,9 @@ in
       authorizedKeys = cfg.sshAuthorizedKeys;
     };
 
-    # Use systemd-tty-ask-password-agent for interactive LUKS passphrase entry over SSH
-    boot.initrd.systemd.users.root.shell = "/bin/systemd-tty-ask-password-agent --watch";
+    # Use a wrapper shell so sshd gets a real executable path while still
+    # launching systemd-tty-ask-password-agent for interactive LUKS unlock.
+    boot.initrd.systemd.users.root.shell = askPasswordShell;
 
     # Tor hidden service for remote unlock over onion
     boot.initrd.secrets = lib.mkIf cfg.enableTorUnlock {
