@@ -112,7 +112,7 @@ in
 
   # Minimal locale settings
   i18n.defaultLocale = "en_US.UTF-8";
-  time.timeZone = "America/Los_Angeles";
+  time.timeZone = "America/Denver";
 
   # Enable flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
