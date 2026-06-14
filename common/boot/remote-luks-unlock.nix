@@ -55,15 +55,17 @@ in
     # launching systemd-tty-ask-password-agent for interactive LUKS unlock.
     boot.initrd.systemd.users.root.shell = askPasswordShell;
 
+    # The root shell path referenced from /etc/passwd must itself be present in
+    # the initrd store closure or sshd rejects the account before auth succeeds.
+    boot.initrd.systemd.storePaths = [ askPasswordShell ] ++ lib.optionals cfg.enableTorUnlock [
+      "${pkgs.tor}/bin/tor"
+      "${pkgs.haveged}/bin/haveged"
+    ];
+
     # Tor hidden service for remote unlock over onion
     boot.initrd.secrets = lib.mkIf cfg.enableTorUnlock {
       "/etc/tor/onion/bootup" = cfg.onionConfig;
     };
-
-    boot.initrd.systemd.storePaths = lib.mkIf cfg.enableTorUnlock [
-      "${pkgs.tor}/bin/tor"
-      "${pkgs.haveged}/bin/haveged"
-    ];
 
     boot.initrd.systemd.services.tor-unlock = lib.mkIf cfg.enableTorUnlock {
       description = "Tor Hidden Service for Boot Unlock";
