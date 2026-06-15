@@ -4,9 +4,15 @@ on:
   push:
     branches:
       - master
+    paths:
+      - .gitea/workflows/tailscale-acl.yaml
+      - common/network/tailscale-acl.hujson
   pull_request:
     branches:
       - master
+    paths:
+      - .gitea/workflows/tailscale-acl.yaml
+      - common/network/tailscale-acl.hujson
   workflow_dispatch: {}
 
 jobs:
