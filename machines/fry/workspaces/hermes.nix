@@ -60,6 +60,7 @@ in
         default = "gpt-5.4";
       };
       toolsets = [ "all" ];
+      platform_toolsets.webhook = [ "hermes-api-server" ];
       terminal.backend = "local";
       platforms.webhook = {
         enabled = true;
