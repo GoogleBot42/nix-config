@@ -32,6 +32,12 @@ in
     ];
   });
 
+  # Signal changed sealed-sender envelopes in June 2026; older signal-cli
+  # releases crash on receive with `getServerGuid(...) must not be null`.
+  # Pull forward 0.14.5 until nixpkgs updates past the broken package in our
+  # current pin.
+  signal-cli = prev.callPackage ../pkgs/signal-cli { };
+
   # nginx 1.30.0 -> 1.30.1: critical security fix. Pulled forward from
   # nixpkgs master (PR #519893, merged 2026-05-14) because the
   # nixos-unstable channel branch we track does not have it yet.
