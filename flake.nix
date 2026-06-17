@@ -119,7 +119,7 @@
         let
           modules = system: hostname: with inputs; [
             ./common
-            simple-nixos-mailserver.nixosModule
+            simple-nixos-mailserver.nixosModules.default
             agenix.nixosModules.default
             dailybot.nixosModule
             nix-index-database.nixosModules.default
