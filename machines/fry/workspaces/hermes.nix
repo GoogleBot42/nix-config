@@ -57,7 +57,7 @@ in
     settings = {
       model = {
         provider = "openai-codex";
-        default = "gpt-5.4";
+        default = "gpt-5.5";
       };
       toolsets = [ "all" ];
       platform_toolsets.webhook = [ "hermes-api-server" ];
@@ -82,7 +82,7 @@ in
   home-manager.users.googlebot.home.packages = with pkgs; [ codex signal-cli tea ];
 
   environment.etc."hermes-codex-config.toml".text = ''
-    model = "gpt-5.4"
+    model = "gpt-5.5"
     model_reasoning_effort = "medium"
     sandbox_mode = "danger-full-access"
     approval_policy = "never"
