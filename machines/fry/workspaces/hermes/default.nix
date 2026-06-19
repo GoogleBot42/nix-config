@@ -72,7 +72,10 @@ in
       };
       toolsets = [ "all" ];
       platform_toolsets.webhook = [ "hermes-api-server" ];
-      terminal.backend = "local";
+      terminal = {
+        backend = "local";
+        cwd = "/home/googlebot/workspace";
+      };
       platforms.email.enabled = true;
       platforms.webhook = {
         enabled = true;
@@ -144,6 +147,23 @@ in
     "d ${hermesStateDir}/.config/himalaya 0700 ${hermesUser} ${hermesGroup} -"
     (mkManagedCopy "${hermesStateDir}/.config/himalaya/config.toml" "0600" "/etc/hermes-himalaya-config.toml")
   ];
+
+  systemd.services.hermes-env-migrate-terminal-cwd = {
+    description = "Remove deprecated Hermes terminal cwd setting from .env";
+    wantedBy = [ "hermes-agent.service" ];
+    before = [ "hermes-agent.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      User = hermesUser;
+      Group = hermesGroup;
+    };
+    script = ''
+      env_file=${lib.escapeShellArg "${hermesStateDir}/.hermes/.env"}
+      if [ -f "$env_file" ]; then
+        ${pkgs.gnused}/bin/sed -i '/^MESSAGING_CWD=/d' "$env_file"
+      fi
+    '';
+  };
 
   systemd.services.postgresql.serviceConfig = {
     User = lib.mkForce hermesUser;
