@@ -80,8 +80,11 @@ in
       };
       approvals.mode = "off";
       memory.provider = "hindsight";
+      agent.restart_drain_timeout = 180;
     };
   };
+
+  systemd.services.hermes-agent.serviceConfig.TimeoutStopSec = 210;
 
   home-manager.users.googlebot.home.sessionVariables = {
     HERMES_HOME = "${hermesStateDir}/.hermes";
