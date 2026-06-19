@@ -16,7 +16,7 @@ let
     "C+ ${target} ${mode} ${hermesUser} ${hermesGroup} - ${source}";
 
   hindsightEnv = {
-    HINDSIGHT_API_DB_URL = "postgresql://googlebot@127.0.0.1:5432/hindsight";
+    HINDSIGHT_API_DATABASE_URL = "postgresql://googlebot@127.0.0.1:5432/hindsight";
     HINDSIGHT_API_LLM_PROVIDER = "openai-codex";
     HINDSIGHT_API_EMBEDDINGS_PROVIDER = "local";
     HINDSIGHT_API_RERANKER_PROVIDER = "local";
