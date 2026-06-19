@@ -25,7 +25,10 @@ let
   };
 in
 {
-  imports = [ hostConfig.inputs.hermes-agent.nixosModules.default ];
+  imports = [
+    hostConfig.inputs.hermes-agent.nixosModules.default
+    ./ntfy-webhook.nix
+  ];
 
   services.hermes-agent = {
     enable = true;
@@ -135,6 +138,7 @@ in
     "d ${hermesStateDir}/.codex 0700 ${hermesUser} ${hermesGroup} -"
     (mkManagedCopy "${hermesStateDir}/.codex/config.toml" "0644" "/etc/hermes-codex-config.toml")
     "d ${hermesStateDir}/hindsight 0700 ${hermesUser} ${hermesGroup} -"
+    "d ${hermesStateDir}/.hermes 0700 ${hermesUser} ${hermesGroup} -"
     (mkManagedCopy "${hermesStateDir}/.hermes/config.yaml" "0640" "/etc/hermes-config.yaml")
     "d ${hermesStateDir}/.config 0700 ${hermesUser} ${hermesGroup} -"
     "d ${hermesStateDir}/.config/himalaya 0700 ${hermesUser} ${hermesGroup} -"

@@ -29,7 +29,7 @@ in
     workspaces.hermes = {
       type = "incus";
       autoStart = true;
-      config = ./workspaces/hermes.nix;
+      config = ./workspaces/hermes;
       ip = "192.168.83.91";
       extraMounts = {
         hermes-state = {
@@ -39,6 +39,12 @@ in
         hermes-env = {
           hostPath = "/run/agenix/hermes-env";
           containerPath = "/etc/hermes-env";
+          createHostPath = false; # managed by agenix
+          shift = false; # /run is tmpfs; idmapping not supported
+        };
+        ntfy-token = {
+          hostPath = "/run/agenix/ntfy-token";
+          containerPath = "/etc/ntfy-token";
           createHostPath = false; # managed by agenix
           shift = false; # /run is tmpfs; idmapping not supported
         };
@@ -56,6 +62,10 @@ in
   # "other" bits — the file shows up as nobody:nogroup over an un-shifted mount.
   age.secrets.hermes-env = {
     file = ../../secrets/hermes-env.age;
+    mode = "0444";
+  };
+  age.secrets.ntfy-token = {
+    file = ../../secrets/ntfy-token.age;
     mode = "0444";
   };
   age.secrets.agent-email-pw = {
