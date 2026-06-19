@@ -47,7 +47,7 @@ in
       EMAIL_IMAP_PORT = "993";
       EMAIL_POLL_INTERVAL = "15";
       EMAIL_SMTP_HOST = "mail.neet.dev";
-      EMAIL_SMTP_PORT = "587";
+      EMAIL_SMTP_PORT = "465";
       CODEX_HOME = "${hermesStateDir}/.codex";
       API_SERVER_ENABLED = "true";
       API_SERVER_HOST = "0.0.0.0";
