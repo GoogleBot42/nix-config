@@ -11,6 +11,10 @@ Bootstrap/import flow:
 3. The workflow snapshots live DNS from DigitalOcean into dns/zones.nix on a branch and opens a PR against stage.
 4. Review/merge the PR.
 
+After bootstrap:
+- dns/zones.nix can be hand-maintained as ordinary Nix, including local let-bound variables/helpers to reduce repetition.
+- Re-running the import workflow will regenerate a flat snapshot and overwrite those manual cleanups.
+
 Required Gitea Actions secrets:
 - DIGITALOCEAN_TOKEN: token with read access to domain records
 - PUSH_TOKEN: token able to push branches and create pull requests in this repo
