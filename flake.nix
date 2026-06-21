@@ -258,6 +258,13 @@
               ];
             };
 
+          leelaImage = self.nixosConfigurations.leela.extendModules {
+            modules = [
+              "${nixpkgs}/nixos/modules/installer/sd-card/sd-image.nix"
+              ./machines/leela/image.nix
+            ];
+          };
+
           mkPackages = system:
             let
               pkgs = pkgsFor system;
@@ -276,6 +283,9 @@
                 nixpkgs' = nixpkgsFor.${system};
                 inherit (inputs) nix-index-database;
               }) s0-rehearsal-iso s0-rehearsal-target;
+            }
+            // nixpkgs.lib.optionalAttrs (system == "aarch64-linux") {
+              leelaImage = leelaImage.config.system.build.sdImage;
             };
         in
         nixpkgs.lib.genAttrs supportedSystems mkPackages;
