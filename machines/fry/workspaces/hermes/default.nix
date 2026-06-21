@@ -69,6 +69,7 @@ in
       model = {
         provider = "openai-codex";
         default = "gpt-5.5";
+        context_length = 400000;
       };
       toolsets = [ "all" ];
       platform_toolsets.webhook = [ "hermes-api-server" ];
@@ -101,6 +102,7 @@ in
 
   environment.etc."hermes-codex-config.toml".text = ''
     model = "gpt-5.5"
+    model_context_window = 400000
     model_reasoning_effort = "medium"
     sandbox_mode = "danger-full-access"
     approval_policy = "never"
