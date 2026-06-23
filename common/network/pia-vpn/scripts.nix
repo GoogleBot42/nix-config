@@ -213,15 +213,36 @@ in
     }
 
     refreshPIAPort() {
-      local bindPortResponse
+      local bindPortResponse status rc attempt
+      local max_attempts="''${PIA_PORT_REFRESH_MAX_ATTEMPTS:-3}"
+      local retry_delay="''${PIA_PORT_REFRESH_RETRY_DELAY:-2}"
+
       echo "Refreshing port forward binding with $WG_HOSTNAME..."
-      bindPortResponse=$(curl -Gs -m 5 \
-        --connect-to "$WG_HOSTNAME::$WG_SERVER_IP:" \
-        --cacert "${caPath}" \
-        --data-urlencode "payload=$PORT_PAYLOAD" \
-        --data-urlencode "signature=$PORT_SIGNATURE" \
-        "https://$WG_HOSTNAME:19999/bindPort")
-      echo "bindPort response: $bindPortResponse"
+      for attempt in $(seq 1 "$max_attempts"); do
+        if bindPortResponse=$(curl -Gs -m 5 \
+          --connect-to "$WG_HOSTNAME::$WG_SERVER_IP:" \
+          --cacert "${caPath}" \
+          --data-urlencode "payload=$PORT_PAYLOAD" \
+          --data-urlencode "signature=$PORT_SIGNATURE" \
+          "https://$WG_HOSTNAME:19999/bindPort"); then
+          echo "bindPort response: $bindPortResponse"
+          status=$(echo "$bindPortResponse" | jq -r '.status')
+          if [[ "$status" == "OK" ]]; then
+            return 0
+          fi
+          echo "ERROR: bindPort returned non-OK status: $bindPortResponse" >&2
+          return 1
+        fi
+
+        rc=$?
+        if [[ "$attempt" -lt "$max_attempts" ]]; then
+          echo "bindPort attempt $attempt/$max_attempts failed with curl exit $rc; retrying in ''${retry_delay}s" >&2
+          sleep "$retry_delay"
+        fi
+      done
+
+      echo "ERROR: bindPort failed after $max_attempts attempts (last curl exit $rc)" >&2
+      return "$rc"
     }
   '';
 }

@@ -250,22 +250,25 @@ in
               MAX_ALERTS=3
 
               check_vpn() {
-                # Check that WireGuard has a peer with a recent handshake (within 3 minutes)
+                # First send real traffic through the tunnel. A WireGuard peer can have
+                # an old latest-handshake timestamp until traffic needs a new handshake;
+                # checking the timestamp before sending traffic can false-fail an idle
+                # but recoverable tunnel.
+                if ! ping -c1 -W10 1.1.1.1 >/dev/null 2>&1; then
+                  echo "Cannot reach internet through VPN" >&2
+                  return 1
+                fi
+
+                # After traffic succeeds, verify WireGuard recorded a recent handshake.
                 handshake=$(wg show ${cfg.interfaceName} latest-handshakes | awk '{print $2}')
                 if [ -z "$handshake" ] || [ "$handshake" -eq 0 ]; then
-                  echo "No WireGuard handshake recorded" >&2
+                  echo "No WireGuard handshake recorded after successful ping" >&2
                   return 1
                 fi
                 now=$(date +%s)
                 age=$((now - handshake))
                 if [ "$age" -gt 180 ]; then
-                  echo "WireGuard handshake is stale (''${age}s ago)" >&2
-                  return 1
-                fi
-
-                # Verify internet connectivity through VPN tunnel
-                if ! ping -c1 -W10 1.1.1.1 >/dev/null 2>&1; then
-                  echo "Cannot reach internet through VPN" >&2
+                  echo "WireGuard handshake is stale (''${age}s ago) after successful ping" >&2
                   return 1
                 fi
 
