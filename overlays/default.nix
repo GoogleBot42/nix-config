@@ -3,6 +3,7 @@ final: prev:
 
 let
   system = prev.system;
+  aiEdgeLitertPinnedPkgs = import inputs.nixpkgs-ai-edge-litert { inherit system; };
 in
 {
   # Disable CephFS support in samba to work around upstream nixpkgs bug:
@@ -64,6 +65,14 @@ in
   logseq = prev.logseq.override {
     electron_39 = final.electron_41;
   };
+
+  # Hold back ai-edge-litert from the last nixpkgs revision before OpenVINO
+  # 2026.2.1 changed SONAMEs from .2620 to .2621. Remove once upstream
+  # ai-edge-litert and OpenVINO are compatible again.
+  # https://github.com/NixOS/nixpkgs/issues/535894
+  python313Packages = prev.python313Packages.overrideScope (_pyFinal: _pyPrev: {
+    ai-edge-litert = aiEdgeLitertPinnedPkgs.python313Packages.ai-edge-litert;
+  });
 
   # Hindsight agent-memory server. Built via uv2nix against the upstream
   # workspace; uses hermes-agent's toolchain pin to avoid duplicating uv2nix.

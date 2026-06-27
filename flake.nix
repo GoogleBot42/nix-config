@@ -2,6 +2,7 @@
   inputs = {
     # nixpkgs
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs-ai-edge-litert.url = "github:NixOS/nixpkgs/567a49d1913ce81ac6e9582e3553dd90a955875f";
 
     # Common Utils Among flake inputs
     systems.url = "github:nix-systems/default";
