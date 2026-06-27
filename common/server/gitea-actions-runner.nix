@@ -1,28 +1,41 @@
 { config, lib, allModules, ... }:
 
-# Gitea Actions Runner inside a NixOS container.
-# The container shares the host's /nix/store (read-only) and nix-daemon socket,
-# so builds go through the host daemon and outputs land in the host store.
-# Warning: NixOS containers are not fully secure — do not run untrusted code.
+# Gitea Actions runners for git.neet.dev.
+#
+# Keep the existing NixOS-container runner online while new workflows are moved
+# over to the Podman-backed runner explicitly. The old runner keeps the `nixos`
+# label; the new runner uses `nixos-podman` so workflow diffs make the migration
+# and eventual old-runner removal easy to review.
 # To enable, assign a machine the 'gitea-actions-runner' system role.
 
 let
   thisMachineIsARunner = config.thisMachine.hasRole."gitea-actions-runner";
   hostName = config.networking.hostName;
-  containerName = "gitea-runner";
-  giteaRunnerUid = 991;
-  giteaRunnerGid = 989;
+  legacyContainerName = "gitea-runner";
+  legacyRunnerUid = 991;
+  legacyRunnerGid = 989;
 in
 {
-  config = lib.mkIf (thisMachineIsARunner && !config.boot.isContainer) {
+  imports = [
+    ./gitea-actions-runner-podman.nix
+  ];
 
-    containers.${containerName} = {
+  config = lib.mkIf (thisMachineIsARunner && !config.boot.isContainer) {
+    age.secrets.gitea-actions-runner-token.file = ../../secrets/gitea-actions-runner-token.age;
+
+    # Legacy NixOS-container runner. It shares the host's /nix/store (read-only)
+    # and nix-daemon socket, so builds go through the host daemon and outputs
+    # land in the host store. Keep this path on the existing `nixos` label until
+    # workflows are deliberately migrated to the Podman-backed `nixos-podman`
+    # runner imported above.
+    # Warning: NixOS containers are not fully secure — do not run untrusted code.
+    containers.${legacyContainerName} = {
       autoStart = true;
       ephemeral = true;
 
       bindMounts = {
         "/run/agenix/gitea-actions-runner-token" = {
-          hostPath = "/run/agenix/gitea-actions-runner-token";
+          hostPath = config.age.secrets.gitea-actions-runner-token.path;
           isReadOnly = true;
         };
         "/var/lib/gitea-runner" = {
@@ -35,30 +48,30 @@ in
         imports = allModules;
 
         ntfy-alerts.ignoredUnits = [ "logrotate" ];
-        ntfy-alerts.hostLabel = "${hostName}/${containerName}";
+        ntfy-alerts.hostLabel = "${hostName}/${legacyContainerName}";
 
         services.gitea-actions-runner.instances.inst = {
           enable = true;
-          name = containerName;
+          name = legacyContainerName;
           url = "https://git.neet.dev/";
           tokenFile = "/run/agenix/gitea-actions-runner-token";
           labels = [ "nixos:host" ];
         };
 
-        # Disable dynamic user so runner state persists via bind mount
+        # Disable dynamic user so runner state persists via bind mount.
         assertions = [{
           assertion = config.systemd.services.gitea-runner-inst.enable;
           message = "Expected systemd service 'gitea-runner-inst' is not enabled — the gitea-actions-runner module may have changed its naming scheme.";
         }];
         systemd.services.gitea-runner-inst.serviceConfig.DynamicUser = lib.mkForce false;
         users.users.gitea-runner = {
-          uid = giteaRunnerUid;
+          uid = legacyRunnerUid;
           home = "/var/lib/gitea-runner";
           group = "gitea-runner";
           isSystemUser = true;
           createHome = true;
         };
-        users.groups.gitea-runner.gid = giteaRunnerGid;
+        users.groups.gitea-runner.gid = legacyRunnerGid;
 
         nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
@@ -71,20 +84,17 @@ in
       };
     };
 
-    # Needs to be outside of the container because container uses's the host's nix-daemon
+    # The legacy container uses the host nix-daemon. Keep the matching host user
+    # trusted until all workflows have moved off the `nixos` runner.
     nix.settings.trusted-users = [ "gitea-runner" ];
 
-    # Matching user on host — the container's gitea-runner UID must be
-    # recognized by the host's nix-daemon as trusted (shared UID namespace)
     users.users.gitea-runner = {
-      uid = giteaRunnerUid;
+      uid = legacyRunnerUid;
       home = "/var/lib/gitea-runner";
       group = "gitea-runner";
       isSystemUser = true;
       createHome = true;
     };
-    users.groups.gitea-runner.gid = giteaRunnerGid;
-
-    age.secrets.gitea-actions-runner-token.file = ../../secrets/gitea-actions-runner-token.age;
+    users.groups.gitea-runner.gid = legacyRunnerGid;
   };
 }
