@@ -66,12 +66,22 @@ in
     electron_39 = final.electron_41;
   };
 
-  # Hold back ai-edge-litert from the last nixpkgs revision before OpenVINO
-  # 2026.2.1 changed SONAMEs from .2620 to .2621. Remove once upstream
-  # ai-edge-litert and OpenVINO are compatible again.
+  # Hold back ai-edge-litert's OpenVINO input until its binary wheels catch up
+  # to the 2026.2.1 SONAME bump from .2620 to .2621. Frigate creates its own
+  # Python package scope, so replace that dependency there explicitly too.
   # https://github.com/NixOS/nixpkgs/issues/535894
-  python313Packages = prev.python313Packages.overrideScope (_pyFinal: _pyPrev: {
-    ai-edge-litert = aiEdgeLitertPinnedPkgs.python313Packages.ai-edge-litert;
+  python313Packages = prev.python313Packages.overrideScope (_pyFinal: pyPrev: {
+    ai-edge-litert = pyPrev.ai-edge-litert.override {
+      openvino-native = aiEdgeLitertPinnedPkgs.openvino;
+    };
+  });
+  frigate = prev.frigate.overridePythonAttrs (old: {
+    dependencies = map
+      (dependency:
+        if dependency.pname or null == "ai-edge-litert"
+        then final.python313Packages.ai-edge-litert
+        else dependency)
+      old.dependencies;
   });
 
   # Hindsight agent-memory server. Built via uv2nix against the upstream
