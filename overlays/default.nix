@@ -75,14 +75,28 @@ in
       openvino-native = aiEdgeLitertPinnedPkgs.openvino;
     };
   });
-  frigate = prev.frigate.overridePythonAttrs (old: {
-    dependencies = map
-      (dependency:
+  frigate =
+    let
+      replaceAiEdgeLitert = dependency:
         if dependency.pname or null == "ai-edge-litert"
         then final.python313Packages.ai-edge-litert
-        else dependency)
-      old.dependencies;
-  });
+        else dependency;
+      oldAiEdgeLitert = prev.lib.findFirst
+        (dependency: dependency.pname or null == "ai-edge-litert")
+        null
+        prev.frigate.dependencies;
+      frigateWithPinnedDependency = prev.frigate.overridePythonAttrs (old: {
+        dependencies = map replaceAiEdgeLitert old.dependencies;
+      });
+    in
+    frigateWithPinnedDependency.overrideAttrs (old: {
+      passthru = old.passthru // {
+        pythonPath = prev.lib.replaceStrings
+          [ "${oldAiEdgeLitert}" ]
+          [ "${final.python313Packages.ai-edge-litert}" ]
+          (builtins.unsafeDiscardStringContext old.passthru.pythonPath);
+      };
+    });
 
   # Hindsight agent-memory server. Built via uv2nix against the upstream
   # workspace; uses hermes-agent's toolchain pin to avoid duplicating uv2nix.
