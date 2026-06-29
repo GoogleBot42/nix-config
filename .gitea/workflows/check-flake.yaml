@@ -12,6 +12,8 @@ env:
 jobs:
   check-flake:
     runs-on: nixos
+    # Cold flake checks can trigger large uncached Nix builds.
+    timeout-minutes: 360
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
