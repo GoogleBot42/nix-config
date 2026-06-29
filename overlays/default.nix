@@ -2,7 +2,7 @@
 final: prev:
 
 let
-  system = prev.system;
+  system = prev.stdenv.hostPlatform.system;
   aiEdgeLitertPinnedPkgs = import inputs.nixpkgs-ai-edge-litert { inherit system; };
 in
 {
