@@ -82,6 +82,13 @@ in
     };
   });
 
+  # Vikunja 2.3.0 in nixos-unstable still asks for the package-specific
+  # pnpm_10_29_2 attr, which is now blocked as insecure. Build it with the
+  # current pnpm 10.x package until nixpkgs updates the Vikunja expression.
+  vikunja = prev.vikunja.override {
+    pnpm_10_29_2 = final.pnpm_10;
+  };
+
   # Hold back ai-edge-litert's OpenVINO input until its binary wheels catch up
   # to the 2026.2.1 SONAME bump from .2620 to .2621. Frigate creates its own
   # Python package scope, so replace that dependency there explicitly too.
