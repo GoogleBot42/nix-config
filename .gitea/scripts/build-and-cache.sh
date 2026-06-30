@@ -10,14 +10,14 @@ attic use local:nixos
 # `nix flake check` still reports as an unknown custom output even though the
 # deploy checks below validate it explicitly. Filter just that one noisy warning
 # so real evaluation warnings still fail the log scan.
-nix flake check --all-systems --print-build-logs --log-format raw --show-trace \
-  2> >(grep -Fv "warning: unknown flake output 'deploy'" >&2)
+nix flake check --all-systems --print-build-logs --log-format bar-with-logs --show-trace \
+  2> >(grep --line-buffered -Fv "warning: unknown flake output 'deploy'" >&2)
 
 # Build all systems
 nix eval .#nixosConfigurations --apply 'cs: builtins.attrNames cs' --json \
   | jq -r '.[]' \
   | xargs -I{} nix build ".#nixosConfigurations.{}.config.system.build.toplevel" \
-      --no-link --print-build-logs --log-format raw
+      --no-link --print-build-logs --log-format bar-with-logs
 
 # Push to cache (only locally-built paths >= 0.5MB)
 toplevels=$(nix eval .#nixosConfigurations \
