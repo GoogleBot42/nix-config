@@ -15,6 +15,7 @@
       ])
     );
   services.mount-samba.enable = true;
+  ntfy-alerts.ignoredUnitPatterns = [ "drkonqi-coredump-processor@*.service" ];
 
   # wireless xbox controller support
   hardware.xone.enable = true;

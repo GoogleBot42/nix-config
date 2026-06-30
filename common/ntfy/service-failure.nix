@@ -22,6 +22,12 @@ in
               exit 0
             fi
           done
+          ignored_unit_patterns=(${lib.concatMapStringsSep " " (u: lib.escapeShellArg u) cfg.ignoredUnitPatterns})
+          for ignored_pattern in "''${ignored_unit_patterns[@]}"; do
+            if [[ "$unit" == $ignored_pattern ]]; then
+              exit 0
+            fi
+          done
           logfile=$(mktemp)
           trap 'rm -f "$logfile"' EXIT
           ${pkgs.systemd}/bin/journalctl -u "$unit" -n 50 --no-pager -o short > "$logfile" 2>/dev/null \

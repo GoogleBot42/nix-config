@@ -27,6 +27,12 @@
       description = "Unit names to skip failure notifications for.";
     };
 
+    ignoredUnitPatterns = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "Shell glob unit name patterns to skip failure notifications for.";
+    };
+
     hostLabel = lib.mkOption {
       type = lib.types.str;
       default = config.networking.hostName;
