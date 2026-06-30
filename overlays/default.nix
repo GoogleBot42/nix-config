@@ -61,10 +61,26 @@ in
   };
 
   # Keep Logseq building after nixpkgs updates until upstream moves off
-  # electron_39, which is now blocked as insecure.
-  logseq = prev.logseq.override {
+  # electron_39, which is now blocked as insecure. The yauzl patch is pulled
+  # forward from nixpkgs master so Electron's zip can still be extracted under
+  # the newer Node.js used by the current package set.
+  logseq = (prev.logseq.override {
     electron_39 = final.electron_41;
-  };
+  }).overrideAttrs (old: {
+    patches = (old.patches or [ ]) ++ [
+      ../patches/logseq-bump-yauzl.patch
+    ];
+
+    yarnOfflineCacheStaticResources = prev.fetchYarnDeps {
+      name = "logseq-${old.version}-yarn-deps-static-resources";
+      src = old.src;
+      patches = (old.patches or [ ]) ++ [
+        ../patches/logseq-bump-yauzl.patch
+      ];
+      postPatch = "cd ./static";
+      hash = "sha256-TFisR5GwcKmuddGhe0i6rAmr2wDWzed/mXnxVGARYK0=";
+    };
+  });
 
   # Hold back ai-edge-litert's OpenVINO input until its binary wheels catch up
   # to the 2026.2.1 SONAME bump from .2620 to .2621. Frigate creates its own
