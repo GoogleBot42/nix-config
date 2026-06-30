@@ -95,6 +95,7 @@ let
 
   zone = records: {
     nameservers = digitalOceanNameservers;
+    nameserverTtl = 1800;
     inherit records;
   };
 in

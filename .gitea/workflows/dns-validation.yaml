@@ -46,6 +46,7 @@ jobs:
           grep -F 'D("runyan.org", REG_NONE,' "$DNSCONFIG_PATH"
           grep -F 'D("neet.dev", REG_NONE,' "$DNSCONFIG_PATH"
           grep -F 'MX("@", 10, "mail.neet.dev."' "$DNSCONFIG_PATH"
+          grep -F 'NAMESERVER_TTL(1800)' "$DNSCONFIG_PATH"
 
       - name: Show before/after dnscontrol diff
         if: github.event_name == 'pull_request'
