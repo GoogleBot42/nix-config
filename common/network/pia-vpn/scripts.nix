@@ -232,9 +232,10 @@ in
           fi
           echo "ERROR: bindPort returned non-OK status: $bindPortResponse" >&2
           return 1
+        else
+          rc=$?
         fi
 
-        rc=$?
         if [[ "$attempt" -lt "$max_attempts" ]]; then
           echo "bindPort attempt $attempt/$max_attempts failed with curl exit $rc; retrying in ''${retry_delay}s" >&2
           sleep "$retry_delay"

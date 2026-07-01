@@ -59,4 +59,33 @@ if [[ "$rc" != "1" ]]; then
 fi
 printf '%s' "$output" | grep -F 'ERROR: bindPort returned non-OK status: {"status":"ERROR","message":"signature expired"}'
 
+printf '0' > "$attempts_file"
+curl() {
+  local attempts
+  attempts="$(cat "$attempts_file")"
+  attempts=$((attempts + 1))
+  printf '%s' "$attempts" > "$attempts_file"
+  echo "simulated persistent curl timeout on attempt $attempts" >&2
+  return 28
+}
+
+set +e
+output="$(refreshPIAPort 2>&1)"
+rc=$?
+set -e
+attempts="$(cat "$attempts_file")"
+
+if [[ "$rc" != "28" ]]; then
+  echo "expected refreshPIAPort to return the curl exit code after persistent failures, got rc=$rc" >&2
+  printf '%s\n' "$output" >&2
+  exit 1
+fi
+if [[ "$attempts" != "3" ]]; then
+  echo "expected refreshPIAPort to retry all attempts on persistent curl failure, got $attempts attempts" >&2
+  printf '%s\n' "$output" >&2
+  exit 1
+fi
+printf '%s' "$output" | grep -F 'bindPort attempt 1/3 failed with curl exit 28; retrying in 0s'
+printf '%s' "$output" | grep -F 'ERROR: bindPort failed after 3 attempts (last curl exit 28)'
+
 echo "pia-vpn port refresh retry behavior looks correct"
