@@ -137,17 +137,16 @@ let
         exit 1
       '';
 
+      # The container itself is deleted on stop (ephemeral semantics; state
+      # only persists via the bind-mounted directories). Images are kept:
+      # deleting them here forced a full re-import on every restart, and
+      # stale images are already cleaned up when a new one is imported.
       preStop = ''
         exec 9>/run/incus-workspace.lock
         flock -x 9
 
         incus stop ${containerName} --force 2>/dev/null || true
         incus delete ${containerName} --force 2>/dev/null || true
-
-        # Clean up all images for this workspace
-        incus image list --format csv 2>/dev/null | grep "^nixos-workspace-${name}-[0-9a-f]\{12\}," | cut -d, -f2 | while read img; do
-          incus image delete "$img" 2>/dev/null || true
-        done
       '';
     };
 
