@@ -59,7 +59,6 @@ in
     # the initrd store closure or sshd rejects the account before auth succeeds.
     boot.initrd.systemd.storePaths = [ askPasswordShell ] ++ lib.optionals cfg.enableTorUnlock [
       "${pkgs.tor}/bin/tor"
-      "${pkgs.haveged}/bin/haveged"
     ];
 
     # Tor hidden service for remote unlock over onion
@@ -67,44 +66,41 @@ in
       "/etc/tor/onion/bootup" = cfg.onionConfig;
     };
 
-    boot.initrd.systemd.services.tor-unlock = lib.mkIf cfg.enableTorUnlock {
-      description = "Tor Hidden Service for Boot Unlock";
-      wantedBy = [ "initrd.target" ];
-      after = [ "network.target" "sshd.service" ];
-      wants = [ "network.target" ];
+    boot.initrd.systemd.services.tor-unlock = lib.mkIf cfg.enableTorUnlock (
+      let
+        torRc = pkgs.writeText "tor.rc" ''
+          DataDirectory /etc/tor
+          SOCKSPort 127.0.0.1:9050 IsolateDestAddr
+          SOCKSPort 127.0.0.1:9063
+          HiddenServiceDir /etc/tor/onion/bootup
+          HiddenServicePort 22 127.0.0.1:22
+        '';
+      in
+      {
+        description = "Tor Hidden Service for Boot Unlock";
+        wantedBy = [ "initrd.target" ];
+        after = [ "network.target" "sshd.service" ];
+        wants = [ "network.target" ];
 
-      unitConfig.DefaultDependencies = false;
+        # Stop cleanly before the root switch, otherwise tor is killed
+        # mid-transition and the unit is carried into stage 2 as failed.
+        before = [ "shutdown.target" "initrd-switch-root.target" ];
+        conflicts = [ "shutdown.target" "initrd-switch-root.target" ];
 
-      serviceConfig = {
-        Type = "forking";
-        RemainAfterExit = true;
-      };
+        unitConfig.DefaultDependencies = false;
 
-      script =
-        let
-          torRc = pkgs.writeText "tor.rc" ''
-            DataDirectory /etc/tor
-            SOCKSPort 127.0.0.1:9050 IsolateDestAddr
-            SOCKSPort 127.0.0.1:9063
-            HiddenServiceDir /etc/tor/onion/bootup
-            HiddenServicePort 22 127.0.0.1:22
-          '';
-        in
-        ''
+        preStart = ''
           # Fix permissions for tor
           chmod -R 700 /etc/tor
 
-          # Ensure loopback is up
-          ip a a 127.0.0.1/8 dev lo 2>/dev/null || true
-          ip link set lo up
-
-          # Start haveged for entropy
-          ${pkgs.haveged}/bin/haveged -F &
-
-          # Verify and start tor
           ${pkgs.tor}/bin/tor -f ${torRc} --verify-config
-          ${pkgs.tor}/bin/tor -f ${torRc} &
         '';
-    };
+
+        serviceConfig = {
+          Type = "simple";
+          ExecStart = "${pkgs.tor}/bin/tor -f ${torRc}";
+        };
+      }
+    );
   };
 }
