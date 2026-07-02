@@ -121,7 +121,7 @@ in
       local listenPort=$2
       rm -f "$wgFile"
       touch "$wgFile"
-      chmod 700 "$wgFile"
+      chmod 600 "$wgFile"
       cat > "$wgFile" <<WGEOF
     [Interface]
     PrivateKey = $PRIVATE_KEY
@@ -142,7 +142,7 @@ in
         --arg ip "$WG_SERVER_IP" \
         --arg port "$WG_SERVER_PORT" \
         '{hostname: $hostname, ip: $ip, port: $port}' > "$serverFile"
-      chmod 700 "$serverFile"
+      chmod 600 "$serverFile"
       echo "Wrote server info to $serverFile"
     }
 
@@ -227,7 +227,7 @@ in
         --arg signature "$PORT_SIGNATURE" \
         --arg payload "$PORT_PAYLOAD" \
         '{signature: $signature, payload: $payload}' > "$portRenewalFile"
-      chmod 700 "$portRenewalFile"
+      chmod 600 "$portRenewalFile"
       echo "Wrote port renewal data to $portRenewalFile"
     }
 
