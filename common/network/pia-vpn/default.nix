@@ -173,7 +173,9 @@ in
     assertions =
       let
         forwardingContainers = filterAttrs (_: c: c.receiveForwardedPort != null) cfg.containers;
-        containerIPs = mapAttrsToList (_: c: c.ip) cfg.containers;
+        # Include the host and VPN container addresses so a service container
+        # can't silently collide with either.
+        allIPs = [ cfg.hostAddress cfg.vpnAddress ] ++ mapAttrsToList (_: c: c.ip) cfg.containers;
       in
       [
         {
@@ -181,8 +183,8 @@ in
           message = "At most one pia-vpn container may set receiveForwardedPort";
         }
         {
-          assertion = length containerIPs == length (unique containerIPs);
-          message = "pia-vpn container IPs must be unique";
+          assertion = length allIPs == length (unique allIPs);
+          message = "pia-vpn container IPs must be unique and must not collide with hostAddress or vpnAddress";
         }
       ];
 
