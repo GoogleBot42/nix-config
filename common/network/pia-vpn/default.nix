@@ -266,34 +266,6 @@ in
       };
     };
 
-    # WireGuard interface creation (host-side oneshot)
-    # Creates the interface in the host namespace so encrypted UDP stays in host netns.
-    # The container takes ownership of the interface on startup via `interfaces = [ ... ]`.
-    systemd.services.pia-vpn-wg-create = {
-      description = "Create PIA VPN WireGuard interface";
-
-      before = [ "container@pia-vpn.service" ];
-      requiredBy = [ "container@pia-vpn.service" ];
-      partOf = [ "container@pia-vpn.service" ];
-      wantedBy = [ "multi-user.target" ];
-
-      path = with pkgs; [ iproute2 ];
-
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-      };
-
-      script = ''
-        [[ -z $(ip link show dev ${cfg.interfaceName} 2>/dev/null) ]] || exit 0
-        ip link add ${cfg.interfaceName} type wireguard
-      '';
-
-      preStop = ''
-        ip link del ${cfg.interfaceName} 2>/dev/null || true
-      '';
-    };
-
     # Host entries for container hostnames — NixOS only auto-creates these for
     # hostAddress/localAddress containers, not hostBridge. Use the standard
     # {name}.containers convention.

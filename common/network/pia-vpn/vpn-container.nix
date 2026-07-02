@@ -57,8 +57,24 @@ let
 in
 {
   config = mkIf cfg.enable {
-    # Give the container more time to boot (pia-vpn-setup retries can delay readiness)
-    systemd.services."container@pia-vpn".serviceConfig.TimeoutStartSec = mkForce "180s";
+    systemd.services."container@pia-vpn" = {
+      # Give the container more time to boot (pia-vpn-setup retries can delay readiness)
+      serviceConfig.TimeoutStartSec = mkForce "180s";
+
+      # WireGuard interface lifecycle. Created in the host namespace so encrypted
+      # UDP stays in the host netns; nspawn moves it into the container via
+      # `interfaces = [ ... ]`. Managed here (not in a separate oneshot unit)
+      # because the interface is destroyed with the container's netns on crash,
+      # and automatic Restart= cycles do not re-run a RemainAfterExit oneshot —
+      # the container would then fail to start with a missing interface.
+      preStart = ''
+        ip link show dev ${cfg.interfaceName} >/dev/null 2>&1 || \
+          ip link add ${cfg.interfaceName} type wireguard
+      '';
+      postStop = ''
+        ip link del dev ${cfg.interfaceName} 2>/dev/null || true
+      '';
+    };
 
     containers.pia-vpn = {
       autoStart = true;
