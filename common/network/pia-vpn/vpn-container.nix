@@ -46,12 +46,15 @@ let
     in
     ''
       if [ "$PORT" -lt 10000 ]; then
+        # Fail the unit so the restart picks a new server/port — previously this
+        # only logged, leaving the service "up" with no DNAT while the refresh
+        # timer kept renewing a port nothing used.
         echo "ERROR: PIA assigned low port $PORT (< 10000), refusing to set up DNAT" >&2
-      else
-        ${tcpRules}
-        ${udpRules}
-        ${onPortForwarded}
+        exit 1
       fi
+      ${tcpRules}
+      ${udpRules}
+      ${onPortForwarded}
     ''
   );
 in
