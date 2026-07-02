@@ -39,6 +39,13 @@ in
   config = mkIf cfg.enable {
     networking.ip_forward = true;
 
+    # The isolation rules below live in the nftables forward chain, which only
+    # exists when filterForward is enabled (and filterForward requires the
+    # nftables firewall). Without these two lines the extraForwardRules are
+    # silently never installed and workspaces can reach the whole LAN.
+    networking.nftables.enable = true;
+    networking.firewall.filterForward = true;
+
     # Create the bridge interface
     systemd.network.netdevs."10-${cfg.bridgeName}" = {
       netdevConfig = {
@@ -113,14 +120,20 @@ in
       allowedUDPPorts = [ 53 ];
     };
 
-    # Block sandboxes from reaching the local network (private RFC1918 ranges)
-    # while still allowing public internet access via NAT.
-    # The sandbox subnet itself is allowed so workspaces can reach the host gateway.
-    networking.firewall.extraForwardRules = ''
-      iifname ${cfg.bridgeName} ip daddr ${cfg.hostAddress} accept
+    # Block sandboxes from reaching the local network (private RFC1918 ranges
+    # and the Tailscale CGNAT range) while still allowing public internet
+    # access via NAT. The sandbox subnet itself is allowed so workspaces can
+    # reach the host gateway and each other.
+    # mkBefore: the NAT module appends its own broad accept rule
+    # ("iifname sandbox-br oifname <upstream> accept") to this same option;
+    # LAN traffic egresses via the upstream interface, so the drops must be
+    # evaluated first.
+    networking.firewall.extraForwardRules = mkBefore ''
+      iifname ${cfg.bridgeName} ip daddr ${cfg.subnet} accept
       iifname ${cfg.bridgeName} ip daddr 10.0.0.0/8 drop
       iifname ${cfg.bridgeName} ip daddr 172.16.0.0/12 drop
       iifname ${cfg.bridgeName} ip daddr 192.168.0.0/16 drop
+      iifname ${cfg.bridgeName} ip daddr 100.64.0.0/10 drop
     '';
   };
 }
