@@ -67,8 +67,10 @@ in
       hostBridge = cfg.bridgeName;
       interfaces = [ cfg.interfaceName ];
 
-      bindMounts."/run/agenix" = {
-        hostPath = "/run/agenix";
+      # Bind only the PIA secret — mounting all of /run/agenix would expose
+      # every host secret to the container that talks to the internet.
+      bindMounts."/run/agenix/pia-login.conf" = {
+        hostPath = config.age.secrets."pia-login.conf".path;
         isReadOnly = true;
       };
 
