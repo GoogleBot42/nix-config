@@ -1,0 +1,21 @@
+diff --git a/pkgs/by-name/op/openvino/package.nix b/pkgs/by-name/op/openvino/package.nix
+index 6cfd5c2f4df1..111111111111 100644
+--- a/pkgs/by-name/op/openvino/package.nix
++++ b/pkgs/by-name/op/openvino/package.nix
+@@ -56,14 +56,14 @@ in
+
+ stdenv.mkDerivation (finalAttrs: {
+   pname = "openvino";
+-  version = "2026.2.1";
++  version = "2026.2.0";
+
+   src = fetchFromGitHub {
+     owner = "openvinotoolkit";
+     repo = "openvino";
+     tag = finalAttrs.version;
+     fetchSubmodules = true;
+-    hash = "sha256-66g+v+L0BPNW6HvmWMHAHoNEFn9SUPrmZDyDjES6K1I=";
++    hash = "sha256-/JbaWeW4MgIylhEhA///febE9OCooONKgz1zTn0tb90=";
+   };
+
+   outputs = [

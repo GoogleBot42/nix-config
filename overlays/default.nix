@@ -1,10 +1,6 @@
 { inputs }:
 final: prev:
 
-let
-  system = prev.stdenv.hostPlatform.system;
-  aiEdgeLitertPinnedPkgs = import inputs.nixpkgs-ai-edge-litert { inherit system; };
-in
 {
   # Disable CephFS support in samba to work around upstream nixpkgs bug:
   # ceph is pinned to python3.11 which is incompatible with sphinx >= 9.1.0.
@@ -71,38 +67,6 @@ in
   vikunja = prev.vikunja.override {
     pnpm_10_29_2 = final.pnpm_10;
   };
-
-  # Hold back ai-edge-litert's OpenVINO input until its binary wheels catch up
-  # to the 2026.2.1 SONAME bump from .2620 to .2621. Frigate creates its own
-  # Python package scope, so replace that dependency there explicitly too.
-  # https://github.com/NixOS/nixpkgs/issues/535894
-  python313Packages = prev.python313Packages.overrideScope (_pyFinal: pyPrev: {
-    ai-edge-litert = pyPrev.ai-edge-litert.override {
-      openvino-native = aiEdgeLitertPinnedPkgs.openvino;
-    };
-  });
-  frigate =
-    let
-      replaceAiEdgeLitert = dependency:
-        if dependency.pname or null == "ai-edge-litert"
-        then final.python313Packages.ai-edge-litert
-        else dependency;
-      oldAiEdgeLitert = prev.lib.findFirst
-        (dependency: dependency.pname or null == "ai-edge-litert")
-        null
-        prev.frigate.dependencies;
-      frigateWithPinnedDependency = prev.frigate.overridePythonAttrs (old: {
-        dependencies = map replaceAiEdgeLitert old.dependencies;
-      });
-    in
-    frigateWithPinnedDependency.overrideAttrs (old: {
-      passthru = old.passthru // {
-        pythonPath = prev.lib.replaceStrings
-          [ "${oldAiEdgeLitert}" ]
-          [ "${final.python313Packages.ai-edge-litert}" ]
-          (builtins.unsafeDiscardStringContext old.passthru.pythonPath);
-      };
-    });
 
   # Hindsight agent-memory server. Built via uv2nix against the upstream
   # workspace; uses hermes-agent's toolchain pin to avoid duplicating uv2nix.

@@ -2,7 +2,6 @@
   inputs = {
     # nixpkgs
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    nixpkgs-ai-edge-litert.url = "github:NixOS/nixpkgs/567a49d1913ce81ac6e9582e3553dd90a955875f";
 
     # Common Utils Among flake inputs
     systems.url = "github:nix-systems/default";
@@ -121,7 +120,9 @@
       # Patches applied to the nixpkgs source tree itself (not to individual
       # packages; those belong in overlays). Remove this whole mechanism once
       # https://github.com/NixOS/nix/issues/3920 is solved.
-      nixpkgsPatches = [ ];
+      nixpkgsPatches = [
+        ./patches/openvino-2026.2.0-for-ai-edge-litert.patch
+      ];
 
       # Re-import the patched tree as a flake with a real `self` fixpoint so
       # everything derived from it — including the flake registry pin
