@@ -198,6 +198,11 @@ in
               iptables -A pia-fwd -i eth0 -o ${cfg.interfaceName} -j ACCEPT
               iptables -A pia-fwd -i ${cfg.interfaceName} -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
 
+              # Clamp TCP MSS to the tunnel PMTU. Service containers see MTU 1500
+              # but the tunnel is 1420; without clamping, forwarded TCP relies
+              # entirely on ICMP-based PMTUD and large transfers can stall.
+              iptables -t mangle -A pia-mangle-fwd -o ${cfg.interfaceName} -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+
               ${optionalString portForwarding ''
                 # 6. Port forwarding setup
                 echo "Reserving port forward..."
