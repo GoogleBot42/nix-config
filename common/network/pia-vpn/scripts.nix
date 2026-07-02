@@ -153,15 +153,39 @@ in
       echo "Loaded server info from $serverFile: $WG_HOSTNAME ($WG_SERVER_IP:$WG_SERVER_PORT)"
     }
 
+    # Chains owned by this module. All dynamic rules go into dedicated chains so
+    # cleanup can remove exactly what was added without flushing global tables
+    # (a bare `iptables -F` would clobber rules owned by anything else).
+    piaChains() {
+      echo "nat PREROUTING pia-nat-pre"
+      echo "nat POSTROUTING pia-nat-post"
+      echo "filter FORWARD pia-fwd"
+      echo "mangle FORWARD pia-mangle-fwd"
+    }
+
+    setupPiaChains() {
+      local table parent chain
+      while read -r table parent chain; do
+        iptables -t "$table" -N "$chain" 2>/dev/null || true
+        iptables -t "$table" -F "$chain"
+        iptables -t "$table" -C "$parent" -j "$chain" 2>/dev/null || \
+          iptables -t "$table" -A "$parent" -j "$chain"
+      done < <(piaChains)
+    }
+
     # Reset WG interface and tear down NAT/forwarding rules.
     # Called on startup (clear stale state) and on exit via trap.
     cleanupVpn() {
       local interfaceName=$1
+      local table parent chain
       wg set "$interfaceName" listen-port 0 2>/dev/null || true
       ip -4 address flush dev "$interfaceName" 2>/dev/null || true
       ip route del default dev "$interfaceName" 2>/dev/null || true
-      iptables -t nat -F 2>/dev/null || true
-      iptables -F FORWARD 2>/dev/null || true
+      while read -r table parent chain; do
+        iptables -t "$table" -D "$parent" -j "$chain" 2>/dev/null || true
+        iptables -t "$table" -F "$chain" 2>/dev/null || true
+        iptables -t "$table" -X "$chain" 2>/dev/null || true
+      done < <(piaChains)
     }
 
     connectToServer() {
