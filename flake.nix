@@ -188,7 +188,10 @@
       # https://github.com/nix-community/nixos-generators/blob/master/formats/kexec.nix#L60
       packages =
         let
-          supportedSystems = import inputs.systems;
+          supportedSystems = [
+            "x86_64-linux"
+            "aarch64-linux"
+          ];
 
           pkgsFor = system: import nixpkgs {
             inherit system;
