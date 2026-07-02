@@ -36,6 +36,12 @@ let
             # Incus containers don't support the kernel features nix sandbox requires
             nix.settings.sandbox = false;
 
+            # Auth for the private binary cache; the host bind-mounts the
+            # decrypted secret to /etc/attic-netrc (see mkIncusService). Only
+            # set when the host actually provides the secret.
+            nix.settings.netrc-file =
+              lib.mkIf (hostConfig.age.secrets ? attic-netrc) "/etc/attic-netrc";
+
             environment.systemPackages = [
               (lib.hiPrio (pkgs.writeShellScriptBin "claude" ''
                 exec ${pkgs.claude-code}/bin/claude --dangerously-skip-permissions "$@"
@@ -66,7 +72,9 @@ let
         incus config device add ${containerName} workspace disk source=/home/googlebot/sandboxed/${name}/workspace path=/home/googlebot/workspace shift=true
         incus config device add ${containerName} ssh-keys disk source=/home/googlebot/sandboxed/${name}/ssh-host-keys path=/etc/ssh-host-keys shift=true
         incus config device add ${containerName} claude-config disk source=/home/googlebot/sandboxed/${name}/claude-config path=/home/googlebot/claude-config shift=true
-        incus config device add ${containerName} attic-netrc disk source=/run/agenix/attic-netrc path=/etc/attic-netrc shift=false
+        ${lib.optionalString (config.age.secrets ? attic-netrc) ''
+          incus config device add ${containerName} attic-netrc disk source=/run/agenix/attic-netrc path=/etc/attic-netrc shift=false
+        ''}
         ${lib.concatStrings (lib.mapAttrsToList (mountName: m: ''
           incus config device add ${containerName} ${mountName} disk source=${m.hostPath} path=${m.containerPath} shift=${lib.boolToString m.shift}
         '') ws.extraMounts)}

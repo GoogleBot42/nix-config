@@ -119,13 +119,14 @@ in
   nix.settings.trusted-users = [ "googlebot" ];
 
   # Binary cache configuration (inherited from host's common/binary-cache.nix).
-  # For incus workspaces the host decrypts attic-netrc and bind-mounts it into
-  # /etc; /run inside the workspace is its own tmpfs, so /run/agenix would be
-  # the wrong target even if the host mounted a secret there.
+  # netrc-file is set by the incus backend only - it is the only backend that
+  # mounts the decrypted attic-netrc secret into the workspace (at /etc,
+  # because /run inside the workspace is its own tmpfs). Pointing the other
+  # backends at a path that never exists just breaks private cache auth
+  # noisily instead of falling back.
   nix.settings.substituters = hostConfig.nix.settings.substituters;
   nix.settings.trusted-public-keys = hostConfig.nix.settings.trusted-public-keys;
   nix.settings.fallback = true;
-  nix.settings.netrc-file = "/etc/attic-netrc";
 
   # Make nixpkgs available in NIX_PATH and registry (like the NixOS ISO)
   # This allows `nix-shell -p`, `nix repl '<nixpkgs>'`, etc. to work
