@@ -29,13 +29,13 @@ let
       targetPort = if fwd.port != null then toString fwd.port else "$PORT";
       tcpRules = optionalString (fwd.protocol == "tcp" || fwd.protocol == "both") ''
         echo "Setting up TCP DNAT: port $PORT → ${targetIp}:${targetPort}"
-        iptables -t nat -A PREROUTING -i ${cfg.interfaceName} -p tcp --dport $PORT -j DNAT --to ${dnatTarget}
-        iptables -A FORWARD -i ${cfg.interfaceName} -d ${targetIp} -p tcp --dport ${targetPort} -j ACCEPT
+        iptables -t nat -A pia-nat-pre -i ${cfg.interfaceName} -p tcp --dport $PORT -j DNAT --to ${dnatTarget}
+        iptables -A pia-fwd -i ${cfg.interfaceName} -d ${targetIp} -p tcp --dport ${targetPort} -j ACCEPT
       '';
       udpRules = optionalString (fwd.protocol == "udp" || fwd.protocol == "both") ''
         echo "Setting up UDP DNAT: port $PORT → ${targetIp}:${targetPort}"
-        iptables -t nat -A PREROUTING -i ${cfg.interfaceName} -p udp --dport $PORT -j DNAT --to ${dnatTarget}
-        iptables -A FORWARD -i ${cfg.interfaceName} -d ${targetIp} -p udp --dport ${targetPort} -j ACCEPT
+        iptables -t nat -A pia-nat-pre -i ${cfg.interfaceName} -p udp --dport $PORT -j DNAT --to ${dnatTarget}
+        iptables -A pia-fwd -i ${cfg.interfaceName} -d ${targetIp} -p udp --dport ${targetPort} -j ACCEPT
       '';
       onPortForwarded = optionalString (forwardingContainer.onPortForwarded != null) ''
         TARGET_IP="${targetIp}"
@@ -193,9 +193,10 @@ in
 
               # 5. NAT: masquerade bridge → WG (so service containers' traffic appears to come from VPN IP)
               echo "Setting up NAT masquerade..."
-              iptables -t nat -A POSTROUTING -o ${cfg.interfaceName} -j MASQUERADE
-              iptables -A FORWARD -i eth0 -o ${cfg.interfaceName} -j ACCEPT
-              iptables -A FORWARD -i ${cfg.interfaceName} -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+              setupPiaChains
+              iptables -t nat -A pia-nat-post -o ${cfg.interfaceName} -j MASQUERADE
+              iptables -A pia-fwd -i eth0 -o ${cfg.interfaceName} -j ACCEPT
+              iptables -A pia-fwd -i ${cfg.interfaceName} -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
 
               ${optionalString portForwarding ''
                 # 6. Port forwarding setup
