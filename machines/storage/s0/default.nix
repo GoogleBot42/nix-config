@@ -14,8 +14,6 @@
 
   # system.autoUpgrade.enable = true;
 
-  nix.gc.automatic = lib.mkForce false; # allow the nix store to serve as a build cache
-
   # binary cache
   services.nix-serve = {
     enable = true;

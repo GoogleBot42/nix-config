@@ -11,8 +11,6 @@ in
   # don't use remote builders
   nix.distributedBuilds = lib.mkForce false;
 
-  nix.gc.automatic = lib.mkForce false;
-
   # Upstream interface for sandbox networking (NAT)
   networking.sandbox.upstreamInterface = lib.mkDefault "enp191s0";
 

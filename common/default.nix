@@ -95,7 +95,13 @@
     { groups = [ "wheel" ]; persist = true; }
   ];
 
-  nix.gc.automatic = !config.boot.isContainer;
+  nix = {
+    gc = {
+      automatic = !config.boot.isContainer;
+      options = "--delete-older-than 14d";
+    };
+    optimise.automatic = true;
+  };
 
   security.acme.acceptTerms = true;
   security.acme.defaults.email = "zuckerberg@neet.dev";
