@@ -196,13 +196,29 @@ in
             };
 
             script = ''
-              # Create directories if they don't exist
-              mkdir -p /home/googlebot/sandboxed/${name}/workspace
-              mkdir -p /home/googlebot/sandboxed/${name}/ssh-host-keys
-              mkdir -p /home/googlebot/sandboxed/${name}/claude-config
-              ${lib.concatMapStrings (m: "mkdir -p ${m.hostPath}\n  ") (lib.filter (m: m.createHostPath) (lib.attrValues ws.extraMounts))}
-              # Fix ownership
-              chown -R googlebot:users /home/googlebot/sandboxed/${name}
+              # Create directories if they don't exist.
+              # Ownership is fixed non-recursively on purpose: a recursive
+              # chown would run on every boot, stomping ownership of files
+              # created inside the workspace by other uids (e.g. service
+              # state under extraMounts) and scaling with the size of the
+              # workspace tree.
+              mkdir -p \
+                /home/googlebot/sandboxed/${name}/workspace \
+                /home/googlebot/sandboxed/${name}/ssh-host-keys \
+                /home/googlebot/sandboxed/${name}/claude-config
+              chown googlebot:users \
+                /home/googlebot/sandboxed \
+                /home/googlebot/sandboxed/${name} \
+                /home/googlebot/sandboxed/${name}/workspace \
+                /home/googlebot/sandboxed/${name}/ssh-host-keys \
+                /home/googlebot/sandboxed/${name}/claude-config
+              ${lib.concatMapStrings
+                (m:
+                  let esc = lib.escapeShellArg m.hostPath; in
+                  "mkdir -p ${esc}\n"
+                  + lib.optionalString (lib.hasPrefix "/home/googlebot/sandboxed/" m.hostPath)
+                    "chown googlebot:users ${esc}\n")
+                (lib.filter (m: m.createHostPath) (lib.attrValues ws.extraMounts))}
 
               # Generate SSH host key if it doesn't exist
               if [ ! -f /home/googlebot/sandboxed/${name}/ssh-host-keys/ssh_host_ed25519_key ]; then
