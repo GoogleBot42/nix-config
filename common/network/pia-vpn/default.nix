@@ -234,9 +234,15 @@ in
       before = [ "container@pia-vpn.service" ];
       after = [ "systemd-networkd.service" ];
       requires = [ "systemd-networkd.service" ];
-      serviceConfig.ExecStartPre = [
-        "+${pkgs.systemd}/lib/systemd/systemd-networkd-wait-online --interface=${cfg.bridgeName}:no-carrier --timeout=180"
-      ];
+      serviceConfig = {
+        ExecStartPre = [
+          "+${pkgs.systemd}/lib/systemd/systemd-networkd-wait-online --interface=${cfg.bridgeName}:no-carrier --timeout=180"
+        ];
+        # Keep systemd's service start timeout above wait-online's bridge wait,
+        # otherwise systemd kills tinyproxy before the explicit 180s readiness
+        # check can finish on slow boots.
+        TimeoutStartSec = "200s";
+      };
     };
 
     # WireGuard interface creation (host-side oneshot)
