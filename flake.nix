@@ -118,7 +118,7 @@
     {
       nixosConfigurations =
         let
-          modules = system: hostname: with inputs; [
+          modules = system: hostname: patchedInputs: with inputs; [
             ./common
             simple-nixos-mailserver.nixosModules.default
             agenix.nixosModules.default
@@ -148,15 +148,16 @@
               };
 
               # because nixos specialArgs doesn't work for containers... need to pass in inputs a different way
-              options.inputs = lib.mkOption { default = inputs; };
+              # nixpkgs is replaced with the patched tree so consumers (incus guest
+              # eval, workspace nixPath/registry pins) see the same nixpkgs the host
+              # was built from.
+              options.inputs = lib.mkOption { default = patchedInputs; };
               options.currentSystem = lib.mkOption { default = system; };
             })
           ];
 
           mkSystem = system: nixpkgs: path: hostname:
             let
-              allModules = modules system hostname;
-
               # allow patching nixpkgs, remove this hack once this is solved: https://github.com/NixOS/nix/issues/3920
               patchedNixpkgsSrc = nixpkgs.legacyPackages.${system}.applyPatches {
                 name = "nixpkgs-patched";
@@ -165,6 +166,14 @@
               };
               patchedNixpkgs = nixpkgs.lib.fix (self: (import "${patchedNixpkgsSrc}/flake.nix").outputs { self = nixpkgs; });
 
+              # The flake outputs attrset lacks an outPath, so graft one on to make
+              # the patched tree usable wherever a flake input is expected
+              # (string interpolation for nixPath, nix.registry pins, etc.).
+              patchedInputs = inputs // {
+                nixpkgs = patchedNixpkgs // { outPath = "${patchedNixpkgsSrc}"; };
+              };
+
+              allModules = modules system hostname patchedInputs;
             in
             patchedNixpkgs.lib.nixosSystem {
               inherit system;
