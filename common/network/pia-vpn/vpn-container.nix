@@ -149,12 +149,20 @@ in
             after = [ "network.target" "network-online.target" "systemd-networkd.service" ];
             wantedBy = [ "multi-user.target" ];
 
-            path = scriptPkgs;
+            path = scriptPkgs ++ [ pkgs.systemd ];
 
             serviceConfig = {
-              Type = "simple";
+              # notify: units ordered After= this one wait for actual VPN
+              # readiness, not just process start.
+              Type = "notify";
+              NotifyAccess = "all";
               Restart = "always";
-              RestartSec = "5m";
+              # Fast recovery for the monthly RuntimeMaxSec recycle, backing off
+              # if setup fails repeatedly (e.g. PIA auth outage) to avoid
+              # hammering the PIA API.
+              RestartSec = "10s";
+              RestartSteps = 6;
+              RestartMaxDelaySec = "10m";
               RuntimeMaxSec = "30d";
             };
 
@@ -163,6 +171,9 @@ in
               ${scripts.scriptCommon}
 
               trap 'cleanupVpn ${cfg.interfaceName}' EXIT
+              # Bash does not run the EXIT trap on an unhandled fatal signal;
+              # translate TERM/INT into a normal exit so cleanup runs on stop.
+              trap 'exit 0' TERM INT
               cleanupVpn ${cfg.interfaceName}
 
               proxy="${proxy}"
@@ -220,7 +231,12 @@ in
               ''}
 
               echo "PIA VPN setup complete"
-              exec sleep infinity
+              systemd-notify --ready
+
+              # Keep the shell alive instead of exec'ing sleep: exec would
+              # replace the shell and silently discard the cleanup trap.
+              sleep infinity &
+              wait $!
             '';
 
           };
