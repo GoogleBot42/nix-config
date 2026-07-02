@@ -146,7 +146,7 @@ in
             description = "PIA VPN WireGuard Setup";
 
             wants = [ "network-online.target" ];
-            after = [ "network.target" "network-online.target" "systemd-networkd.service" ];
+            after = [ "network.target" "network-online.target" "systemd-networkd.service" "systemd-resolved.service" ];
             wantedBy = [ "multi-user.target" ];
 
             path = scriptPkgs ++ [ pkgs.systemd ];
@@ -201,6 +201,19 @@ in
               # 4. Default route through WG
               ip route replace default dev ${cfg.interfaceName}
               echo "Default route set through ${cfg.interfaceName}"
+
+              # Point resolved at PIA's DNS servers via the tunnel link. Without
+              # explicit servers, resolved silently falls back to its
+              # compiled-in FallbackDNS (Cloudflare/Google). Degrade to that
+              # fallback rather than failing the whole VPN if this errors.
+              if [[ -n "$PIA_DNS_SERVERS" ]]; then
+                resolvectl dns ${cfg.interfaceName} $PIA_DNS_SERVERS \
+                  && resolvectl domain ${cfg.interfaceName} '~.' \
+                  && resolvectl default-route ${cfg.interfaceName} true \
+                  || echo "WARNING: failed to configure PIA DNS; resolved fallback DNS remains in use" >&2
+              else
+                echo "WARNING: PIA returned no DNS servers; resolved fallback DNS remains in use" >&2
+              fi
 
               # 5. NAT: masquerade bridge → WG (so service containers' traffic appears to come from VPN IP)
               echo "Setting up NAT masquerade..."
