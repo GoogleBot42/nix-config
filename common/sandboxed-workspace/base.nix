@@ -122,7 +122,8 @@ in
 
   # Minimal locale settings
   i18n.defaultLocale = "en_US.UTF-8";
-  time.timeZone = "America/Denver";
+  # Follow the host's timezone; workspaces can override.
+  time.timeZone = lib.mkDefault hostConfig.time.timeZone;
 
   # Enable flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];

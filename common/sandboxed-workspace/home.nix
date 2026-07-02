@@ -6,7 +6,9 @@
 {
   home.username = "googlebot";
   home.homeDirectory = "/home/googlebot";
-  home.stateVersion = "24.11";
+  # Keep in sync with system.stateVersion in base.nix. Workspaces are
+  # ephemeral, so bumping this is safe.
+  home.stateVersion = "25.11";
 
   programs.home-manager.enable = true;
 
