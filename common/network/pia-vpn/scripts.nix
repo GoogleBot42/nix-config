@@ -112,7 +112,8 @@ in
       MY_IP=$(echo "$addKeyResponse" | jq -r '.peer_ip')
       WG_SERVER_PUBLIC_KEY=$(echo "$addKeyResponse" | jq -r '.server_key')
       WG_SERVER_PORT=$(echo "$addKeyResponse" | jq -r '.server_port')
-      echo "Key authorized — assigned VPN IP: $MY_IP, server port: $WG_SERVER_PORT"
+      PIA_DNS_SERVERS=$(echo "$addKeyResponse" | jq -r '(.dns_servers // []) | join(" ")')
+      echo "Key authorized — assigned VPN IP: $MY_IP, server port: $WG_SERVER_PORT, DNS: $PIA_DNS_SERVERS"
     }
 
     writeWireguardQuickFile() {
@@ -181,6 +182,7 @@ in
       wg set "$interfaceName" listen-port 0 2>/dev/null || true
       ip -4 address flush dev "$interfaceName" 2>/dev/null || true
       ip route del default dev "$interfaceName" 2>/dev/null || true
+      resolvectl revert "$interfaceName" 2>/dev/null || true
       while read -r table parent chain; do
         iptables -t "$table" -D "$parent" -j "$chain" 2>/dev/null || true
         iptables -t "$table" -F "$chain" 2>/dev/null || true
