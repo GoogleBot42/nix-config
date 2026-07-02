@@ -303,7 +303,14 @@
 
   services.memos = {
     enable = true;
-    settings.MEMOS_PORT = "57643";
+    settings = {
+      MEMOS_MODE = "prod";
+      MEMOS_ADDR = "127.0.0.1";
+      MEMOS_PORT = "57643";
+      MEMOS_DATA = config.services.memos.dataDir;
+      MEMOS_DRIVER = "sqlite";
+      MEMOS_INSTANCE_URL = "https://memos.s0.neet.dev";
+    };
   };
   # ReadWritePaths doesn't work with ProtectSystem=strict on ZFS submounts (/var/lib is a separate dataset)
   systemd.services.memos.serviceConfig.ProtectSystem = lib.mkForce "full";
