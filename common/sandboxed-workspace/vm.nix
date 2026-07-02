@@ -131,6 +131,16 @@ in
     (mkIf (cfg.enable && vmWorkspaces != { }) {
       # Convert VM workspace configs to microvm.nix format
       microvm.vms = mapAttrs mkVmConfig vmWorkspaces;
+
+      # Ensure directories and SSH host keys exist even when the VM is
+      # started manually (the setup unit is otherwise only pulled in at
+      # boot via multi-user.target).
+      systemd.services = mapAttrs'
+        (name: ws: nameValuePair "microvm@${name}" {
+          wants = [ "workspace-${name}-setup.service" ];
+          after = [ "workspace-${name}-setup.service" ];
+        })
+        vmWorkspaces;
     })
 
     # microvm.nixosModules.host enables KSM, but /sys is read-only in containers

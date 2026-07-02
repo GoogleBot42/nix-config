@@ -23,6 +23,11 @@ in
           config.containers.${name}.path
           config.environment.etc."nixos-containers/${name}.conf".source
         ];
+        # Ensure directories and SSH host keys exist even when the container
+        # is started manually (the setup unit is otherwise only pulled in at
+        # boot via multi-user.target).
+        wants = [ "workspace-${name}-setup.service" ];
+        after = [ "workspace-${name}-setup.service" ];
       })
       containerWorkspaces;
 
