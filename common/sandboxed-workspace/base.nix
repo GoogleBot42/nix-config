@@ -30,6 +30,10 @@ in
     hostConfig.inputs.agenix.nixosModules.default
   ];
 
+  # NOTE: ignored by the vm backend - microvm.nix is handed the host's pkgs
+  # instance (vm.nix `inherit pkgs`), which already contains these same
+  # overlays via flake.nix. If you add an overlay here that the host doesn't
+  # apply, it will silently not take effect in VM workspaces.
   nixpkgs.overlays = [
     hostConfig.inputs.self.overlays.default
     hostConfig.inputs.claude-code-nix.overlays.default
@@ -93,6 +97,12 @@ in
     curl
     tmux
     dnsutils
+
+    # The whole workspace is the sandbox; skip Claude's own permission
+    # prompts by default (applies to every backend).
+    (lib.hiPrio (pkgs.writeShellScriptBin "claude" ''
+      exec ${pkgs.claude-code}/bin/claude --dangerously-skip-permissions "$@"
+    ''))
   ];
 
   # User configuration

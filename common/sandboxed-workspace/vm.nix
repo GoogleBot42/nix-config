@@ -58,12 +58,6 @@ let
         networkInterface = { Type = "ether"; };
       })
       {
-        environment.systemPackages = [
-          (lib.hiPrio (pkgs.writeShellScriptBin "claude" ''
-            exec ${pkgs.claude-code}/bin/claude --dangerously-skip-permissions "$@"
-          ''))
-        ];
-
         # MicroVM specific configuration
         microvm = {
           # Use cloud-hypervisor for better performance

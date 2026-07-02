@@ -41,12 +41,6 @@ let
             # set when the host actually provides the secret.
             nix.settings.netrc-file =
               lib.mkIf (hostConfig.age.secrets ? attic-netrc) "/etc/attic-netrc";
-
-            environment.systemPackages = [
-              (lib.hiPrio (pkgs.writeShellScriptBin "claude" ''
-                exec ${pkgs.claude-code}/bin/claude --dangerously-skip-permissions "$@"
-              ''))
-            ];
           })
         ];
       };
