@@ -280,7 +280,9 @@ in
     # PIA login secret
     age.secrets."pia-login.conf".file = ../../../secrets/pia-login.age;
 
-    # IP forwarding needed for bridge traffic between containers
-    networking.ip_forward = true;
+    # NOTE: deliberately no networking.ip_forward here. Container↔container and
+    # host↔container traffic over the bridge is L2/local and needs no routing;
+    # the host must NOT forward for VPN containers (the VPN container is the
+    # only gateway). Forwarding inside the VPN container is enabled separately.
   };
 }
