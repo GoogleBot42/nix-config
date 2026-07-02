@@ -114,6 +114,54 @@
           inherit nixpkgs;
           assertionsModule = "${nixpkgs}/nixos/modules/misc/assertions.nix";
         }).machines.hosts;
+
+      # Extend a nixpkgs lib with the custom helpers from ./lib.
+      extendLib = baseLib: baseLib.extend (final: prev: import ./lib { lib = final; });
+
+      # Patches applied to the nixpkgs source tree itself (not to individual
+      # packages; those belong in overlays). Remove this whole mechanism once
+      # https://github.com/NixOS/nix/issues/3920 is solved.
+      nixpkgsPatches = [ ];
+
+      # Re-import the patched tree as a flake with a real `self` fixpoint so
+      # everything derived from it — including the flake registry pin
+      # (nixpkgs.flake.source) baked into each machine — points at the patched
+      # tree. The patched store path has no git metadata of its own, so the
+      # base input's is grafted on for `lib.version` / nixos-version info.
+      patchNixpkgs = system:
+        let
+          src = nixpkgs.legacyPackages.${system}.applyPatches {
+            name = "nixpkgs-patched";
+            src = nixpkgs;
+            patches = nixpkgsPatches;
+          };
+          metadata = {
+            outPath = src;
+            inherit (nixpkgs) lastModified lastModifiedDate narHash;
+          } // nixpkgs.lib.optionalAttrs (nixpkgs ? rev) {
+            inherit (nixpkgs) rev shortRev;
+          };
+        in
+        nixpkgs.lib.fix (self:
+          (import "${src}/flake.nix").outputs { inherit self; } // metadata);
+
+      # Systems flake outputs are provided for. Machine arches are always a
+      # subset of these (enforced by the arch enum in machine-info).
+      supportedSystems = [ "x86_64-linux" "aarch64-linux" ];
+
+      # One nixpkgs flake + extended lib per system, shared by every machine
+      # and package output of that system instead of re-evaluated per use.
+      # While the patch list is empty the plain input is used directly,
+      # skipping the full-tree copy (and import-from-derivation) that
+      # applyPatches costs.
+      nixpkgsFor = nixpkgs.lib.genAttrs supportedSystems (system:
+        let
+          flake = if nixpkgsPatches == [ ] then nixpkgs else patchNixpkgs system;
+        in
+        {
+          inherit flake;
+          lib = extendLib flake.lib;
+        });
     in
     {
       nixosConfigurations =
@@ -153,57 +201,50 @@
             })
           ];
 
-          mkSystem = system: nixpkgs: path: hostname:
+          mkSystem = system: path: hostname:
             let
               allModules = modules system hostname;
-
-              # allow patching nixpkgs, remove this hack once this is solved: https://github.com/NixOS/nix/issues/3920
-              patchedNixpkgsSrc = nixpkgs.legacyPackages.${system}.applyPatches {
-                name = "nixpkgs-patched";
-                src = nixpkgs;
-                patches = [ ];
-              };
-              patchedNixpkgs = nixpkgs.lib.fix (self: (import "${patchedNixpkgsSrc}/flake.nix").outputs { self = nixpkgs; });
-
+              nixpkgs' = nixpkgsFor.${system};
             in
-            patchedNixpkgs.lib.nixosSystem {
+            nixpkgs'.flake.lib.nixosSystem {
               inherit system;
+              lib = nixpkgs'.lib;
               modules = allModules ++ [ path ];
 
               specialArgs = {
                 inherit allModules;
-                lib = self.lib;
                 nixos-hardware = inputs.nixos-hardware;
               };
             };
         in
         nixpkgs.lib.mapAttrs
           (hostname: cfg:
-            mkSystem cfg.arch nixpkgs cfg.configurationPath hostname)
+            mkSystem cfg.arch cfg.configurationPath hostname)
           machineHosts;
 
       # kexec produces a tarball; for a self-extracting bundle see:
       # https://github.com/nix-community/nixos-generators/blob/master/formats/kexec.nix#L60
       packages =
         let
-          supportedSystems = [
-            "x86_64-linux"
-            "aarch64-linux"
-          ];
-
-          pkgsFor = system: import nixpkgs {
+          pkgsFor = system: import nixpkgsFor.${system}.flake {
             inherit system;
             overlays = [ self.overlays.default ];
           };
 
-          mkEphemeral = pkgsForSystem: nixpkgs.lib.nixosSystem {
-            system = pkgsForSystem.stdenv.hostPlatform.system;
-            modules = [
-              { nixpkgs.pkgs = pkgsForSystem; }
-              ./machines/ephemeral/minimal.nix
-              inputs.nix-index-database.nixosModules.default
-            ];
-          };
+          mkEphemeral = pkgsForSystem:
+            let
+              system = pkgsForSystem.stdenv.hostPlatform.system;
+              nixpkgs' = nixpkgsFor.${system};
+            in
+            nixpkgs'.flake.lib.nixosSystem {
+              inherit system;
+              lib = nixpkgs'.lib;
+              modules = [
+                { nixpkgs.pkgs = pkgsForSystem; }
+                ./machines/ephemeral/minimal.nix
+                inputs.nix-index-database.nixosModules.default
+              ];
+            };
 
           mkPackages = system:
             let
@@ -239,6 +280,6 @@
 
       checks = import ./tests { inherit inputs self; };
 
-      lib = nixpkgs.lib.extend (final: prev: import ./lib { lib = nixpkgs.lib; });
+      lib = extendLib nixpkgs.lib;
     };
 }
