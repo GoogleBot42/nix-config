@@ -141,7 +141,6 @@ in
       (mkCNAME "cast" hosts.ponyo 3600)
       (mkCNAME "files" hosts.ponyo 3600)
       (mkTXT "mail._domainkey" dkim."neet.cloud".mail 3600)
-      (mkCNAME "navidrome" hosts.ponyo 3600)
       (mkTXT "pic._domainkey" dkim."neet.cloud".pic 3600)
     ]
   );

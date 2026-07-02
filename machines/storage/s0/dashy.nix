@@ -214,19 +214,9 @@
             statusCheck = true;
             id = "7_836_ntfy";
           };
-          navidrome-public = {
-            title = "Navidrome";
-            description = "navidrome.neet.cloud";
-            icon = "hl-navidrome";
-            url = "https://navidrome.neet.cloud";
-            target = "sametab";
-            statusCheck = true;
-            id = "10_836_navidrome-public";
-          };
         };
         servicesList = [
           servicesItems.ntfy
-          servicesItems.navidrome-public
         ];
       in
       {

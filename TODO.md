@@ -26,8 +26,6 @@
 - music
     - mopidy
         - use the jellyfin plugin?
-    - navidrome
-        - spotify secrets for navidrome
     - picard for music tagging
     - alternative music software
         - https://www.smarthomebeginner.com/best-music-server-software-options/
