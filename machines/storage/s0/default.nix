@@ -40,7 +40,10 @@
 
     containers.transmission = {
       ip = "10.100.0.10";
-      mounts."/var/lib".hostPath = "/var/lib";
+      # Persist only transmission's own state — mounting all of host /var/lib
+      # would hand the most internet-exposed containers write access to every
+      # other service's state.
+      mounts."/var/lib/transmission".hostPath = "/var/lib/transmission";
       mounts."/data/samba/Public".hostPath = "/data/samba/Public";
       receiveForwardedPort = { protocol = "both"; };
       onPortForwarded = ''
@@ -112,9 +115,20 @@
 
     containers.servarr = {
       ip = "10.100.0.11";
-      mounts."/var/lib".hostPath = "/var/lib";
+      # Persist only the state of the services in this container (see note on
+      # the transmission container). Prowlarr uses DynamicUser, so its state
+      # lives under /var/lib/private.
+      mounts."/var/lib/sonarr".hostPath = "/var/lib/sonarr";
+      mounts."/var/lib/radarr".hostPath = "/var/lib/radarr";
+      mounts."/var/lib/lidarr".hostPath = "/var/lib/lidarr";
+      mounts."/var/lib/bazarr".hostPath = "/var/lib/bazarr";
+      mounts."/var/lib/private/prowlarr".hostPath = "/var/lib/private/prowlarr";
       mounts."/data/samba/Public".hostPath = "/data/samba/Public";
       config = {
+        # nspawn creates the /var/lib/private mount-point parent as 0755, but
+        # systemd refuses DynamicUser state directories unless it is 0700.
+        systemd.tmpfiles.rules = [ "d /var/lib/private 0700 root root -" ];
+
         services.prowlarr.enable = true;
         services.sonarr.enable = true;
         services.sonarr.user = "public_data";
