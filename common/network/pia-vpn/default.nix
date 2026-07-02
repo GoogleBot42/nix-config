@@ -214,16 +214,33 @@ in
       linkConfig.RequiredForOnline = "no-carrier";
     };
 
-    # Allow wireguard traffic through rpfilter
-    networking.firewall.checkReversePath = "loose";
+    networking.firewall = mkMerge [
+      {
+        # Allow wireguard traffic through rpfilter
+        checkReversePath = "loose";
 
-    # Block bridge → outside forwarding (prevents host from being a gateway for containers)
-    networking.firewall.extraForwardRules = ''
-      iifname "${cfg.bridgeName}" oifname != "${cfg.bridgeName}" drop
-    '';
+        # Allow tinyproxy from bridge (tinyproxy itself restricts to VPN container IP)
+        interfaces.${cfg.bridgeName}.allowedTCPPorts = [ cfg.proxyPort ];
+      }
 
-    # Allow tinyproxy from bridge (tinyproxy itself restricts to VPN container IP)
-    networking.firewall.interfaces.${cfg.bridgeName}.allowedTCPPorts = [ cfg.proxyPort ];
+      # Block bridge → outside forwarding (prevents host from being a gateway for
+      # containers). extraForwardRules only exists on the nftables backend and is
+      # silently ignored with iptables, so an iptables fallback is required.
+      (mkIf config.networking.nftables.enable {
+        extraForwardRules = ''
+          iifname "${cfg.bridgeName}" oifname != "${cfg.bridgeName}" drop
+        '';
+      })
+      (mkIf (!config.networking.nftables.enable) {
+        extraCommands = ''
+          ip46tables -D FORWARD -i ${cfg.bridgeName} ! -o ${cfg.bridgeName} -j DROP 2>/dev/null || true
+          ip46tables -I FORWARD -i ${cfg.bridgeName} ! -o ${cfg.bridgeName} -j DROP
+        '';
+        extraStopCommands = ''
+          ip46tables -D FORWARD -i ${cfg.bridgeName} ! -o ${cfg.bridgeName} -j DROP 2>/dev/null || true
+        '';
+      })
+    ];
 
     # Tinyproxy — runs on bridge IP so VPN container can bootstrap PIA auth.
     # Allow ONLY the VPN container: without an Allow directive tinyproxy accepts
