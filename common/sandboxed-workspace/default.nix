@@ -189,58 +189,58 @@ in
 
     # Automatically generate SSH host keys and directories for all workspaces
     systemd.services = lib.mapAttrs'
-        (name: ws:
-          let
-            serviceName =
-              if ws.type == "vm" then "microvm@${name}"
-              else if ws.type == "incus" then "incus-workspace-${name}"
-              else "container@${name}";
-          in
-          lib.nameValuePair "workspace-${name}-setup" {
-            description = "Setup directories and SSH keys for workspace ${name}";
-            wantedBy = [ "multi-user.target" ];
-            before = [ "${serviceName}.service" ];
+      (name: ws:
+        let
+          serviceName =
+            if ws.type == "vm" then "microvm@${name}"
+            else if ws.type == "incus" then "incus-workspace-${name}"
+            else "container@${name}";
+        in
+        lib.nameValuePair "workspace-${name}-setup" {
+          description = "Setup directories and SSH keys for workspace ${name}";
+          wantedBy = [ "multi-user.target" ];
+          before = [ "${serviceName}.service" ];
 
-            serviceConfig = {
-              Type = "oneshot";
-              RemainAfterExit = true;
-            };
+          serviceConfig = {
+            Type = "oneshot";
+            RemainAfterExit = true;
+          };
 
-            script = ''
-              # Create directories if they don't exist.
-              # Ownership is fixed non-recursively on purpose: a recursive
-              # chown would run on every boot, stomping ownership of files
-              # created inside the workspace by other uids (e.g. service
-              # state under extraMounts) and scaling with the size of the
-              # workspace tree.
-              mkdir -p \
-                /home/googlebot/sandboxed/${name}/workspace \
-                /home/googlebot/sandboxed/${name}/ssh-host-keys \
-                /home/googlebot/sandboxed/${name}/claude-config
-              chown googlebot:users \
-                /home/googlebot/sandboxed \
-                /home/googlebot/sandboxed/${name} \
-                /home/googlebot/sandboxed/${name}/workspace \
-                /home/googlebot/sandboxed/${name}/ssh-host-keys \
-                /home/googlebot/sandboxed/${name}/claude-config
-              ${lib.concatMapStrings
-                (m:
-                  let esc = lib.escapeShellArg m.hostPath; in
-                  "mkdir -p ${esc}\n"
-                  + lib.optionalString (lib.hasPrefix "/home/googlebot/sandboxed/" m.hostPath)
-                    "chown googlebot:users ${esc}\n")
-                (lib.filter (m: m.createHostPath) (lib.attrValues ws.extraMounts))}
+          script = ''
+            # Create directories if they don't exist.
+            # Ownership is fixed non-recursively on purpose: a recursive
+            # chown would run on every boot, stomping ownership of files
+            # created inside the workspace by other uids (e.g. service
+            # state under extraMounts) and scaling with the size of the
+            # workspace tree.
+            mkdir -p \
+              /home/googlebot/sandboxed/${name}/workspace \
+              /home/googlebot/sandboxed/${name}/ssh-host-keys \
+              /home/googlebot/sandboxed/${name}/claude-config
+            chown googlebot:users \
+              /home/googlebot/sandboxed \
+              /home/googlebot/sandboxed/${name} \
+              /home/googlebot/sandboxed/${name}/workspace \
+              /home/googlebot/sandboxed/${name}/ssh-host-keys \
+              /home/googlebot/sandboxed/${name}/claude-config
+            ${lib.concatMapStrings
+              (m:
+                let esc = lib.escapeShellArg m.hostPath; in
+                "mkdir -p ${esc}\n"
+                + lib.optionalString (lib.hasPrefix "/home/googlebot/sandboxed/" m.hostPath)
+                  "chown googlebot:users ${esc}\n")
+              (lib.filter (m: m.createHostPath) (lib.attrValues ws.extraMounts))}
 
-              # Generate SSH host key if it doesn't exist
-              if [ ! -f /home/googlebot/sandboxed/${name}/ssh-host-keys/ssh_host_ed25519_key ]; then
-                ${pkgs.openssh}/bin/ssh-keygen -t ed25519 -N "" \
-                  -f /home/googlebot/sandboxed/${name}/ssh-host-keys/ssh_host_ed25519_key
-                chown googlebot:users /home/googlebot/sandboxed/${name}/ssh-host-keys/ssh_host_ed25519_key*
-                echo "Generated SSH host key for workspace ${name}"
-              fi
-            '';
-          }
-        )
-        cfg.workspaces;
+            # Generate SSH host key if it doesn't exist
+            if [ ! -f /home/googlebot/sandboxed/${name}/ssh-host-keys/ssh_host_ed25519_key ]; then
+              ${pkgs.openssh}/bin/ssh-keygen -t ed25519 -N "" \
+                -f /home/googlebot/sandboxed/${name}/ssh-host-keys/ssh_host_ed25519_key
+              chown googlebot:users /home/googlebot/sandboxed/${name}/ssh-host-keys/ssh_host_ed25519_key*
+              echo "Generated SSH host key for workspace ${name}"
+            fi
+          '';
+        }
+      )
+      cfg.workspaces;
   };
 }

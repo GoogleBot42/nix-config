@@ -47,7 +47,7 @@ let
 
   # Generate VM configuration for a workspace
   mkVmConfig = name: ws: {
-    inherit pkgs;  # Use host's pkgs (includes allowUnfree)
+    inherit pkgs; # Use host's pkgs (includes allowUnfree)
     config = import ws.config;
     specialArgs = { inputs = hostConfig.inputs; };
     extraModules = [
