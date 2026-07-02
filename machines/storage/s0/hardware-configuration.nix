@@ -10,7 +10,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.systemd-boot.memtest86.enable = true;
   boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "nvme" "usb_storage" "uas" "sd_mod" "rtsx_pci_sdmmc" ];
-  boot.initrd.kernelModules = [ ];
+  boot.initrd.kernelModules = [ "8021q" ]; # VLAN netdevs in initrd (remote LUKS unlock over vlan-main)
   boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
 
