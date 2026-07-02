@@ -39,18 +39,6 @@ in
   # current pin.
   signal-cli = prev.callPackage ../pkgs/signal-cli { };
 
-  # nginx 1.30.0 -> 1.30.1: critical security fix. Pulled forward from
-  # nixpkgs master (PR #519893, merged 2026-05-14) because the
-  # nixos-unstable channel branch we track does not have it yet.
-  # Remove once nixos-unstable advances past 2026-05-14.
-  nginxStable = prev.nginxStable.overrideAttrs (old: rec {
-    version = "1.30.1";
-    src = prev.fetchurl {
-      url = "https://nginx.org/download/nginx-${version}.tar.gz";
-      hash = "sha256-mXZQANl0iWsxyliC2MJ5zj/n729cb58Kln7X/TQH+cw=";
-    };
-  });
-  nginx = final.nginxStable;
 
   # Plasma Bigscreen: TV-optimized KDE shell (not yet packaged in nixpkgs)
   plasma-bigscreen = import ./plasma-bigscreen.nix {
