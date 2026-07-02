@@ -54,7 +54,6 @@
 - Binary Cache
     - Maybe use cachix https://gvolpe.com/blog/nixos-binary-cache-ci/
     - Self hosted binary cache? https://www.tweag.io/blog/2019-11-21-untrusted-ci/
-    - https://github.com/edolstra/nix-serve
     - https://nixos.wiki/wiki/Binary_Cache
     - https://discourse.nixos.org/t/introducing-attic-a-self-hostable-nix-binary-cache-server/24343
 - Both

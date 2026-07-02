@@ -161,9 +161,7 @@
               patchedNixpkgsSrc = nixpkgs.legacyPackages.${system}.applyPatches {
                 name = "nixpkgs-patched";
                 src = nixpkgs;
-                patches = [
-                  ./patches/dont-break-nix-serve.patch
-                ];
+                patches = [ ];
               };
               patchedNixpkgs = nixpkgs.lib.fix (self: (import "${patchedNixpkgsSrc}/flake.nix").outputs { self = nixpkgs; });
 

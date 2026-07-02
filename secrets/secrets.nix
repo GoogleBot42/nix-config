@@ -23,10 +23,6 @@ with roles;
   "hashed-agent-email-pw.age".publicKeys = email-server;
   "robots-email-pw.age".publicKeys = gitea ++ outline;
 
-  # nix binary cache
-  # public key: s0.koi-bebop.ts.net:OjbzD86YjyJZpCp9RWaQKANaflcpKhtzBMNP8I2aPUU=
-  "binary-cache-private-key.age".publicKeys = binary-cache;
-
   # attic binary cache
   "atticd-credentials.age".publicKeys = binary-cache;
   "attic-netrc.age".publicKeys = everyone;
