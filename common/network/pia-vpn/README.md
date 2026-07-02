@@ -30,17 +30,18 @@ Routes service containers through a PIA WireGuard VPN using a shared bridge netw
 
 ## Key design decisions
 
-- **Bridge, not veth pairs**: All containers share one bridge (`br-vpn`), so the VPN container can act as a single gateway. The host does NOT masquerade bridge traffic — only the VPN container does (through WG).
+- **Bridge, not veth pairs**: All containers share one bridge (`br-vpn`), so the VPN container can act as a single gateway. The host does NOT masquerade bridge traffic — only the VPN container does (through WG). The host firewall additionally drops bridge→outside forwarding on both nftables and iptables backends, and tinyproxy only accepts connections from the VPN container so service containers can't use it to bypass the tunnel.
 - **Port forwarding is implicit**: If any container sets `receiveForwardedPort`, the VPN container automatically handles PIA port forwarding and DNAT. No separate toggle needed.
-- **DNS through WG**: Service containers use the VPN container as their DNS server. The VPN container runs `systemd-resolved` listening on its bridge IP, forwarding queries through the WG tunnel.
-- **Monthly renewal**: `pia-vpn-setup` uses `Type=simple` + `Restart=always` + `RuntimeMaxSec=30d` to periodically re-authenticate with PIA and get a fresh port forwarding signature (signatures expire after ~2 months). Service containers are unaffected during renewal.
+- **DNS through WG**: Service containers use the VPN container as their DNS server. The VPN container runs `systemd-resolved` listening on its bridge IP; queries are forwarded to the DNS servers PIA returns from `addKey`, through the WG tunnel.
+- **Monthly renewal**: `pia-vpn-setup` uses `Type=notify` + `Restart=always` + `RuntimeMaxSec=30d` to periodically re-authenticate with PIA and get a fresh port forwarding signature (signatures expire after ~2 months). Restart is near-immediate on the happy path with stepped backoff (up to 10m) on repeated failure. Service containers are unaffected during renewal, though the PIA-assigned port changes (`onPortForwarded` runs again).
+- **Owned firewall chains**: All dynamic rules inside the VPN container live in dedicated `pia-*` iptables chains, so setup/teardown never touches rules owned by anything else. TCP MSS is clamped to the tunnel PMTU for forwarded traffic.
 
 ## Files
 
 | File | Purpose |
 |---|---|
-| `default.nix` | Options, bridge, tinyproxy, host firewall, WG interface creation, assertions |
-| `vpn-container.nix` | VPN container: PIA auth, WG config, NAT, DNAT, port refresh timer |
+| `default.nix` | Options, bridge, tinyproxy, host firewall, assertions |
+| `vpn-container.nix` | VPN container: WG interface lifecycle, PIA auth, WG config, NAT, DNAT, port refresh timer |
 | `service-container.nix` | Generates service containers with static IP and gateway→VPN |
 | `scripts.nix` | Bash function library for PIA API calls and WG configuration |
 | `ca.rsa.4096.crt` | PIA CA certificate for API TLS verification |

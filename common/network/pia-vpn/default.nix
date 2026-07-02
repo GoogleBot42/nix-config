@@ -189,6 +189,10 @@ in
     # Enable systemd-networkd for bridge management
     systemd.network.enable = true;
 
+    # NOTE: host-wide behavior change. With networkd enabled just for the
+    # bridge, the default all-interfaces wait can hang on machines whose
+    # primary uplink is not networkd-managed; any-interface avoids delaying
+    # network-online.target. Tinyproxy separately waits for the bridge itself.
     systemd.network.wait-online.anyInterface = true;
 
     # Tell NetworkManager to ignore VPN bridge and container interfaces
