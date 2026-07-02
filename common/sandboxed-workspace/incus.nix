@@ -104,13 +104,16 @@ let
         flock -x 9
 
         # Import image if not present
-        if ! incus image list --format csv | grep -q "${imageName}"; then
+        # Alias matches are anchored to the full alias column: an unanchored
+        # substring match would let workspace "foo" also match (and delete)
+        # images belonging to workspace "foo-bar".
+        if ! incus image list --format csv | grep -q "^${imageName},"; then
           metadata_tarball=$(echo ${images.metadata}/tarball/*.tar.xz)
           rootfs_tarball=$(echo ${images.rootfs}/tarball/*.tar.xz)
           incus image import "$metadata_tarball" "$rootfs_tarball" --alias ${imageName}
 
           # Clean up old images for this workspace
-          incus image list --format csv | grep "nixos-workspace-${name}-" | grep -v "${imageName}" | cut -d, -f2 | while read old_image; do
+          incus image list --format csv | grep "^nixos-workspace-${name}-[0-9a-f]\{12\}," | grep -v "^${imageName}," | cut -d, -f2 | while read old_image; do
             incus image delete "$old_image" || true
           done || true
         fi
@@ -142,7 +145,7 @@ let
         incus delete ${containerName} --force 2>/dev/null || true
 
         # Clean up all images for this workspace
-        incus image list --format csv 2>/dev/null | grep "nixos-workspace-${name}-" | cut -d, -f2 | while read img; do
+        incus image list --format csv 2>/dev/null | grep "^nixos-workspace-${name}-[0-9a-f]\{12\}," | cut -d, -f2 | while read img; do
           incus image delete "$img" 2>/dev/null || true
         done
       '';
