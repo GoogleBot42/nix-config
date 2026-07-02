@@ -222,12 +222,16 @@ in
     # Allow tinyproxy from bridge (tinyproxy itself restricts to VPN container IP)
     networking.firewall.interfaces.${cfg.bridgeName}.allowedTCPPorts = [ cfg.proxyPort ];
 
-    # Tinyproxy — runs on bridge IP so VPN container can bootstrap PIA auth
+    # Tinyproxy — runs on bridge IP so VPN container can bootstrap PIA auth.
+    # Allow ONLY the VPN container: without an Allow directive tinyproxy accepts
+    # all clients, which would let service containers bypass the VPN through the
+    # proxy with the host's real IP.
     services.tinyproxy = {
       enable = true;
       settings = {
         Listen = cfg.hostAddress;
         Port = cfg.proxyPort;
+        Allow = cfg.vpnAddress;
       };
     };
     systemd.services.tinyproxy = {
