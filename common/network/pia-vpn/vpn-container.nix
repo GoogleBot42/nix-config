@@ -86,11 +86,19 @@ in
       hostBridge = cfg.bridgeName;
       interfaces = [ cfg.interfaceName ];
 
-      # Bind only the PIA secret — mounting all of /run/agenix would expose
+      # Bind only the needed secrets — mounting all of /run/agenix would expose
       # every host secret to the container that talks to the internet.
-      bindMounts."/run/agenix/pia-login.conf" = {
-        hostPath = config.age.secrets."pia-login.conf".path;
-        isReadOnly = true;
+      bindMounts = {
+        "/run/agenix/pia-login.conf" = {
+          hostPath = config.age.secrets."pia-login.conf".path;
+          isReadOnly = true;
+        };
+      } // optionalAttrs config.thisMachine.hasRole."ntfy" {
+        # ntfy-alerts inside the container reads the token from this path
+        "/run/agenix/ntfy-token" = {
+          hostPath = config.age.secrets.ntfy-token.path;
+          isReadOnly = true;
+        };
       };
 
       config = { config, pkgs, lib, ... }:

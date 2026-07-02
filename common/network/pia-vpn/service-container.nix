@@ -24,7 +24,15 @@ let
         hostPath = mount.hostPath;
         isReadOnly = mount.isReadOnly;
       })
-      ctr.mounts;
+      ctr.mounts
+    // optionalAttrs config.thisMachine.hasRole."ntfy" {
+      # ntfy-alerts inside the container reads the token from this path.
+      # Without it, in-container failure alerts fail silently.
+      "/run/agenix/ntfy-token" = {
+        hostPath = config.age.secrets.ntfy-token.path;
+        isReadOnly = true;
+      };
+    };
 
     config = { config, pkgs, lib, ... }: {
       imports = allModules ++ [ ctr.config ];

@@ -114,7 +114,6 @@
       ip = "10.100.0.11";
       mounts."/var/lib".hostPath = "/var/lib";
       mounts."/data/samba/Public".hostPath = "/data/samba/Public";
-      mounts."/run/agenix" = { hostPath = "/run/agenix"; isReadOnly = true; };
       config = {
         services.prowlarr.enable = true;
         services.sonarr.enable = true;
