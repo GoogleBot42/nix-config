@@ -34,24 +34,29 @@ in
         ephemeral = true;
         restartIfChanged = true;
 
+        # User-namespace the container. Without this, googlebot inside the
+        # container is uid 1000 on the host, and nspawn always bind-mounts the
+        # host's nix daemon socket (/nix/var/nix/daemon-socket) into the guest.
+        # The host daemon trusts uid 1000 (nix.settings.trusted-users), and
+        # trusted nix users are root-equivalent - i.e. the sandbox could
+        # trivially escalate to host root. With "pick", guest uids map to an
+        # unused high range, so the daemon treats workspace processes as
+        # untrusted clients (normal nix builds still work).
+        privateUsers = "pick";
+
         # Attach container's veth to the sandbox bridge
         # This creates the veth pair and attaches host side to the bridge
         hostBridge = config.networking.sandbox.bridgeName;
 
-        bindMounts = {
-          "/home/googlebot/workspace" = {
-            hostPath = "/home/googlebot/sandboxed/${name}/workspace";
-            isReadOnly = false;
-          };
-          "/etc/ssh-host-keys" = {
-            hostPath = "/home/googlebot/sandboxed/${name}/ssh-host-keys";
-            isReadOnly = false;
-          };
-          "/home/googlebot/claude-config" = {
-            hostPath = "/home/googlebot/sandboxed/${name}/claude-config";
-            isReadOnly = false;
-          };
-        };
+        # Workspace mounts are passed as raw nspawn flags instead of
+        # bindMounts because the NixOS module doesn't support the idmap mount
+        # option, which is required for host-owned files to show up as
+        # googlebot inside the user namespace.
+        extraFlags = [
+          "--bind=/home/googlebot/sandboxed/${name}/workspace:/home/googlebot/workspace:idmap"
+          "--bind=/home/googlebot/sandboxed/${name}/ssh-host-keys:/etc/ssh-host-keys:idmap"
+          "--bind=/home/googlebot/sandboxed/${name}/claude-config:/home/googlebot/claude-config:idmap"
+        ];
 
         config = { config, lib, pkgs, ... }: {
           imports = [

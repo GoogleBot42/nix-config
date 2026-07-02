@@ -26,7 +26,9 @@ in
             description = ''
               Backend type for this workspace:
               - "vm": microVM with cloud-hypervisor (more isolation, uses virtiofs)
-              - "container": systemd-nspawn via NixOS containers (less overhead, uses bind mounts)
+              - "container": systemd-nspawn via NixOS containers (less overhead, uses
+                idmapped bind mounts and a private user namespace; nix builds go
+                through the host's nix daemon as an untrusted user)
               - "incus": Incus/LXD container (unprivileged, better security than NixOS containers)
             '';
           };
