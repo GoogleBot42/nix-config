@@ -73,6 +73,10 @@ in
         default = "gpt-5.5";
         context_length = 400000;
       };
+      compression = {
+        threshold = 0.85;
+        codex_gpt55_autoraise = false;
+      };
       toolsets = [ "all" ];
       platform_toolsets.webhook = [ "hermes-api-server" ];
       terminal.backend = "local";
