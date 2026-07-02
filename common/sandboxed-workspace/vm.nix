@@ -129,6 +129,22 @@ in
 {
   config = mkMerge [
     (mkIf (cfg.enable && vmWorkspaces != { }) {
+      # vsock CIDs must be unique per host; auto-generated CIDs are hashed
+      # from the workspace name, so a collision would otherwise be silent.
+      assertions = [
+        (
+          let
+            cids = mapAttrsToList
+              (n: ws: if ws.cid != null then ws.cid else nameToCid n)
+              vmWorkspaces;
+          in
+          {
+            assertion = length cids == length (unique cids);
+            message = "sandboxed-workspace: vsock CIDs collide across VM workspaces (${concatMapStringsSep ", " toString cids}); set an explicit cid on one of them.";
+          }
+        )
+      ];
+
       # Convert VM workspace configs to microvm.nix format
       microvm.vms = mapAttrs mkVmConfig vmWorkspaces;
 

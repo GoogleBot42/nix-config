@@ -135,7 +135,18 @@ in
         assertion = ws.extraMounts == { } || ws.type == "incus";
         message = ''sandboxed-workspace.workspaces.${name}: extraMounts is only supported for type = "incus" (got "${ws.type}").'';
       })
-      cfg.workspaces;
+      cfg.workspaces
+    ++ [
+      (
+        let
+          ips = lib.mapAttrsToList (_: ws: ws.ip) cfg.workspaces;
+        in
+        {
+          assertion = lib.length ips == lib.length (lib.unique ips);
+          message = "sandboxed-workspace: workspace IPs must be unique (got: ${lib.concatStringsSep ", " ips}).";
+        }
+      )
+    ];
 
     # Automatically enable sandbox networking when workspaces are defined
     networking.sandbox.enable = mkIf (cfg.workspaces != { }) true;
