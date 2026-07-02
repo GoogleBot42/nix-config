@@ -33,11 +33,6 @@ in
     ];
   });
 
-  # Signal changed sealed-sender envelopes in June 2026; older signal-cli
-  # releases crash on receive with `getServerGuid(...) must not be null`.
-  # Pull forward 0.14.5 until nixpkgs updates past the broken package in our
-  # current pin.
-  signal-cli = prev.callPackage ../pkgs/signal-cli { };
 
 
   # Plasma Bigscreen: TV-optimized KDE shell (not yet packaged in nixpkgs)
