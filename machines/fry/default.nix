@@ -73,6 +73,7 @@ in
   age.secrets.attic-netrc.mode = "0444";
 
   environment.systemPackages = with pkgs; [
+    prismlauncher
     system76-keyboard-configurator
   ];
 
