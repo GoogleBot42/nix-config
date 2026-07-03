@@ -15,6 +15,7 @@
     "frigate"
     "zigbee"
     "media-server"
+    "minecraft-create"
     "linkwarden"
     "outline"
     "dns-challenge"

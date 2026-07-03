@@ -1,11 +1,13 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 let
   stateDir = "/var/lib/minecraft-create";
-  curseForgeApiKey = "/etc/minecraft-create/curseforge-api-key";
+  curseForgeApiKey = config.age.secrets.minecraft-create-curseforge-api-key.path;
   packZip = ./minecraft/create-chronicles-industrial-landscapes-no-magic-0.1.zip;
 in
 {
+  age.secrets.minecraft-create-curseforge-api-key.file = ../../../secrets/minecraft-create-curseforge-api-key.age;
+
   virtualisation.podman.enable = true;
   virtualisation.oci-containers.backend = "podman";
   virtualisation.docker.enable = false;
@@ -49,7 +51,6 @@ in
 
   systemd.tmpfiles.rules = [
     "d ${stateDir} 0755 root root - -"
-    "d /etc/minecraft-create 0750 root root - -"
   ];
 
   systemd.services.podman-minecraft-create = {

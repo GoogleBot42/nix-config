@@ -49,6 +49,9 @@ with roles;
   # gitea actions runner
   "gitea-actions-runner-token.age".publicKeys = gitea-actions-runner;
 
+  # Minecraft Create server
+  "minecraft-create-curseforge-api-key.age".publicKeys = minecraft-create;
+
   # Hermes agent
   "hermes-env.age".publicKeys = personal;
   "agent-email-pw.age".publicKeys = personal;

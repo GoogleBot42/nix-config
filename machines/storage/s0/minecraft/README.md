@@ -28,11 +28,10 @@ Only the world save is included in backups:
 /var/lib/minecraft-create/world
 ```
 
-Because the custom pack is a CurseForge manifest, the installer needs a CurseForge API key to resolve and download the referenced files. Before starting the service on s0, create:
+Because the custom pack is a CurseForge manifest, the installer needs a CurseForge API key to resolve and download the referenced files. The key is managed by agenix as:
 
-```sh
-doas install -d -m 0750 /etc/minecraft-create
-doas install -m 0400 /path/to/curseforge-api-key /etc/minecraft-create/curseforge-api-key
+```text
+secrets/minecraft-create-curseforge-api-key.age
 ```
 
 After deployment:
