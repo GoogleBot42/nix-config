@@ -236,12 +236,12 @@ in
       requires = [ "systemd-networkd.service" ];
       serviceConfig = {
         ExecStartPre = [
-          "+${pkgs.systemd}/lib/systemd/systemd-networkd-wait-online --interface=${cfg.bridgeName}:no-carrier --timeout=180"
+          "+${pkgs.systemd}/lib/systemd/systemd-networkd-wait-online --interface=${cfg.bridgeName}:no-carrier --timeout=240"
         ];
         # Keep systemd's service start timeout above wait-online's bridge wait,
-        # otherwise systemd kills tinyproxy before the explicit 180s readiness
+        # otherwise systemd kills tinyproxy before the explicit bridge readiness
         # check can finish on slow boots.
-        TimeoutStartSec = "200s";
+        TimeoutStartSec = "260s";
       };
     };
 
