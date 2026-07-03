@@ -4,12 +4,15 @@ let
   stateDir = "/var/lib/minecraft-create";
   minecraftUser = "minecraft-create";
   minecraftGroup = "minecraft-create";
-  minecraftUid = 993;
-  minecraftGid = 993;
+  minecraftUid = config.ids.uids.${minecraftUser};
+  minecraftGid = config.ids.gids.${minecraftGroup};
   curseForgeApiKey = config.age.secrets.minecraft-create-curseforge-api-key.path;
   packZip = ./minecraft/create-chronicles-industrial-landscapes-no-magic-0.1.zip;
 in
 {
+  ids.uids.${minecraftUser} = 993;
+  ids.gids.${minecraftGroup} = 993;
+
   users.groups.${minecraftGroup}.gid = minecraftGid;
   users.users.${minecraftUser} = {
     isSystemUser = true;
@@ -43,6 +46,8 @@ in
       CF_SLUG = "custom";
       CF_MODPACK_ZIP = "/modpacks/create-industrial-landscapes.zip";
       CF_API_KEY_FILE = "/run/secrets/curseforge-api-key";
+      UID = toString minecraftUid;
+      GID = toString minecraftGid;
       MEMORY = "16G";
       USE_MEOWICE_FLAGS = "TRUE";
       MOTD = "Cogworks Beneath Painted Skies";
