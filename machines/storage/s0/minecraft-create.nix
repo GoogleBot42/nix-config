@@ -2,11 +2,27 @@
 
 let
   stateDir = "/var/lib/minecraft-create";
+  minecraftUser = "minecraft-create";
+  minecraftGroup = "minecraft-create";
+  minecraftUid = 993;
+  minecraftGid = 993;
   curseForgeApiKey = config.age.secrets.minecraft-create-curseforge-api-key.path;
   packZip = ./minecraft/create-chronicles-industrial-landscapes-no-magic-0.1.zip;
 in
 {
-  age.secrets.minecraft-create-curseforge-api-key.file = ../../../secrets/minecraft-create-curseforge-api-key.age;
+  users.groups.${minecraftGroup}.gid = minecraftGid;
+  users.users.${minecraftUser} = {
+    isSystemUser = true;
+    group = minecraftGroup;
+    uid = minecraftUid;
+  };
+
+  age.secrets.minecraft-create-curseforge-api-key = {
+    file = ../../../secrets/minecraft-create-curseforge-api-key.age;
+    owner = minecraftUser;
+    group = minecraftGroup;
+    mode = "0400";
+  };
 
   virtualisation.podman.enable = true;
   virtualisation.oci-containers.backend = "podman";
@@ -27,6 +43,8 @@ in
       CF_SLUG = "custom";
       CF_MODPACK_ZIP = "/modpacks/create-industrial-landscapes.zip";
       CF_API_KEY_FILE = "/run/secrets/curseforge-api-key";
+      UID = toString minecraftUid;
+      GID = toString minecraftGid;
       MEMORY = "16G";
       USE_MEOWICE_FLAGS = "TRUE";
       MOTD = "Cogworks Beneath Painted Skies";
@@ -50,7 +68,7 @@ in
   networking.firewall.allowedTCPPorts = [ 25565 ];
 
   systemd.tmpfiles.rules = [
-    "d ${stateDir} 0755 root root - -"
+    "d ${stateDir} 0755 ${minecraftUser} ${minecraftGroup} - -"
   ];
 
   systemd.services.podman-minecraft-create = {
