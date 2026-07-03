@@ -18,7 +18,6 @@
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # luks unlock with clevis
-  boot.initrd.systemd.enable = true;
   boot.initrd.clevis = {
     enable = true;
     devices."enc-pv".secretFile = "/secret/decrypt.jwe";
