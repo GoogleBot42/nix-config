@@ -1,0 +1,37 @@
+Custom pack created from Create Chronicles: The Endventure 2.0.0
+Output: /home/googlebot/workspace/create-chronicles-industrial-landscapes-no-magic-0.1.zip
+Original manifest mods: 320
+Kept manifest mods: 298
+Removed manifest mods: 22
+Removed override files: 1783
+
+Removed mods:
+- 1492763 / 7907336: Iron's Lib (irons-lib)
+- 986583 / 7492121: Apothic Spawners (apothic-spawners)
+- 1171602 / 8059472: Alshanex's Familiars (alshanexs-familiars)
+- 1299492 / 8079666: Ace's Spell Utils (aces-spell-utils)
+- 1153374 / 7566322: Crystal Chronicles - Iron's Spells 'n Spellbooks (crystal-chronicles)
+- 1161828 / 6692790: Quests Kill Task Tweaks (quests-kill-task-tweaks)
+- 1063926 / 8107222: Apothic Enchanting (apothic-enchanting)
+- 313970 / 8102047: Apotheosis (apotheosis)
+- 898963 / 7445079: Apothic Attributes (apothic-attributes)
+- 1244863 / 8048938: Apotheosis x Iron's Spellbooks Compat (apotheosis-x-irons-spellbooks-compat)
+- 1509193 / 7931973: Tunes n' Tomes: a bards journey (tunes-n-tomes-a-bards-journey)
+- 289412 / 7878289: FTB Quests (NeoForge) (ftb-quests-forge)
+- 1231627 / 8099442: Hazen 'N Stuff (hazen-n-stuff)
+- 1446971 / 8041335: SG-Economy API (sg-economy-api)
+- 1316458 / 8059464: FamiliarsLib (familiarslib)
+- 855414 / 7907341: Iron's Spells 'n Spellbooks (irons-spells-n-spellbooks)
+- 1528722 / 8099176: HazentouveLib (hazentouvelib)
+- 1241005 / 6451581: No Apotheosis Names (no-apotheosis-names)
+- 318299 / 7621939: Treasure Bags (treasure-bags)
+- 404183 / 5625392: End Remastered [NeoForge/Fabric] (endremastered)
+- 1372051 / 8048066: Certain Questing Additions (certain-questing-additions)
+- 597281 / 7937725: Magic Coins (magic-coins)
+
+Override cleanup policy:
+- Removed all overrides/kubejs content because Endventure market/quests/rewards/loot scripts reference removed magic, Apotheosis, economy, and quest mods.
+- Removed config/data files whose paths reference removed magic, Apotheosis, FTB quest, economy, Treasure Bags, or End Remastered components.
+- Kept ordinary configs for Create, Refined Storage, Sophisticated Storage, worldgen, structures, performance, decor, food, and exploration mods.
+
+Known caveat: this is a first custom CurseForge import pack. It has been zip/manifest validated, but not yet launch-tested in a Minecraft server/client.
