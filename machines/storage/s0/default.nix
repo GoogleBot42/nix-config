@@ -1,12 +1,5 @@
 { config, pkgs, lib, ... }:
 
-let
-  repeatedHex = n: lib.concatStrings (lib.replicate n "[0-9a-f]");
-  transientContainerUnitPatterns = [
-    "${repeatedHex 64}-${repeatedHex 15}.service"
-    "${repeatedHex 64}-${repeatedHex 16}.service"
-  ];
-in
 {
   imports = [
     ./hardware-configuration.nix
@@ -18,7 +11,7 @@ in
   networking.hostName = "s0";
 
   ntfy-alerts.ignoredUnits = [ "logrotate" ];
-  ntfy-alerts.ignoredUnitPatterns = transientContainerUnitPatterns;
+  ntfy-alerts.ignoreTransientContainerUnitFailures = true;
   ntfy-alerts.dimmTempCheck.enable = true;
 
   # system.autoUpgrade.enable = true;
