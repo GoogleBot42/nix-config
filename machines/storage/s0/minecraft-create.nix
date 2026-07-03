@@ -43,8 +43,6 @@ in
       CF_SLUG = "custom";
       CF_MODPACK_ZIP = "/modpacks/create-industrial-landscapes.zip";
       CF_API_KEY_FILE = "/run/secrets/curseforge-api-key";
-      UID = toString minecraftUid;
-      GID = toString minecraftGid;
       MEMORY = "16G";
       USE_MEOWICE_FLAGS = "TRUE";
       MOTD = "Cogworks Beneath Painted Skies";
@@ -58,6 +56,9 @@ in
       ENABLE_WHITELIST = "FALSE";
     };
     extraOptions = [
+      # The image defaults to running as uid 1000; force it to run as the
+      # host user that owns the state dir and can read the agenix secret.
+      "--user=${toString minecraftUid}:${toString minecraftGid}"
       "--pull=missing"
       "--memory=20g"
       "--ulimit=nofile=1048576:1048576"
@@ -69,6 +70,9 @@ in
 
   systemd.tmpfiles.rules = [
     "d ${stateDir} 0755 ${minecraftUser} ${minecraftGroup} - -"
+    # Existing data may be owned by uid 1000 from when the container ran as
+    # the image's default user; recursively fix ownership.
+    "Z ${stateDir} - ${minecraftUser} ${minecraftGroup} - -"
   ];
 
   systemd.services.podman-minecraft-create = {
