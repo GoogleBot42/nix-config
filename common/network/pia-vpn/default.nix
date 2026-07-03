@@ -17,6 +17,8 @@ let
   # Derive prefix length from subnet CIDR (e.g. "10.100.0.0/24" → "24")
   subnetPrefixLen = last (splitString "/" cfg.subnet);
 
+  bridgeReadyUnit = "systemd-networkd-wait-online@${cfg.bridgeName}:no-carrier.service";
+
   containerSubmodule = types.submodule ({ name, ... }: {
     options = {
       ip = mkOption {
@@ -206,9 +208,10 @@ in
       matchConfig.Name = cfg.bridgeName;
       networkConfig = {
         Address = "${cfg.hostAddress}/${cfg.subnetPrefixLen}";
+        ConfigureWithoutCarrier = true;
         DHCPServer = false;
       };
-      linkConfig.RequiredForOnline = "no";
+      linkConfig.RequiredForOnline = "no-carrier";
     };
 
     # Allow wireguard traffic through rpfilter
@@ -232,17 +235,14 @@ in
     };
     systemd.services.tinyproxy = {
       before = [ "container@pia-vpn.service" ];
-      after = [ "systemd-networkd.service" ];
-      requires = [ "systemd-networkd.service" ];
-      serviceConfig = {
-        ExecStartPre = [
-          "+${pkgs.systemd}/lib/systemd/systemd-networkd-wait-online --interface=${cfg.bridgeName}:no-carrier --timeout=240"
-        ];
-        # Keep systemd's service start timeout above wait-online's bridge wait,
-        # otherwise systemd kills tinyproxy before the explicit bridge readiness
-        # check can finish on slow boots.
-        TimeoutStartSec = "260s";
-      };
+      after = [
+        "systemd-networkd.service"
+        bridgeReadyUnit
+      ];
+      requires = [
+        "systemd-networkd.service"
+        bridgeReadyUnit
+      ];
     };
 
     # WireGuard interface creation (host-side oneshot)
