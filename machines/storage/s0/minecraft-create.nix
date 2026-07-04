@@ -50,6 +50,9 @@ in
       MODE = "survival";
       ONLINE_MODE = "TRUE";
       ALLOW_FLIGHT = "TRUE";
+      OPS = "googlebot42";
+      EXISTING_OPS_FILE = "MERGE";
+      OP_PERMISSION_LEVEL = "4";
       MAX_TICK_TIME = "180000";
       VIEW_DISTANCE = "12";
       SIMULATION_DISTANCE = "8";
