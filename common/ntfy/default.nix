@@ -4,6 +4,9 @@ let
   cfg = config.ntfy-alerts;
   repeatedHex = n: lib.concatStrings (lib.replicate n "[0-9a-f]");
   transientContainerUnitPatterns = [
+    "${repeatedHex 64}-${repeatedHex 14}"
+    "${repeatedHex 64}-${repeatedHex 15}"
+    "${repeatedHex 64}-${repeatedHex 16}"
     "${repeatedHex 64}-${repeatedHex 14}.service"
     "${repeatedHex 64}-${repeatedHex 15}.service"
     "${repeatedHex 64}-${repeatedHex 16}.service"
