@@ -1,0 +1,11 @@
+diff --git a/avahi-daemon.in b/avahi-daemon.in
+index a37f4ee..0bc3c4c 100644
+--- a/avahi-daemon.in
++++ b/avahi-daemon.in
+@@ -28,5 +28,5 @@
+ 
+ : ${avahi_daemon_pidfile:=/var/run/avahi-daemon/pid}
+ if [ -s "$avahi_daemon_pidfile" ]; then
+-	kill -HUP $(cat "$avahi_daemon_pidfile")
++	kill -HUP $(cat "$avahi_daemon_pidfile") 2>/dev/null || true
+ fi

@@ -29,7 +29,12 @@ final: prev:
     ];
   });
 
-
+  # Ignore stale Avahi pidfiles when resolvconf refreshes static DNS at boot.
+  openresolv = prev.openresolv.overrideAttrs (old: {
+    patches = (old.patches or [ ]) ++ [
+      ../patches/openresolv-avahi-ignore-stale-pid.patch
+    ];
+  });
 
   # Plasma Bigscreen: TV-optimized KDE shell (not yet packaged in nixpkgs)
   plasma-bigscreen = import ./plasma-bigscreen.nix {
