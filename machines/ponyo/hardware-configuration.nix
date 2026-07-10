@@ -1,4 +1,4 @@
-{ lib, modulesPath, ... }:
+{ config, modulesPath, ... }:
 
 {
   imports =
@@ -43,5 +43,16 @@
   ];
 
   networking.usePredictableInterfaceNames = true;
-  networking.interfaces.eth0.useDHCP = true;
+
+  networking.useDHCP = false;
+  networking.useNetworkd = true;
+
+  boot.initrd.systemd.network.networks = config.systemd.network.networks;
+
+  systemd.network.enable = true;
+  systemd.network.networks."10-eth0" = {
+    matchConfig.Name = "eth0";
+    networkConfig.DHCP = "ipv4";
+    linkConfig.RequiredForOnline = "routable";
+  };
 }
