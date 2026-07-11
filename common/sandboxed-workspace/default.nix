@@ -64,6 +64,12 @@ in
             description = "Whether to automatically start this workspace on boot";
           };
 
+          passHostGpu = mkEnableOption ''
+            passing the host GPU through to this workspace and installing
+            userspace graphics/Vulkan support in the workspace image. Only
+            supported for Incus workspaces.
+          '';
+
           cid = mkOption {
             type = types.nullOr types.int;
             default = null;
@@ -128,12 +134,18 @@ in
   };
 
   config = mkIf cfg.enable {
-    assertions = lib.mapAttrsToList
-      (name: ws: {
-        assertion = ws.extraMounts == { } || ws.type == "incus";
-        message = ''sandboxed-workspace.workspaces.${name}: extraMounts is only supported for type = "incus" (got "${ws.type}").'';
-      })
-      cfg.workspaces;
+    assertions = lib.concatLists (lib.mapAttrsToList
+      (name: ws: [
+        {
+          assertion = ws.extraMounts == { } || ws.type == "incus";
+          message = ''sandboxed-workspace.workspaces.${name}: extraMounts is only supported for type = "incus" (got "${ws.type}").'';
+        }
+        {
+          assertion = !ws.passHostGpu || ws.type == "incus";
+          message = ''sandboxed-workspace.workspaces.${name}: passHostGpu is only supported for type = "incus" (got "${ws.type}").'';
+        }
+      ])
+      cfg.workspaces);
 
     # Automatically enable sandbox networking when workspaces are defined
     networking.sandbox.enable = mkIf (cfg.workspaces != { }) true;

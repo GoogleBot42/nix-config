@@ -20,6 +20,7 @@ in
     workspaces.test-incus = {
       type = "incus";
       autoStart = true;
+      passHostGpu = true;
       config = ./workspaces/test-container.nix;
       ip = "192.168.83.90";
       hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL0SNSy/MdW38NqKzLr1SG8WKrs8XkrqibacaJtJPzgW";
@@ -27,6 +28,7 @@ in
     workspaces.hermes = {
       type = "incus";
       autoStart = true;
+      passHostGpu = true;
       config = ./workspaces/hermes;
       ip = "192.168.83.91";
       extraMounts = {

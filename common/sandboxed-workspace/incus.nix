@@ -36,10 +36,14 @@ let
             # Incus containers don't support the kernel features nix sandbox requires
             nix.settings.sandbox = false;
 
+            hardware.graphics.enable = lib.mkIf ws.passHostGpu true;
+
             environment.systemPackages = [
               (lib.hiPrio (pkgs.writeShellScriptBin "claude" ''
                 exec ${pkgs.claude-code}/bin/claude --dangerously-skip-permissions "$@"
               ''))
+            ] ++ lib.optionals ws.passHostGpu [
+              pkgs.vulkan-tools
             ];
           })
         ];
@@ -67,7 +71,9 @@ let
         incus config device add ${containerName} ssh-keys disk source=/home/googlebot/sandboxed/${name}/ssh-host-keys path=/etc/ssh-host-keys shift=true
         incus config device add ${containerName} claude-config disk source=/home/googlebot/sandboxed/${name}/claude-config path=/home/googlebot/claude-config shift=true
         incus config device add ${containerName} attic-netrc disk source=/run/agenix/attic-netrc path=/etc/attic-netrc shift=false
-        ${lib.concatStrings (lib.mapAttrsToList (mountName: m: ''
+        ${lib.optionalString ws.passHostGpu ''
+          incus config device add ${containerName} gpu gpu
+        ''}${lib.concatStrings (lib.mapAttrsToList (mountName: m: ''
           incus config device add ${containerName} ${mountName} disk source=${m.hostPath} path=${m.containerPath} shift=${lib.boolToString m.shift}
         '') ws.extraMounts)}
       '';
