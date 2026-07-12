@@ -70,13 +70,10 @@ in
     settings = {
       model = {
         provider = "openai-codex";
-        default = "gpt-5.5";
-        context_length = 400000;
+        default = "gpt-5.6-sol";
+        context_length = 372000;
       };
-      compression = {
-        threshold = 0.85;
-        codex_gpt55_autoraise = false;
-      };
+      compression.threshold = 0.85;
       toolsets = [ "all" ];
       platform_toolsets.webhook = [ "hermes-api-server" ];
       terminal.backend = "local";
@@ -104,8 +101,8 @@ in
   home-manager.users.googlebot.home.packages = with pkgs; [ codex signal-cli tea ];
 
   environment.etc."hermes-codex-config.toml".text = ''
-    model = "gpt-5.5"
-    model_context_window = 400000
+    model = "gpt-5.6-sol"
+    model_context_window = 372000
     model_reasoning_effort = "medium"
     sandbox_mode = "danger-full-access"
     approval_policy = "never"
