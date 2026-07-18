@@ -15,5 +15,6 @@
     ./unifi.nix
     ./ntfy.nix
     ./gatus.nix
+    ./pgs.nix
   ];
 }

@@ -84,6 +84,21 @@
     root = "/var/www/tmp";
   };
 
+  # pgs static site hosting
+  services.pgs = {
+    enable = true;
+    domain = "sites.neet.dev";
+    sshHost = config.services.nginx.tailscaleListenAddress;
+    initialUsers.jeremy = config.machines.ssh.userKeys;
+    initialUsers.hermes = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILCUueCIRiGWWWsDrwi828G32afRHHpBOisbbYJzRFjn"
+    ];
+    initialUsers.claude = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIOLN3ec0oA0Md/9RZEpcoWv3hgWo1aRBco9PZSkWWQl"
+    ];
+    nginx.enable = true;
+  };
+
   # push notifications
   services.ntfy-sh.enable = true;
   services.ntfy-sh.hostname = "ntfy.neet.dev";

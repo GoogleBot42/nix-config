@@ -68,6 +68,8 @@ final: prev:
     pnpm_10_29_2 = final.pnpm_10;
   };
 
+  pgs = prev.callPackage ../pkgs/pgs { };
+
   # Hindsight agent-memory server. Built via uv2nix against the upstream
   # workspace; uses hermes-agent's toolchain pin to avoid duplicating uv2nix.
   hindsight-api = prev.callPackage ../pkgs/hindsight {
