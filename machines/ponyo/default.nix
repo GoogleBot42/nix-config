@@ -96,6 +96,9 @@
     initialUsers.claude = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIOLN3ec0oA0Md/9RZEpcoWv3hgWo1aRBco9PZSkWWQl"
     ];
+    initialUsers.bevy_voxel = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMR32OsK8nVYi7GruL6J4JszDzb+nrBwEBYBhrRIdyx7"
+    ];
     nginx.enable = true;
   };
 
