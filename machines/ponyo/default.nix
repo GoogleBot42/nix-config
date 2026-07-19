@@ -93,6 +93,8 @@
     enable = true;
     domain = "sites.neet.dev";
     sshHost = config.services.nginx.tailscaleListenAddress;
+    maxSize = 1024 * 1024 * 1024;
+    maxAssetSize = 100 * 1024 * 1024;
     initialUsers.jeremy = config.machines.ssh.userKeys;
     initialUsers.hermes = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILCUueCIRiGWWWsDrwi828G32afRHHpBOisbbYJzRFjn"

@@ -8,6 +8,8 @@ let
     PGS_CACHE_TTL = cfg.cacheTtl;
     PGS_DOMAIN = cfg.domain;
     PGS_HOST = cfg.sshHost;
+    PGS_MAX_ASSET_SIZE = toString cfg.maxAssetSize;
+    PGS_MAX_SIZE = toString cfg.maxSize;
     PGS_PROTOCOL = "https";
     PGS_PROM_PORT = toString cfg.prometheusPort;
     PGS_SSH_HOST = cfg.sshHost;
@@ -82,6 +84,18 @@ in
       type = lib.types.str;
       default = "600s";
       description = "pgs HTTP cache TTL, parsed by Go time.ParseDuration.";
+    };
+
+    maxSize = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 25 * 1024 * 1024;
+      description = "Maximum total storage quota per pgs user, in bytes.";
+    };
+
+    maxAssetSize = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 10 * 1024 * 1024;
+      description = "Maximum size for an individual pgs uploaded asset, in bytes.";
     };
 
     initialUsers = lib.mkOption {

@@ -1,0 +1,32 @@
+diff --git a/pkg/apps/pgs/config.go b/pkg/apps/pgs/config.go
+index f7e6b15..54c6f7e 100644
+--- a/pkg/apps/pgs/config.go
++++ b/pkg/apps/pgs/config.go
+@@ -84,13 +84,25 @@ func NewPgsConfig(logger *slog.Logger, dbpool pgsdb.PgsDB, st storage.StorageSer
+ 
+ 	sshHost := shared.GetEnv("PGS_SSH_HOST", "0.0.0.0")
+ 	sshPort := shared.GetEnv("PGS_SSH_PORT", "2222")
++	storageMax := maxSize
++	if storageMaxStr := shared.GetEnv("PGS_MAX_SIZE", ""); storageMaxStr != "" {
++		if parsed, err := strconv.ParseUint(storageMaxStr, 10, 64); err == nil {
++			storageMax = parsed
++		}
++	}
++	fileMax := maxAssetSize
++	if fileMaxStr := shared.GetEnv("PGS_MAX_ASSET_SIZE", ""); fileMaxStr != "" {
++		if parsed, err := strconv.ParseInt(fileMaxStr, 10, 64); err == nil {
++			fileMax = parsed
++		}
++	}
+ 
+ 	cfg := PgsConfig{
+ 		CacheTTL:           cacheTTL,
+ 		CacheMaxItems:      cacheMaxItems,
+ 		Domain:             domain,
+-		MaxAssetSize:       maxAssetSize,
+-		MaxSize:            maxSize,
++		MaxAssetSize:       fileMax,
++		MaxSize:            storageMax,
+ 		MaxSpecialFileSize: maxSpecialFileSize,
+ 		SshHost:            sshHost,
+ 		SshPort:            sshPort,

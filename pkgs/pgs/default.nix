@@ -17,6 +17,8 @@ buildGoModule rec {
 
   vendorHash = "sha256-sjH/eTCGlHwLmMx+2aKLCxovQANN6eRMt1inEnH/Lbo=";
 
+  patches = [ ./configurable-limits.patch ];
+
   subPackages = [ "cmd/pgs/standalone" ];
 
   nativeBuildInputs = [ makeWrapper ];
