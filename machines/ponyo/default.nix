@@ -23,6 +23,10 @@
   services.gitea = {
     enable = true;
     hostname = "git.neet.dev";
+    settings = {
+      "repository.upload".FILE_MAX_SIZE = 1024;
+      attachment.MAX_SIZE = 1024;
+    };
   };
 
   # IRC
@@ -126,6 +130,9 @@
   services.nginx.virtualHosts."git.neet.dev" = {
     tailscaleOnly = true;
     useACMEHost = "neet.dev";
+    extraConfig = ''
+      client_max_body_size 1g;
+    '';
   };
   services.nginx.virtualHosts."irc.neet.dev" = {
     tailscaleOnly = true;
