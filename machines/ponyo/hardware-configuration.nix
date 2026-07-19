@@ -50,8 +50,8 @@
   boot.initrd.systemd.network.networks = config.systemd.network.networks;
 
   systemd.network.enable = true;
-  systemd.network.networks."10-eth0" = {
-    matchConfig.Name = "eth0";
+  systemd.network.networks."10-ens3" = {
+    matchConfig.Name = "ens3";
     networkConfig.DHCP = "ipv4";
     linkConfig.RequiredForOnline = "routable";
   };
