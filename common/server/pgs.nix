@@ -180,6 +180,7 @@ in
       '';
       serviceConfig = {
         Type = "oneshot";
+        RemainAfterExit = true;
         User = cfg.user;
         Group = cfg.group;
         WorkingDirectory = cfg.dataDir;
