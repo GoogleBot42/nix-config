@@ -13,6 +13,22 @@ final: prev:
     nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ prev.writableTmpDirAsHomeHook ];
   });
 
+  # Skip the upstream test suite: test_amd_pstate_upower is timing-sensitive
+  # ("timed out waiting for ...") and intermittently fails on loaded CI
+  # runners while the same derivation builds fine elsewhere.
+  power-profiles-daemon = prev.power-profiles-daemon.overrideAttrs (old: {
+    doCheck = false;
+    # Later flags win in meson, overriding the package's -Dtests=true
+    mesonFlags = (old.mesonFlags or [ ]) ++ [ "-Dtests=false" ];
+  });
+
+  # Skip the upstream test suite: the dynamiclauncher and notification
+  # (test_sound_fd sound validator subprocess) integration tests fail in the
+  # nix build sandbox on our builders.
+  xdg-desktop-portal = prev.xdg-desktop-portal.overrideAttrs {
+    doCheck = false;
+  };
+
   # Retry on push failure to work around hyper connection pool race condition.
   # https://github.com/zhaofengli/attic/pull/246
   attic-client = prev.attic-client.overrideAttrs (old: {
