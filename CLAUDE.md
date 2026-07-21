@@ -81,7 +81,6 @@ When adding or removing a web-facing service, update both:
 - `lib/default.nix` extends nixpkgs lib with custom utility functions (extends via `nixpkgs.lib.extend`)
 - Overlays are in `/overlays/` and applied globally via `flake.nix`
 - The Nix formatter for this project is `nixpkgs-fmt`
-- Do not add "Co-Authored-By" lines to commit messages
 - Always use `--no-link` when running `nix build`
 - Don't use `nix build --dry-run` unless you only need evaluation — it skips the actual build
 - Avoid `2>&1` on nix commands — it can cause error output to be missed
