@@ -119,7 +119,7 @@ lib.mkMerge [
         };
         # Make frigate aware of the go2rtc streams
         go2rtc.streams = config.services.go2rtc.settings.streams;
-        detect.enabled = false; # :(
+        detect.enabled = true;
         objects = {
           track = [ "person" "dog" ];
         };
