@@ -145,12 +145,12 @@
   # I could not figure out how to allow the container to access the encoder
   services.jellyfin.enable = true;
   users.users.${config.services.jellyfin.user}.extraGroups = [ "public_data" ];
+  # VAAPI decode/encode comes from mesa's radeonsi driver (Ryzen 7900X iGPU),
+  # which hardware.graphics.enable already provides
   hardware.graphics = {
     enable = true;
     extraPackages = with pkgs; [
-      intel-media-driver
-      libvdpau-va-gl
-      intel-compute-runtime # OpenCL filter support (hardware tonemapping and subtitle burn-in)
+      rocmPackages.clr.icd # OpenCL filter support (hardware tonemapping and subtitle burn-in)
     ];
   };
 
