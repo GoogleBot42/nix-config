@@ -50,14 +50,25 @@ let
       };
     in
     {
-      rootfs = containerSystem.config.system.build.images.lxc;
+      # zstd instead of the default pixz: compresses the multi-GB rootfs in
+      # seconds instead of minutes (and incus unpacks it much faster too).
+      # The incus daemon ships zstd in its path, so import just works.
+      rootfs = containerSystem.config.system.build.images.lxc.override {
+        compressCommand = "zstd -T0 -c";
+        compressionExtension = ".zst";
+        extraInputs = [ pkgs.zstd ];
+      };
       metadata = containerSystem.config.system.build.images.lxc-metadata;
       toplevel = containerSystem.config.system.build.toplevel;
     };
 
+  # Evaluate each workspace's guest system once, shared by the systemd
+  # service and the sandboxedWorkspaceGuests closure export below.
+  workspaceImages = mapAttrs mkContainerImage incusWorkspaces;
+
   mkIncusService = name: ws:
     let
-      images = mkContainerImage name ws;
+      images = workspaceImages.${name};
       hash = builtins.substring 0 12 (builtins.hashString "sha256" "${images.rootfs}");
       imageName = "nixos-workspace-${name}-${hash}";
       containerName = "workspace-${name}";
@@ -104,7 +115,7 @@ let
         # Import image if not present
         if ! incus image list --format csv | grep -q "${imageName}"; then
           metadata_tarball=$(echo ${images.metadata}/tarball/*.tar.xz)
-          rootfs_tarball=$(echo ${images.rootfs}/tarball/*.tar.xz)
+          rootfs_tarball=$(echo ${images.rootfs}/tarball/*.tar.zst)
           incus image import "$metadata_tarball" "$rootfs_tarball" --alias ${imageName}
 
           # Clean up old images for this workspace
@@ -182,6 +193,13 @@ in
     systemd.services = mapAttrs'
       (name: ws: nameValuePair "incus-workspace-${name}" (mkIncusService name ws))
       incusWorkspaces;
+
+    # Guest systems are only referenced through the rootfs tarballs, so their
+    # store paths never appear in the host closure and would otherwise never
+    # reach the binary cache. Export them so CI can push the closures
+    # (see .gitea/scripts/build-and-cache.sh).
+    system.build.sandboxedWorkspaceGuests = pkgs.linkFarm "sandboxed-workspace-guests"
+      (mapAttrsToList (name: images: { inherit name; path = images.toplevel; }) workspaceImages);
 
     # Extra alias for incus shell access (ssh is also available via default.nix aliases)
     environment.shellAliases = mkMerge (mapAttrsToList
