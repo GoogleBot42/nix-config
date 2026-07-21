@@ -16,6 +16,18 @@ let
     in
     {
       pia-vpn-port-refresh = import ./pia-vpn-port-refresh-check.nix { inherit pkgs; };
+
+      # Sandboxed-workspace guest systems are only referenced through their
+      # image tarballs, so their store paths never appear in any host closure.
+      # Root them here so CI builds them explicitly and pushes their closures
+      # to the binary cache (see .gitea/scripts/build-and-cache.sh).
+      workspace-guests = pkgs.linkFarm "workspace-guests"
+        (nixpkgs.lib.concatLists (nixpkgs.lib.mapAttrsToList
+          (host: cfg: nixpkgs.lib.optional
+            (cfg.pkgs.stdenv.hostPlatform.system == system
+              && cfg.config.system.build ? sandboxedWorkspaceGuests)
+            { name = host; path = cfg.config.system.build.sandboxedWorkspaceGuests; })
+          self.nixosConfigurations));
     };
 in
 builtins.mapAttrs
