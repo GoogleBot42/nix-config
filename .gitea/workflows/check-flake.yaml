@@ -2,6 +2,11 @@ name: Check Flake
 
 on: [push]
 
+# Rapid pushes to the same branch supersede each other; cancel the older run.
+concurrency:
+  group: check-flake-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   DEBIAN_FRONTEND: noninteractive
   PATH: /run/current-system/sw/bin/

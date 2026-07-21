@@ -56,6 +56,10 @@ in
           url = "https://git.neet.dev/";
           tokenFile = "/run/agenix/gitea-actions-runner-token";
           labels = [ "nixos:host" ];
+          # Run up to two jobs at once so a long flake check doesn't queue
+          # every other push behind it. Builds share the host nix-daemon,
+          # which locks derivations, so overlapping jobs dedupe work.
+          settings.runner.capacity = 2;
         };
 
         # Disable dynamic user so runner state persists via bind mount.
