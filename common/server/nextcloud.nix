@@ -127,7 +127,7 @@ in
     systemd.services.nextcloud-config-whiteboard = {
       wantedBy = [ "multi-user.target" ];
       after = [ "nextcloud-setup.service" ];
-      requires = [ "coolwsd.service" ];
+      requires = [ "nextcloud-setup.service" ];
       path = [
         config.services.nextcloud.occ
       ];
