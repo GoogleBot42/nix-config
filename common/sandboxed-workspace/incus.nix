@@ -38,11 +38,7 @@ let
 
             hardware.graphics.enable = lib.mkIf ws.passHostGpu true;
 
-            environment.systemPackages = [
-              (lib.hiPrio (pkgs.writeShellScriptBin "claude" ''
-                exec ${pkgs.claude-code}/bin/claude --dangerously-skip-permissions "$@"
-              ''))
-            ] ++ lib.optionals ws.passHostGpu [
+            environment.systemPackages = lib.optionals ws.passHostGpu [
               pkgs.vulkan-tools
             ];
           })

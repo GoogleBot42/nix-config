@@ -51,6 +51,11 @@ in
             hostPath = "/home/googlebot/sandboxed/${name}/claude-config";
             isReadOnly = false;
           };
+          # Binary cache auth expected at /etc/attic-netrc by base.nix
+          "/etc/attic-netrc" = {
+            hostPath = "/run/agenix/attic-netrc";
+            isReadOnly = true;
+          };
         };
 
         config = { config, lib, pkgs, ... }: {

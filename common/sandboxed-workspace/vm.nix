@@ -47,7 +47,7 @@ let
 
   # Generate VM configuration for a workspace
   mkVmConfig = name: ws: {
-    inherit pkgs;  # Use host's pkgs (includes allowUnfree)
+    inherit pkgs; # Use host's pkgs (includes allowUnfree)
     config = import ws.config;
     specialArgs = { inputs = hostConfig.inputs; };
     extraModules = [
@@ -58,11 +58,9 @@ let
         networkInterface = { Type = "ether"; };
       })
       {
-        environment.systemPackages = [
-          (lib.hiPrio (pkgs.writeShellScriptBin "claude" ''
-            exec ${pkgs.claude-code}/bin/claude --dangerously-skip-permissions "$@"
-          ''))
-        ];
+        # virtiofs can only share directories; base.nix expects the netrc
+        # file at /etc/attic-netrc, so link it into the shared staging dir
+        environment.etc."attic-netrc".source = "/etc/attic-netrc.d/attic-netrc";
 
         # MicroVM specific configuration
         microvm = {
@@ -107,6 +105,13 @@ let
               source = "/home/googlebot/sandboxed/${name}/claude-config";
               mountPoint = "/home/googlebot/claude-config";
             }
+            {
+              # Binary cache auth, staged by microvm-workspace-netrc.service
+              proto = "virtiofs";
+              tag = "attic-netrc";
+              source = "/run/microvm-workspace-netrc";
+              mountPoint = "/etc/attic-netrc.d";
+            }
           ];
 
           # Writeable overlay for /nix/store
@@ -137,6 +142,23 @@ in
     (mkIf (cfg.enable && vmWorkspaces != { }) {
       # Convert VM workspace configs to microvm.nix format
       microvm.vms = mapAttrs mkVmConfig vmWorkspaces;
+
+      # Stage the attic netrc in a dedicated dir so virtiofs (which can only
+      # share directories) exposes just this one secret to workspaces.
+      # Mode 0444 for the same reason as the incus shift=false mounts: the
+      # guest may not map host uids, so rely on the "other" read bits.
+      systemd.services.microvm-workspace-netrc = {
+        description = "Stage attic netrc for VM workspaces";
+        wantedBy = [ "multi-user.target" ];
+        before = map (name: "microvm@${name}.service") (attrNames vmWorkspaces);
+        serviceConfig = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+        };
+        script = ''
+          install -D -m 444 ${config.age.secrets.attic-netrc.path} /run/microvm-workspace-netrc/attic-netrc
+        '';
+      };
     })
 
     # microvm.nixosModules.host enables KSM, but /sys is read-only in containers

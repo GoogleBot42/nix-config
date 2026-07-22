@@ -84,7 +84,10 @@ in
 
   # Basic system packages
   environment.systemPackages = with pkgs; [
-    claude-code
+    # The point of a sandboxed workspace: claude runs without permission prompts
+    (writeShellScriptBin "claude" ''
+      exec ${claude-code}/bin/claude --dangerously-skip-permissions "$@"
+    '')
     kakoune
     vim
     git
@@ -119,9 +122,11 @@ in
   nix.settings.trusted-users = [ "googlebot" ];
 
   # Binary cache configuration (inherited from host's common/binary-cache.nix).
-  # For incus workspaces the host decrypts attic-netrc and bind-mounts it into
-  # /etc; /run inside the workspace is its own tmpfs, so /run/agenix would be
-  # the wrong target even if the host mounted a secret there.
+  # Each backend makes the host's decrypted attic-netrc available at
+  # /etc/attic-netrc: incus and container bind the file directly; vm shares a
+  # staging dir via virtiofs (directories only) and symlinks /etc/attic-netrc
+  # into it. /run inside the workspace is its own tmpfs, so /run/agenix would
+  # be the wrong target even if the host mounted a secret there.
   nix.settings.substituters = hostConfig.nix.settings.substituters;
   nix.settings.trusted-public-keys = hostConfig.nix.settings.trusted-public-keys;
   nix.settings.fallback = true;
