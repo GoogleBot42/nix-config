@@ -30,8 +30,6 @@ in
     ./ntfy-webhook.nix
   ];
 
-  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
-
   services.hermes-agent = {
     enable = true;
     addToSystemPackages = true;

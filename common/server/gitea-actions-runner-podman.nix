@@ -13,14 +13,17 @@ let
   runnerImageName = "localhost/gitea-runner-nix";
   runnerImageTag = "latest";
 
-  # Podman job containers share the host kernel's binfmt_misc registrations,
-  # but the registered qemu interpreter path still has to exist inside the
-  # container rootfs unless the registration uses the fix-binary flag. Include
-  # the configured interpreter roots so s0's aarch64/armv7l emulation continues
-  # to work from inside the runner image.
+  # Podman job containers share the host kernel's binfmt_misc registrations.
+  # With preferStaticEmulators (set below) registrations use the fix-binary
+  # flag, so the kernel pins the interpreter at registration time and nothing
+  # needs to exist inside the container rootfs. For any registration that has
+  # no static emulator (interpreterSandboxPath != null), fall back to baking
+  # its interpreter root into the runner image.
   binfmtInterpreterRoots = lib.unique (
-    map (registration: registration.interpreterSandboxPath) (
-      lib.attrValues config.boot.binfmt.registrations
+    lib.filter (path: path != null) (
+      map (registration: registration.interpreterSandboxPath) (
+        lib.attrValues config.boot.binfmt.registrations
+      )
     )
   );
 
@@ -58,7 +61,9 @@ let
         "NIX_PAGER=cat"
         "SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
         "NIX_SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
-        "NIX_CONFIG=experimental-features = nix-command flakes\nsandbox = false"
+        ("NIX_CONFIG=experimental-features = nix-command flakes\nsandbox = false"
+          + lib.optionalString (config.boot.binfmt.emulatedSystems != [ ])
+            "\nextra-platforms = ${toString config.boot.binfmt.emulatedSystems}")
       ];
       Cmd = [ "${pkgs.bashInteractive}/bin/bash" ];
     };
@@ -66,6 +71,11 @@ let
 in
 {
   config = lib.mkIf (thisMachineIsARunner && !config.boot.isContainer) {
+    # Register binfmt emulators as static binaries with the fix-binary (F)
+    # flag so job containers can exec foreign-arch binaries without the
+    # interpreter existing in their rootfs.
+    boot.binfmt.preferStaticEmulators = true;
+
     virtualisation.podman = {
       enable = true;
       dockerSocket.enable = true;

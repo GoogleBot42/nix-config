@@ -36,6 +36,12 @@ let
             # Incus containers don't support the kernel features nix sandbox requires
             nix.settings.sandbox = false;
 
+            # The container shares the host kernel, so the host's binfmt_misc
+            # registrations apply inside it (they must be fix-binary/static,
+            # see preferStaticEmulators below). The guest just needs nix to
+            # treat those platforms as buildable.
+            nix.settings.extra-platforms = hostConfig.boot.binfmt.emulatedSystems;
+
             hardware.graphics.enable = lib.mkIf ws.passHostGpu true;
 
             environment.systemPackages = lib.optionals ws.passHostGpu [
@@ -160,6 +166,12 @@ in
 
     virtualisation.incus.enable = true;
     networking.nftables.enable = true;
+
+    # Register binfmt emulators as static binaries with the fix-binary (F)
+    # flag: the kernel opens the interpreter at registration time, so
+    # workspace containers can exec foreign-arch binaries even though the
+    # host's /nix/store (where qemu lives) isn't mounted inside them.
+    boot.binfmt.preferStaticEmulators = true;
 
     virtualisation.incus.preseed = {
       storage_pools = [{
