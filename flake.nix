@@ -98,12 +98,11 @@
       };
     };
 
-    # Hindsight memory server (vectorize-io). No upstream flake; consumed as a
-    # bare source tree and packaged via the uv2nix toolchain from hermes-agent.
-    hindsight-src = {
-      url = "github:vectorize-io/hindsight";
-      flake = false;
-    };
+    # Hindsight memory server, packaged from source in its own CI-verified
+    # flake (daily auto-updated; runtime-checked before its lock moves).
+    # Deliberately no `follows`: the pinned closure is exactly what that CI
+    # built, checked, and pushed to the attic cache.
+    hindsight-nix.url = "git+https://git.neet.dev/zuckerberg/hindsight-nix";
   };
 
   outputs = { self, nixpkgs, ... }@inputs:
