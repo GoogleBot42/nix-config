@@ -36,7 +36,7 @@
       permit_join = false;
       serial = {
         adapter = "ember";
-        port = "/dev/ttyACM0";
+        port = "/dev/serial/by-id/usb-ITEAD_SONOFF_Zigbee_3.0_USB_Dongle_Plus_V2_20230830181018-if00";
       };
       mqtt = {
         server = "mqtt://localhost:1883";
