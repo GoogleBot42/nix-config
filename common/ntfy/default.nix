@@ -33,6 +33,12 @@ in
       description = "Extra arguments to pass to curl (e.g. --proxy http://host:port).";
     };
 
+    ignoredSshUsers = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "Users to skip SSH login notifications for (e.g. the gitea user for git-over-ssh).";
+    };
+
     ignoredUnits = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ ];

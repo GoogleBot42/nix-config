@@ -7,6 +7,13 @@ let
     # Only notify on session open, not close
     [ "$PAM_TYPE" = "open_session" ] || exit 0
 
+    ${lib.optionalString (cfg.ignoredSshUsers != [ ]) ''
+      # Skip noisy service users (e.g. gitea git-over-ssh)
+      case "$PAM_USER" in
+        ${lib.concatStringsSep "|" cfg.ignoredSshUsers}) exit 0 ;;
+      esac
+    ''}
+
     . /run/agenix/ntfy-token
 
     # Send notification in background so login isn't delayed

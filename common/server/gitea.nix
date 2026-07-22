@@ -63,6 +63,9 @@ in
       config.services.gitea.stateDir
     ];
 
+    # git-over-ssh sessions are forced-command gitea serv calls, not real logins
+    ntfy-alerts.ignoredSshUsers = [ config.services.gitea.user ];
+
     services.nginx.enable = true;
     services.nginx.virtualHosts.${cfg.hostname} = {
       enableACME = lib.mkDefault true;
