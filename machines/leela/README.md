@@ -120,3 +120,32 @@ Mono Gateway DK's board firmware/U-Boot in NOR to load `/boot/extlinux` from the
 image. `machines/leela/image.nix` keeps a pre-partition firmware gap and documents
 where to add a vendor-specific eMMC U-Boot write if field testing shows the board
 requires a bundled bootloader instead of the existing NOR firmware.
+
+## SSH host key (required first-boot step)
+
+`hostKey` in `properties.nix` is the OpenWrt router's Dropbear Ed25519 key, and
+`secrets/attic-netrc.age` is already encrypted to it. The flashed image contains
+**no** host key — NixOS generates a fresh one on first boot, which would match
+neither `properties.nix` nor the secret. Pick one of:
+
+**Option A — carry the OpenWrt key over (recommended, no rekey needed).** From
+the OpenWrt config backup, convert the Dropbear key and place it on the flashed
+root filesystem before first boot (NixOS only generates host keys that are
+missing, so it will use this one):
+
+```sh
+nix shell nixpkgs#dropbear -c dropbearconvert dropbear openssh \
+  etc/dropbear/dropbear_ed25519_host_key ssh_host_ed25519_key
+# with the image's NIXOS_ROOT partition mounted at /mnt:
+install -Dm600 ssh_host_ed25519_key /mnt/etc/ssh/ssh_host_ed25519_key
+```
+
+This also keeps existing `known_hosts` entries for `openwrt.lan` valid.
+
+**Option B — fresh key.** Boot, read `/etc/ssh/ssh_host_ed25519_key.pub` from
+the console, put it in `properties.nix` `hostKey`, then re-encrypt the secret
+with `make rekey-secret attic-netrc.age` and redeploy.
+
+Until one of these is done, agenix cannot decrypt `attic-netrc` on leela (the
+nix daemon then lacks credentials for the private binary cache; builds still
+work via the public caches and `fallback = true`).
