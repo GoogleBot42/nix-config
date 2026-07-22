@@ -18,6 +18,8 @@
     "ntfy"
   ];
 
+  publicIP = "147.135.114.130";
+
   hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMBBlTAIp38RhErU1wNNV5MBeb+WGH0mhF/dxh5RsAXN";
 
   remoteUnlock = {

@@ -9,12 +9,20 @@ let
   whiteboardHostname = "whiteboard.runyan.org";
   whiteboardPort = 3002; # Seems impossible to change
 
-  # Hardcoded public ip of ponyo... I wish I didn't need this...
-  public_ip_address = "147.135.114.130";
+  # Collabora needs the machine's public IP in the WOPI allowlist
+  public_ip_address = config.thisMachine.config.publicIP;
 
 in
 {
   config = lib.mkIf cfg.enable {
+    assertions = [{
+      assertion = public_ip_address != null;
+      message = ''
+        services.nextcloud requires publicIP to be set in this machine's properties.nix
+        (used for the Collabora WOPI allowlist).
+      '';
+    }];
+
     services.nextcloud = {
       https = true;
       package = pkgs.nextcloud33;

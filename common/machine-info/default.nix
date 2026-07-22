@@ -65,6 +65,13 @@ let
           };
         });
       };
+      publicIP = lib.mkOption {
+        default = null;
+        type = lib.types.nullOr lib.types.str;
+        description = ''
+          The static public IP address of this machine, if it has one.
+        '';
+      };
       userKeys = lib.mkOption {
         default = [ ];
         type = lib.types.listOf lib.types.str;
