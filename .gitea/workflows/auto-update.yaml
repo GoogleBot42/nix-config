@@ -58,5 +58,5 @@ jobs:
             -H "Title: Flake auto-update failed" \
             -H "Priority: high" \
             -H "Tags: warning" \
-            -d "Auto-update workflow failed. Check: ${{ gitea.server_url }}/${{ gitea.repository }}/actions/runs/${{ gitea.run_number }}" \
+            -d "Auto-update workflow failed. Check: ${{ gitea.server_url }}/${{ gitea.repository }}/actions/runs/${{ gitea.run_id }}" \
             https://ntfy.neet.dev/nix-flake-updates

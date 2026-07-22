@@ -36,5 +36,5 @@ jobs:
             -H "Title: Flake check failed" \
             -H "Priority: high" \
             -H "Tags: warning" \
-            -d "Check failed for ${{ gitea.ref_name }}. Check: ${{ gitea.server_url }}/${{ gitea.repository }}/actions/runs/${{ gitea.run_number }}" \
+            -d "Check failed for ${{ gitea.ref_name }}. Check: ${{ gitea.server_url }}/${{ gitea.repository }}/actions/runs/${{ gitea.run_id }}" \
             https://ntfy.neet.dev/nix-flake-updates
