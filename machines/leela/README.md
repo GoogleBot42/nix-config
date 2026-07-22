@@ -33,7 +33,7 @@ The intended physical roles are:
 - SFP+ port 2 — tagged VLAN trunk.
 - All 3 RJ-45 ports — untagged/native main LAN, corresponding to VLAN 5 policy.
 
-`default.nix` currently uses this provisional Linux interface mapping:
+`networking.nix` currently uses this provisional Linux interface mapping:
 
 - `eth0` — SFP+ WAN.
 - `eth1` — SFP+ tagged VLAN trunk.
@@ -41,7 +41,7 @@ The intended physical roles are:
 
 Verify the mapping from the UART console with `ip link` before cutover. If Mono's
 kernel exposes a different order or names, update the `wan`, `lanTrunk`, and
-`mainAccessIfs` bindings in `default.nix`.
+`mainAccessIfs` bindings in `networking.nix`.
 
 ## Network policy
 
@@ -50,18 +50,42 @@ forwarding, NAT, and blocked-traffic model.
 
 ## Preserved gateway behavior
 
+Cross-checked against the OpenWrt APU2 backup from 2026-07-21:
+
 - Main LAN: VLAN 5 on the SFP+ trunk plus untagged/native RJ-45 access ports,
-  `192.168.1.1/21`, DHCP `192.168.1.2-192.168.1.249`.
+  `192.168.1.1/21`, DHCP `192.168.1.100-192.168.1.249`.
 - IoT: VLAN 2 on the SFP+ trunk, `192.168.8.1/22`, DHCP
-  `192.168.8.2-192.168.8.249`.
+  `192.168.8.100-192.168.8.249`.
 - Management: VLAN 4 on the SFP+ trunk, `192.168.13.1/24`, DHCP
-  `192.168.13.2-192.168.13.249`.
-- Static DHCP leases for `s0`, `fry`, `vacuum`, `eight-pod`, and `dog-cam`.
-- WAN input is default-deny with only DHCP client and required ICMP/ICMPv6
-  control traffic allowed; WAN ping, IGMP, and router services are not exposed.
+  `192.168.13.100-192.168.13.249`.
+- Static DHCP leases for `s0`, `fry`, `vacuum`, `eight-pod`, and `dog-cam`
+  (pinned below/outside the pools, as on OpenWrt).
+- WAN input is default-deny with DHCP client traffic, ping (ICMPv4 echo,
+  ICMPv6 echo/reply), IGMP, and required ICMP/ICMPv6 control traffic allowed —
+  matching OpenWrt's default WAN rules. No router services are exposed on WAN.
 - Only main LAN forwards to WAN and receives IPv4 masquerade; IoT and management
   do not forward or NAT to WAN.
-- DNS from IoT and management to the router is rejected.
+- TCP MSS is clamped to path MTU on WAN forwards (OpenWrt `mtu_fix`).
+- IoT and management devices are treated as untrusted: they are not offered a
+  DNS server via DHCP, and DNS queries to the router are actively rejected so
+  they cannot exfiltrate via DNS even if they try the router anyway.
+
+## Changes from the OpenWrt behavior
+
+- IPv6 on the main LAN actually works now: the WAN DHCPv6 client requests a
+  delegated prefix and `br-main` announces it via SLAAC, with the router's
+  link-local dnsmasq as the advertised resolver. (The OpenWrt config requested
+  a prefix on wan6 but never enabled RA/DHCPv6 on any LAN, so LAN IPv6 was
+  dead.) IoT and management remain IPv4-only on purpose.
+- The OpenWrt `Allow-IPSec-ESP`/`Allow-ISAKMP` WAN→LAN forward rules were
+  dropped: with no DNAT/port-forward anywhere they could never match (inbound
+  WAN traffic is addressed to the router itself), and outbound-initiated IPsec
+  already works via conntrack. Add a DNAT rule if inbound IPsec to a specific
+  host is ever needed.
+- Tailscale (enabled repo-wide) is accepted in the input chain as a backup
+  admin path; access control is handled by Tailscale ACLs.
+- dnsmasq uses explicit upstream resolvers (`1.1.1.1`, `8.8.8.8`) instead of
+  ISP-provided DNS, since systemd-resolved is disabled on this machine.
 
 ## Image build and install assumptions
 
