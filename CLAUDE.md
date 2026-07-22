@@ -41,6 +41,9 @@ make edit-secret <secret-filename>
 
 # Rekey all secrets (after adding/removing machine host keys)
 make rekey-secrets
+
+# Rekey a single secret (after changing its recipients)
+make rekey-secret <secret-filename>
 ```
 
 ## Architecture

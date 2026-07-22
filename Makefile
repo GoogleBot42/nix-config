@@ -16,6 +16,12 @@ edit-secret:
 rekey-secrets:
 	cd secrets && agenix -r
 
+# Rekey a single secret (ex: 'attic-netrc.age') after changing its recipients.
+# agenix -r is just EDITOR=: agenix -e for every secret; this does one file.
+.PHONY: rekey-secret
+rekey-secret:
+	cd secrets && EDITOR=: agenix -e $(filter-out $@,$(MAKECMDGOALS))
+
 # NixOS utils
 .PHONY: clean-old-nixos-profiles
 clean-old-nixos-profiles:
