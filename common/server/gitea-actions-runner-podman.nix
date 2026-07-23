@@ -10,6 +10,8 @@ let
   thisMachineIsARunner = config.thisMachine.hasRole."gitea-actions-runner";
   podmanRunnerInstance = "podman";
   podmanRunnerName = "gitea-runner-podman";
+  ubuntuRunnerInstance = "ubuntu";
+  ubuntuRunnerName = "gitea-runner-ubuntu";
   runnerImageName = "localhost/gitea-runner-nix";
   runnerImageTag = "latest";
 
@@ -63,7 +65,7 @@ let
         "NIX_SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
         ("NIX_CONFIG=experimental-features = nix-command flakes\nsandbox = false"
           + lib.optionalString (config.boot.binfmt.emulatedSystems != [ ])
-            "\nextra-platforms = ${toString config.boot.binfmt.emulatedSystems}")
+          "\nextra-platforms = ${toString config.boot.binfmt.emulatedSystems}")
       ];
       Cmd = [ "${pkgs.bashInteractive}/bin/bash" ];
     };
@@ -132,6 +134,35 @@ in
         "gitea-runner-load-podman-image.service"
         "podman.socket"
       ];
+    };
+
+    # Plain ubuntu-latest runner so unmodified GitHub Actions workflows work.
+    # Jobs run in the catthehacker images, which mirror the tooling of
+    # GitHub-hosted ubuntu runners. Kept as a separate instance so the
+    # nix-specific container options above (host /nix overlay) don't apply
+    # to ubuntu jobs.
+    services.gitea-actions-runner.instances.${ubuntuRunnerInstance} = {
+      enable = true;
+      name = ubuntuRunnerName;
+      url = "https://git.neet.dev/";
+      tokenFile = config.age.secrets.gitea-actions-runner-token.path;
+      labels = [
+        "ubuntu-latest:docker://ghcr.io/catthehacker/ubuntu:act-latest"
+        "ubuntu-24.04:docker://ghcr.io/catthehacker/ubuntu:act-24.04"
+        "ubuntu-22.04:docker://ghcr.io/catthehacker/ubuntu:act-22.04"
+      ];
+      settings.container = {
+        # Only pull when the image is missing; images update via autoPrune
+        # cycling out old layers rather than pulling on every job.
+        force_pull = false;
+        require_docker = true;
+        docker_host = "unix:///run/podman/podman.sock";
+      };
+    };
+
+    systemd.services."gitea-runner-${ubuntuRunnerInstance}" = {
+      requires = [ "podman.socket" ];
+      after = [ "podman.socket" ];
     };
   };
 }
