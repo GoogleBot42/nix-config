@@ -21,23 +21,47 @@ Mono documents the Gateway Development Kit as:
 
 The board runs the stock NixOS `linuxPackages_6_12` kernel, unpatched, so it
 comes straight from cache.nixos.org. Mono's board support consists of a single
-`mono-gateway-dk.dts` (vendored unmodified in this directory from their public
-kernel tree); `hardware-configuration.nix` compiles it against the kernel's
-device tree sources via `hardware.deviceTree` and loads it through the extlinux
-`FDT` directive. This deliberately avoids `boot.kernelPatches`, which would
-force a full kernel rebuild just to add a dtb. It is a base board device tree
-(a new board, not present in mainline), so `hardware.deviceTree.overlays` -
-which patches existing dtbs - does not apply here.
+`mono-gateway-dk.dts`, vendored unmodified in this directory from
+[we-are-mono/nix](https://github.com/we-are-mono/nix)
+`pkgs/kernel/dts/mono-gateway-dk.dts` at commit `37d452e35b32`.
+`hardware-configuration.nix` compiles it against the kernel's device tree
+sources via `hardware.deviceTree` and loads it through the extlinux `FDT`
+directive. This deliberately avoids `boot.kernelPatches`, which would force a
+full kernel rebuild just to add a dtb. It is a base board device tree (a new
+board, not present in mainline), so `hardware.deviceTree.overlays` - which
+patches existing dtbs - does not apply here.
 
-Everything else the board needs is already enabled in the stock NixOS aarch64
-kernel config: the DPAA1 ethernet stack used as a plain NIC (`FSL_DPAA`,
-`FSL_DPAA_ETH`, `FSL_FMAN`, `FSL_XGMAC_MDIO`, `PCS_LYNX`, `SFP`, phylink), the
-esdhc eMMC controller, QSPI NOR, PCA954x i2c muxes, QorIQ GPIO/clock, and the
-board's sensor/RTC drivers. Mono's ASK/offload stack is not used. One runtime
-dependency to verify at first boot: mainline's FMan driver needs the FMan
-microcode, which the board's U-Boot is expected to load from NOR and inject
-into the device tree (check for `/proc/device-tree/soc/fman@1a00000/fman-firmware`
-or dpaa_eth probe errors on the console).
+This DTS variant was chosen over the two-commit `add-mono` branch of Mono's
+mainline kernel fork because the latter is missing pieces that matter for a
+router: the `sfp = <&sfp_xfi0/1>` phandles on the 10G MACs (without them
+phylink never drives TX_DISABLE, so optical SFP+ modules keep their laser off),
+the `ethernet*` aliases (used by U-Boot to fix up stable MAC addresses), and
+the correct `ti,ina234` power-sensor compatibles.
+
+Mainline viability for plain (non-offload) networking is confirmed by Mono
+themselves: their shipped stock OpenWrt build uses the mainline `fsl_dpa`
+DPAA1 driver with all five ports working, and their `KERNEL_PATCHES.md` states
+the NXP SDK patches are only needed for hardware acceleration (ASK fast
+path/IPsec offload), which this config does not use. Expect CPU-bound routing
+(roughly 2-8 Gbps, not 10G line rate) - still far beyond the APU2.
+
+Everything the board needs is already enabled in the stock NixOS aarch64
+kernel config (verified against the cached 6.12 configfile): the DPAA1
+ethernet stack as a plain NIC (`FSL_DPAA`, `FSL_DPAA_ETH`, `FSL_FMAN`,
+`FSL_XGMAC_MDIO`, `PCS_LYNX`, `SFP=m`, phylink), esdhc eMMC, QSPI NOR, PCA954x
+i2c muxes, QorIQ GPIO/clock, `EMC2305` fan control, `LM90` (TMP431) sensors,
+GPIO LEDs, and the PCF2131 RTC. Not driven on mainline 6.12 and knowingly
+accepted: the INA234 power monitors (driver lands upstream around 6.16), the
+LP5812 front LED controller, and Mono's custom `mono,sfp-led` helper - all
+cosmetic, none affect networking.
+
+One firmware dependency: the mainline FMan driver contains no firmware-loading
+code at all - it relies on U-Boot having already uploaded the FMan microcode
+into FMan IRAM. The board's NOR flash layout reserves offset `0x400000` for
+exactly this and Mono's U-Boot config loads it from there, so the stock boot
+flow just works; do not erase the NOR firmware region. If ethernet interfaces
+fail to probe on the console, missing FMan microcode is the first thing to
+check.
 
 ## Port mapping
 
@@ -53,9 +77,12 @@ The intended physical roles are:
 - `eth1` — SFP+ tagged VLAN trunk.
 - `eth2`, `eth3`, `eth4` — RJ-45 untagged/native main LAN access ports.
 
-Verify the mapping from the UART console with `ip link` before cutover. If Mono's
-kernel exposes a different order or names, update the `wan`, `lanTrunk`, and
-`mainAccessIfs` bindings in `networking.nix`.
+Verify the mapping from the UART console with `ip link` before cutover. The
+`ethernet*` aliases in the DTS give U-Boot stable MAC address assignment, but
+mainline dpaa does **not** use them for interface naming (that was an
+NXP-SDK-only patch in Mono's tree), so probe order decides the `eth*` names.
+If the order differs, update the `wan`, `lanTrunk`, and `mainAccessIfs`
+bindings in `networking.nix`.
 
 ## Network policy
 
