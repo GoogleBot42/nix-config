@@ -17,13 +17,27 @@ Mono documents the Gateway Development Kit as:
 - 32 GB eMMC for the operating system and 64 MB NOR flash for firmware.
 - USB-C UART console at 115200 baud.
 
-Mono's public kernel tree carries two board-support commits for the Gateway DK:
-one Makefile entry and one `mono-gateway-dk.dts` device tree. This config does
-not import Mono's experimental NixOS tree or ASK/offload stack, but it does apply
-those minimal kernel patches on top of NixOS's 6.12 LTS kernel line so the board
-support is explicit instead of assuming unpatched mainline is enough. If basic
-boot or Ethernet bring-up still fails, the next step is to package more of Mono's
-kernel work rather than adopting the whole experimental Mono NixOS flake.
+## Kernel and device tree
+
+The board runs the stock NixOS `linuxPackages_6_12` kernel, unpatched, so it
+comes straight from cache.nixos.org. Mono's board support consists of a single
+`mono-gateway-dk.dts` (vendored unmodified in this directory from their public
+kernel tree); `hardware-configuration.nix` compiles it against the kernel's
+device tree sources via `hardware.deviceTree` and loads it through the extlinux
+`FDT` directive. This deliberately avoids `boot.kernelPatches`, which would
+force a full kernel rebuild just to add a dtb. It is a base board device tree
+(a new board, not present in mainline), so `hardware.deviceTree.overlays` -
+which patches existing dtbs - does not apply here.
+
+Everything else the board needs is already enabled in the stock NixOS aarch64
+kernel config: the DPAA1 ethernet stack used as a plain NIC (`FSL_DPAA`,
+`FSL_DPAA_ETH`, `FSL_FMAN`, `FSL_XGMAC_MDIO`, `PCS_LYNX`, `SFP`, phylink), the
+esdhc eMMC controller, QSPI NOR, PCA954x i2c muxes, QorIQ GPIO/clock, and the
+board's sensor/RTC drivers. Mono's ASK/offload stack is not used. One runtime
+dependency to verify at first boot: mainline's FMan driver needs the FMan
+microcode, which the board's U-Boot is expected to load from NOR and inject
+into the device tree (check for `/proc/device-tree/soc/fman@1a00000/fman-firmware`
+or dpaa_eth probe errors on the console).
 
 ## Port mapping
 
