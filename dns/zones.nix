@@ -102,7 +102,7 @@ in
 {
   "av1.zip" = zone (
     [
-      (mkA "@" publicIps.ponyo 360)
+      (mkA "@" publicIps.ponyo 300)
       (mkAAAA "@" publicIps.ponyoIPv6 300)
     ]
     ++ commonMailRecords hosts.mail
@@ -138,8 +138,8 @@ in
     ]
     ++ commonMailRecords hosts.mail
     ++ [
-      (mkCNAME "cast" hosts.ponyo 3600)
-      (mkCNAME "files" hosts.ponyo 3600)
+      (mkCNAME "cast" hosts.ponyo 300)
+      (mkCNAME "files" hosts.ponyo 300)
       (mkTXT "mail._domainkey" dkim."neet.cloud".mail 3600)
       (mkTXT "pic._domainkey" dkim."neet.cloud".pic 3600)
     ]
@@ -147,26 +147,26 @@ in
 
   "neet.dev" = zone [
     (mkA "*.fry" tailscaleIps.fry 3600)
-    (mkA "*.ponyo" tailscaleIps.ponyo 3600)
+    (mkA "*.ponyo" tailscaleIps.ponyo 300)
     (mkA "*.s0" tailscaleIps.s0 3600)
-    (mkA "*.sites" tailscaleIps.ponyo 3600)
+    (mkA "*.sites" tailscaleIps.ponyo 300)
     (mkA "@" publicIps.ponyo 300)
     (mkMX "@" 10 absoluteHosts.mail 14400)
     (mkTXT "@" txt.spf 3600)
     (mkTXT "_dmarc" txt.dmarcNone 3600)
     (mkA "fry" tailscaleIps.fry 3600)
-    (mkCNAME "git" absoluteHosts.gitPonyo 3600)
-    (mkCNAME "irc" absoluteHosts.ircPonyo 3600)
+    (mkCNAME "git" absoluteHosts.gitPonyo 300)
+    (mkCNAME "irc" absoluteHosts.ircPonyo 300)
     (mkTXT "krs._domainkey" dkim."neet.dev".krs 3600)
     (mkA "mail" publicIps.ponyo 30)
     (mkTXT "mail._domainkey" dkim."neet.dev".mail 3600)
-    (mkCNAME "ntfy" absoluteHosts.ponyo 3600)
-    (mkCNAME "ponyo" "@" 3600)
+    (mkCNAME "ntfy" absoluteHosts.ponyo 300)
+    (mkCNAME "ponyo" "@" 300)
     (mkA "s0" tailscaleIps.s0 3600)
-    (mkA "sites" tailscaleIps.ponyo 3600)
-    (mkCNAME "status" absoluteHosts.statusPonyo 3600)
-    (mkCNAME "tmp" "@" 3600)
-    (mkCNAME "unlock.ponyo" absoluteHosts.ponyo 3600)
+    (mkA "sites" tailscaleIps.ponyo 300)
+    (mkCNAME "status" absoluteHosts.statusPonyo 300)
+    (mkCNAME "tmp" "@" 300)
+    (mkCNAME "unlock.ponyo" absoluteHosts.ponyo 300)
   ];
 
   "neet.space" = zone [
@@ -178,7 +178,7 @@ in
     (mkA "chat" tailscaleIps.ponyo 300)
     (mkTXT "mail._domainkey" dkim."neet.space".mail 3600)
     (mkTXT "smtp._domainkey" dkim."neet.space".smtp 3600)
-    (mkCNAME "turn" "@" 3600)
+    (mkCNAME "turn" "@" 300)
   ];
 
   "runyan.org" = zone (
@@ -187,10 +187,10 @@ in
     ]
     ++ commonMailRecords hosts.mail
     ++ [
-      (mkCNAME "collabora" hosts.collaboraPonyo 3600)
+      (mkCNAME "collabora" hosts.collaboraPonyo 300)
       (mkTXT "mail._domainkey" dkim."runyan.org".mail 3600)
       (mkTXT "smtp._domainkey" dkim."runyan.org".smtp 3600)
-      (mkCNAME "whiteboard" hosts.whiteboardPonyo 3600)
+      (mkCNAME "whiteboard" hosts.whiteboardPonyo 300)
     ]
   );
 
