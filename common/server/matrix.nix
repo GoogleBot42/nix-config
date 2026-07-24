@@ -190,6 +190,19 @@ in
         LC_CTYPE = "C";
     '';
 
+    # Nightly logical dump of the synapse database so restic captures a
+    # consistent DB snapshot alongside the media store.
+    services.postgresqlBackup = {
+      enable = true;
+      databases = [ "matrix-synapse" ];
+    };
+
+    # backups
+    backup.group."matrix".paths = [
+      config.services.matrix-synapse.dataDir
+      config.services.postgresqlBackup.location
+    ];
+
     services.jitsi-meet = lib.mkIf cfg.jitsi-meet.enable {
       enable = true;
       hostName = cfg.jitsi-meet.host;

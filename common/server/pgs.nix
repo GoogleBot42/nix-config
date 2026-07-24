@@ -124,6 +124,9 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    # backups
+    backup.group."pgs".paths = [ cfg.dataDir ];
+
     users.groups.${cfg.group} = { };
     users.users.${cfg.user} = {
       isSystemUser = true;
