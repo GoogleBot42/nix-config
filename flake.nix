@@ -35,6 +35,13 @@
       };
     };
 
+    # Declarative disk partitioning (consumed at install time by nixos-anywhere).
+    # Inert for machines that define no `disko.devices`.
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Agenix
     agenix = {
       url = "github:ryantm/agenix";
@@ -169,6 +176,7 @@
           modules = system: hostname: with inputs; [
             ./common
             simple-nixos-mailserver.nixosModules.default
+            disko.nixosModules.disko
             agenix.nixosModules.default
             dailybot.nixosModule
             nix-index-database.nixosModules.default

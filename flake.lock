@@ -137,6 +137,26 @@
         "type": "github"
       }
     },
+    "disko": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1781152676,
+        "narHash": "sha256-RxWs5ND31KzTG7wvMM+PMfUjyNpmIEr999lqNARaM5o=",
+        "owner": "nix-community",
+        "repo": "disko",
+        "rev": "ff8702b4de27f72b4c78573dfb89ec74e36abdf1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "disko",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -547,6 +567,7 @@
         "claude-code-nix": "claude-code-nix",
         "dailybot": "dailybot",
         "deploy-rs": "deploy-rs",
+        "disko": "disko",
         "flake-compat": "flake-compat",
         "flake-utils": "flake-utils",
         "hermes-agent": "hermes-agent",
