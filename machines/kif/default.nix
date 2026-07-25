@@ -28,6 +28,32 @@
   # nextcloud
   services.nextcloud.enable = true;
 
+  # Explicit version required: the module default follows stateVersion (23.11
+  # fleet-wide -> postgres 15).
+  services.postgresql.package = pkgs.postgresql_17;
+
+  # matrix home server
+  services.matrix = {
+    enable = true;
+    host = "neet.space";
+    publicFederation = false;
+    enable_registration = false;
+    element-web = {
+      enable = true;
+      host = "chat.neet.space";
+    };
+    jitsi-meet = {
+      enable = false; # disabled until vulnerable libolm dependency is removed/fixed
+      host = "meet.neet.space";
+    };
+    turn = {
+      host = "turn.neet.space";
+      useACMEHost = "neet.space";
+      openFirewall = false;
+      secret = "a8369a0e96922abf72494bb888c85831b";
+    };
+  };
+
   # Tailscale-only nginx virtual hosts bind to kif's stable tailnet address.
   services.nginx.tailscaleListenAddress = "100.89.83.99";
 
@@ -104,6 +130,18 @@
   services.nginx.virtualHosts."whiteboard.runyan.org" = {
     tailscaleOnly = true;
     useACMEHost = "runyan.org";
+  };
+  services.nginx.virtualHosts."neet.space" = {
+    tailscaleOnly = true;
+    useACMEHost = "neet.space";
+  };
+  services.nginx.virtualHosts."chat.neet.space" = {
+    tailscaleOnly = true;
+    useACMEHost = "neet.space";
+  };
+  services.nginx.virtualHosts."turn.neet.space" = {
+    tailscaleOnly = true;
+    useACMEHost = "neet.space";
   };
   services.nginx.virtualHosts."irc.neet.dev" = {
     tailscaleOnly = true;

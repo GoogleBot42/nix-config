@@ -1,8 +1,8 @@
 { config, pkgs, lib, ... }:
 
-# Being migrated to kif in phases. Phases 2-3 moved: thelounge, drastikbot,
-# tmp.neet.dev, pgs, ntfy, gatus, nextcloud. Remaining here until later
-# phases: matrix (4), gitea (5), mailserver (6).
+# Being migrated to kif in phases. Phases 2-4 moved: thelounge, drastikbot,
+# tmp.neet.dev, pgs, ntfy, gatus, nextcloud, matrix. Remaining here:
+# gitea (5), mailserver (6).
 
 {
   imports = [
@@ -30,30 +30,6 @@
     };
   };
 
-  # matrix home server
-  services.matrix = {
-    enable = true;
-    host = "neet.space";
-    publicFederation = false;
-    enable_registration = false;
-    element-web = {
-      enable = true;
-      host = "chat.neet.space";
-    };
-    jitsi-meet = {
-      enable = false; # disabled until vulnerable libolm dependency is removed/fixed
-      host = "meet.neet.space";
-    };
-    turn = {
-      host = "turn.neet.space";
-      useACMEHost = "neet.space";
-      openFirewall = false;
-      secret = "a8369a0e96922abf72494bb888c85831b";
-    };
-  };
-  # pin postgresql for matrix (kif restores into an unpinned postgres in phase 4)
-  services.postgresql.package = pkgs.postgresql_15;
-
   # proxied web services
   services.nginx.enable = true;
 
@@ -64,18 +40,6 @@
     extraConfig = ''
       client_max_body_size 1g;
     '';
-  };
-  services.nginx.virtualHosts."neet.space" = {
-    tailscaleOnly = true;
-    useACMEHost = "neet.space";
-  };
-  services.nginx.virtualHosts."chat.neet.space" = {
-    tailscaleOnly = true;
-    useACMEHost = "neet.space";
-  };
-  services.nginx.virtualHosts."turn.neet.space" = {
-    tailscaleOnly = true;
-    useACMEHost = "neet.space";
   };
 
 }

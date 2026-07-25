@@ -183,12 +183,12 @@ in
   ];
 
   "neet.space" = zone [
-    (mkA "@" tailscaleIps.ponyo 300)
+    (mkA "@" tailscaleIps.kif 300)
     (mkMX "@" 10 hosts.mail 14400)
     (mkTXT "@" txt.rizonVhost 3600)
     (mkTXT "@" txt.spf 3600)
     (mkTXT "_dmarc" txt.dmarcNone 3600)
-    (mkA "chat" tailscaleIps.ponyo 300)
+    (mkA "chat" tailscaleIps.kif 300)
     (mkTXT "mail._domainkey" dkim."neet.space".mail 3600)
     (mkTXT "smtp._domainkey" dkim."neet.space".smtp 3600)
     (mkCNAME "turn" "@" 300)
