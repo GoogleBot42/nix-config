@@ -16,4 +16,11 @@
     ./hardware-configuration.nix
     ./disko.nix
   ];
+
+  # Claude agent key, authorized for the ponyo->kif migration (state sync,
+  # remote LUKS unlock, host key harvest). Remove at Phase 7 decommission.
+  # Also flows into remoteLuksUnlock.sshAuthorizedKeys via its default.
+  users.users.root.openssh.authorizedKeys.keys = [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFlGtWc9X6vs6YLyrC5BC8ZWm+KVOG40uRY4Tj7fjSKL claude-agent-devbox"
+  ];
 }
