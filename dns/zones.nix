@@ -11,14 +11,11 @@ let
   ];
 
   publicIps = {
-    ponyo = "147.135.114.130";
-    ponyoIPv6 = "2604:2dc0:101:200::1092";
     kif = "15.204.91.158";
     kifIPv6 = "2604:2dc0:202:300::2436";
   };
 
   tailscaleIps = {
-    ponyo = "100.76.85.13";
     kif = "100.89.83.99";
     fry = "100.117.73.96";
     s0 = "100.112.73.53";
@@ -26,24 +23,17 @@ let
 
   hosts = {
     mail = "mail.neet.dev";
-    ponyo = "ponyo.neet.dev";
     kif = "kif.neet.dev";
-    collaboraPonyo = "collabora.ponyo.neet.dev";
-    whiteboardPonyo = "whiteboard.ponyo.neet.dev";
     collaboraKif = "collabora.kif.neet.dev";
     whiteboardKif = "whiteboard.kif.neet.dev";
   };
 
   absoluteHosts = {
     mail = "mail.neet.dev.";
-    ponyo = "ponyo.neet.dev.";
     kif = "kif.neet.dev.";
     gitKif = "git.kif.neet.dev.";
     ircKif = "irc.kif.neet.dev.";
     statusKif = "status.kif.neet.dev.";
-    gitPonyo = "git.ponyo.neet.dev.";
-    ircPonyo = "irc.ponyo.neet.dev.";
-    statusPonyo = "status.ponyo.neet.dev.";
   };
 
   txt = {
@@ -112,16 +102,16 @@ in
 {
   "av1.zip" = zone (
     [
-      (mkA "@" publicIps.ponyo 300)
-      (mkAAAA "@" publicIps.ponyoIPv6 300)
+      (mkA "@" publicIps.kif 300)
+      (mkAAAA "@" publicIps.kifIPv6 300)
     ]
     ++ commonMailRecords hosts.mail
   );
 
   "bsd.ninja" = zone (
     [
-      (mkA "@" publicIps.ponyo 300)
-      (mkAAAA "@" publicIps.ponyoIPv6 300)
+      (mkA "@" publicIps.kif 300)
+      (mkAAAA "@" publicIps.kifIPv6 300)
     ]
     ++ commonMailRecords hosts.mail
     ++ [
@@ -132,8 +122,8 @@ in
 
   "bsd.rocks" = zone (
     [
-      (mkA "@" publicIps.ponyo 300)
-      (mkAAAA "@" publicIps.ponyoIPv6 300)
+      (mkA "@" publicIps.kif 300)
+      (mkAAAA "@" publicIps.kifIPv6 300)
     ]
     ++ commonMailRecords hosts.mail
     ++ [
@@ -144,11 +134,11 @@ in
 
   "neet.cloud" = zone (
     [
-      (mkA "@" publicIps.ponyo 300)
+      (mkA "@" publicIps.kif 300)
     ]
     ++ commonMailRecords hosts.mail
     ++ [
-      (mkCNAME "cast" hosts.ponyo 300)
+      (mkCNAME "cast" hosts.kif 300)
       (mkCNAME "files" hosts.kif 300)
       (mkTXT "mail._domainkey" dkim."neet.cloud".mail 3600)
       (mkTXT "pic._domainkey" dkim."neet.cloud".pic 3600)
@@ -158,10 +148,9 @@ in
   "neet.dev" = zone [
     (mkA "*.fry" tailscaleIps.fry 3600)
     (mkA "*.kif" tailscaleIps.kif 300)
-    (mkA "*.ponyo" tailscaleIps.ponyo 300)
     (mkA "*.s0" tailscaleIps.s0 3600)
     (mkA "*.sites" tailscaleIps.kif 300)
-    (mkA "@" publicIps.ponyo 300)
+    (mkA "@" publicIps.kif 300)
     (mkMX "@" 10 absoluteHosts.mail 14400)
     (mkTXT "@" txt.spf 3600)
     (mkTXT "_dmarc" txt.dmarcNone 3600)
@@ -174,13 +163,11 @@ in
     (mkCNAME "ntfy" absoluteHosts.kif 300)
     (mkA "kif" publicIps.kif 300)
     (mkAAAA "kif" publicIps.kifIPv6 300)
-    (mkCNAME "ponyo" "@" 300)
     (mkA "s0" tailscaleIps.s0 3600)
     (mkA "sites" tailscaleIps.kif 300)
     (mkCNAME "status" absoluteHosts.statusKif 300)
     (mkCNAME "tmp" absoluteHosts.kif 300)
     (mkCNAME "unlock.kif" absoluteHosts.kif 300)
-    (mkCNAME "unlock.ponyo" absoluteHosts.ponyo 300)
   ];
 
   "neet.space" = zone [
@@ -210,8 +197,8 @@ in
 
   "runyan.rocks" = zone (
     [
-      (mkA "@" publicIps.ponyo 300)
-      (mkAAAA "@" publicIps.ponyoIPv6 300)
+      (mkA "@" publicIps.kif 300)
+      (mkAAAA "@" publicIps.kifIPv6 300)
     ]
     ++ commonMailRecords hosts.mail
     ++ [
@@ -222,8 +209,8 @@ in
 
   "tar.ninja" = zone (
     [
-      (mkA "@" publicIps.ponyo 300)
-      (mkAAAA "@" publicIps.ponyoIPv6 300)
+      (mkA "@" publicIps.kif 300)
+      (mkAAAA "@" publicIps.kifIPv6 300)
     ]
     ++ commonMailRecords hosts.mail
     ++ [
@@ -234,8 +221,8 @@ in
 
   "thunderhex.com" = zone (
     [
-      (mkA "@" publicIps.ponyo 300)
-      (mkAAAA "@" publicIps.ponyoIPv6 300)
+      (mkA "@" publicIps.kif 300)
+      (mkAAAA "@" publicIps.kifIPv6 300)
     ]
     ++ commonMailRecords hosts.mail
     ++ [
@@ -246,8 +233,8 @@ in
 
   "zstd.zip" = zone (
     [
-      (mkA "@" publicIps.ponyo 300)
-      (mkAAAA "@" publicIps.ponyoIPv6 300)
+      (mkA "@" publicIps.kif 300)
+      (mkAAAA "@" publicIps.kifIPv6 300)
     ]
     ++ commonMailRecords hosts.mail
   );
