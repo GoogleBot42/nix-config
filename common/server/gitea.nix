@@ -37,10 +37,9 @@ in
         };
         mailer = {
           ENABLED = true;
-          MAILER_TYPE = "smtp";
+          PROTOCOL = "smtps";
           SMTP_ADDR = "mail.neet.dev";
-          SMTP_PORT = "465";
-          IS_TLS_ENABLED = true;
+          SMTP_PORT = 465;
           USER = "robot@runyan.org";
           FROM = "no-reply@neet.dev";
         };
