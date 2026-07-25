@@ -27,6 +27,7 @@ let
   hosts = {
     mail = "mail.neet.dev";
     ponyo = "ponyo.neet.dev";
+    kif = "kif.neet.dev";
     collaboraPonyo = "collabora.ponyo.neet.dev";
     whiteboardPonyo = "whiteboard.ponyo.neet.dev";
   };
@@ -34,6 +35,9 @@ let
   absoluteHosts = {
     mail = "mail.neet.dev.";
     ponyo = "ponyo.neet.dev.";
+    kif = "kif.neet.dev.";
+    ircKif = "irc.kif.neet.dev.";
+    statusKif = "status.kif.neet.dev.";
     gitPonyo = "git.ponyo.neet.dev.";
     ircPonyo = "irc.ponyo.neet.dev.";
     statusPonyo = "status.ponyo.neet.dev.";
@@ -142,7 +146,7 @@ in
     ++ commonMailRecords hosts.mail
     ++ [
       (mkCNAME "cast" hosts.ponyo 300)
-      (mkCNAME "files" "kif.neet.dev." 300)
+      (mkCNAME "files" hosts.kif 300)
       (mkTXT "mail._domainkey" dkim."neet.cloud".mail 3600)
       (mkTXT "pic._domainkey" dkim."neet.cloud".pic 3600)
     ]
@@ -160,19 +164,19 @@ in
     (mkTXT "_dmarc" txt.dmarcNone 3600)
     (mkA "fry" tailscaleIps.fry 3600)
     (mkCNAME "git" absoluteHosts.gitPonyo 300)
-    (mkCNAME "irc" "irc.kif.neet.dev." 300)
+    (mkCNAME "irc" absoluteHosts.ircKif 300)
     (mkTXT "krs._domainkey" dkim."neet.dev".krs 3600)
     (mkA "mail" publicIps.ponyo 30)
     (mkTXT "mail._domainkey" dkim."neet.dev".mail 3600)
-    (mkCNAME "ntfy" "kif.neet.dev." 300)
+    (mkCNAME "ntfy" absoluteHosts.kif 300)
     (mkA "kif" publicIps.kif 300)
     (mkAAAA "kif" publicIps.kifIPv6 300)
     (mkCNAME "ponyo" "@" 300)
     (mkA "s0" tailscaleIps.s0 3600)
     (mkA "sites" tailscaleIps.kif 300)
-    (mkCNAME "status" "status.kif.neet.dev." 300)
-    (mkCNAME "tmp" "kif.neet.dev." 300)
-    (mkCNAME "unlock.kif" "kif.neet.dev." 300)
+    (mkCNAME "status" absoluteHosts.statusKif 300)
+    (mkCNAME "tmp" absoluteHosts.kif 300)
+    (mkCNAME "unlock.kif" absoluteHosts.kif 300)
     (mkCNAME "unlock.ponyo" absoluteHosts.ponyo 300)
   ];
 
