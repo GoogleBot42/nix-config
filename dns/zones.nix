@@ -13,6 +13,8 @@ let
   publicIps = {
     ponyo = "147.135.114.130";
     ponyoIPv6 = "2604:2dc0:101:200::1092";
+    kif = "15.204.91.158";
+    kifIPv6 = "2604:2dc0:202:300::2436";
   };
 
   tailscaleIps = {
@@ -161,11 +163,14 @@ in
     (mkA "mail" publicIps.ponyo 30)
     (mkTXT "mail._domainkey" dkim."neet.dev".mail 3600)
     (mkCNAME "ntfy" absoluteHosts.ponyo 300)
+    (mkA "kif" publicIps.kif 300)
+    (mkAAAA "kif" publicIps.kifIPv6 300)
     (mkCNAME "ponyo" "@" 300)
     (mkA "s0" tailscaleIps.s0 3600)
     (mkA "sites" tailscaleIps.ponyo 300)
     (mkCNAME "status" absoluteHosts.statusPonyo 300)
     (mkCNAME "tmp" "@" 300)
+    (mkCNAME "unlock.kif" "kif.neet.dev." 300)
     (mkCNAME "unlock.ponyo" absoluteHosts.ponyo 300)
   ];
 

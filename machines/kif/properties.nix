@@ -20,8 +20,7 @@
 
   publicIP = "15.204.91.158";
 
-  # PLACEHOLDER — replace with kif's real /etc/ssh/ssh_host_ed25519_key.pub after first boot, BEFORE merge and BEFORE rekey-secrets
-  hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFH80vg/pzxp6/D2Fm0hB0pTlL2dMwAVKoy+rQxww2Jz";
+  hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHD056+ePqWCXpuy2lyRrtOvOs0w2jPXlLTgb2S0baz2";
 
   remoteUnlock = {
     hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMberhCFbhVmanTxk9E3TNXtF//ZxwREdt0XWG6hcXBC";
