@@ -131,9 +131,14 @@ in
       '';
     };
 
-    # backups
+    # backups (roundcube keeps contacts/settings in a local postgres db)
+    services.postgresqlBackup = {
+      enable = true;
+      databases = [ "roundcube" ];
+    };
     backup.group."email".paths = [
       config.mailserver.storage.path
+      config.services.postgresqlBackup.location
     ];
   };
 }
