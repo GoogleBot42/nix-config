@@ -169,7 +169,7 @@ in
     (mkCNAME "git" absoluteHosts.gitKif 300)
     (mkCNAME "irc" absoluteHosts.ircKif 300)
     (mkTXT "krs._domainkey" dkim."neet.dev".krs 3600)
-    (mkA "mail" publicIps.ponyo 30)
+    (mkA "mail" publicIps.kif 30)
     (mkTXT "mail._domainkey" dkim."neet.dev".mail 3600)
     (mkCNAME "ntfy" absoluteHosts.kif 300)
     (mkA "kif" publicIps.kif 300)

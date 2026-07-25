@@ -25,6 +25,9 @@
   # proxied web services
   services.nginx.enable = true;
 
+  # email server
+  mailserver.enable = true;
+
   # nextcloud
   services.nextcloud.enable = true;
 
