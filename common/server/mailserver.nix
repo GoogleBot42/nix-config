@@ -124,6 +124,8 @@ in
       enable = true;
       hostName = config.mailserver.fqdn;
       extraConfig = ''
+        # dovecot only exposes imaps (no plaintext 143 listener)
+        $config['imap_host'] = "ssl://${config.mailserver.fqdn}:993";
         # starttls needed for authentication, so the fqdn required to match the certificate
         $config['smtp_server'] = "tls://${config.mailserver.fqdn}";
         $config['smtp_user'] = "%u";
