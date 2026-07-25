@@ -25,6 +25,9 @@
   # proxied web services
   services.nginx.enable = true;
 
+  # nextcloud
+  services.nextcloud.enable = true;
+
   # Tailscale-only nginx virtual hosts bind to kif's stable tailnet address.
   services.nginx.tailscaleListenAddress = "100.89.83.99";
 
@@ -90,6 +93,18 @@
 
   # Keep public web listeners open overall, but pin selected vhosts to the
   # tailnet address.
+  services.nginx.virtualHosts."runyan.org" = {
+    tailscaleOnly = true;
+    useACMEHost = "runyan.org";
+  };
+  services.nginx.virtualHosts."collabora.runyan.org" = {
+    tailscaleOnly = true;
+    useACMEHost = "runyan.org";
+  };
+  services.nginx.virtualHosts."whiteboard.runyan.org" = {
+    tailscaleOnly = true;
+    useACMEHost = "runyan.org";
+  };
   services.nginx.virtualHosts."irc.neet.dev" = {
     tailscaleOnly = true;
     useACMEHost = "neet.dev";

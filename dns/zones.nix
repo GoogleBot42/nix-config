@@ -30,6 +30,8 @@ let
     kif = "kif.neet.dev";
     collaboraPonyo = "collabora.ponyo.neet.dev";
     whiteboardPonyo = "whiteboard.ponyo.neet.dev";
+    collaboraKif = "collabora.kif.neet.dev";
+    whiteboardKif = "whiteboard.kif.neet.dev";
   };
 
   absoluteHosts = {
@@ -194,14 +196,14 @@ in
 
   "runyan.org" = zone (
     [
-      (mkA "@" tailscaleIps.ponyo 300)
+      (mkA "@" tailscaleIps.kif 300)
     ]
     ++ commonMailRecords hosts.mail
     ++ [
-      (mkCNAME "collabora" hosts.collaboraPonyo 300)
+      (mkCNAME "collabora" hosts.collaboraKif 300)
       (mkTXT "mail._domainkey" dkim."runyan.org".mail 3600)
       (mkTXT "smtp._domainkey" dkim."runyan.org".smtp 3600)
-      (mkCNAME "whiteboard" hosts.whiteboardPonyo 300)
+      (mkCNAME "whiteboard" hosts.whiteboardKif 300)
     ]
   );
 

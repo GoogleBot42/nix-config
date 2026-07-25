@@ -1,8 +1,8 @@
 { config, pkgs, lib, ... }:
 
-# Being migrated to kif in phases. Phase 2 moved: thelounge, drastikbot,
-# tmp.neet.dev, pgs, ntfy, gatus. Remaining here until later phases:
-# nextcloud (3), matrix (4), gitea (5), mailserver (6).
+# Being migrated to kif in phases. Phases 2-3 moved: thelounge, drastikbot,
+# tmp.neet.dev, pgs, ntfy, gatus, nextcloud. Remaining here until later
+# phases: matrix (4), gitea (5), mailserver (6).
 
 {
   imports = [
@@ -19,9 +19,6 @@
 
   # email server
   mailserver.enable = true;
-
-  # nextcloud
-  services.nextcloud.enable = true;
 
   # git
   services.gitea = {
@@ -61,18 +58,6 @@
   services.nginx.enable = true;
 
   # Keep public web listeners open overall, but pin selected vhosts to the tailnet address.
-  services.nginx.virtualHosts."runyan.org" = {
-    tailscaleOnly = true;
-    useACMEHost = "runyan.org";
-  };
-  services.nginx.virtualHosts."collabora.runyan.org" = {
-    tailscaleOnly = true;
-    useACMEHost = "runyan.org";
-  };
-  services.nginx.virtualHosts."whiteboard.runyan.org" = {
-    tailscaleOnly = true;
-    useACMEHost = "runyan.org";
-  };
   services.nginx.virtualHosts."git.neet.dev" = {
     tailscaleOnly = true;
     useACMEHost = "neet.dev";
