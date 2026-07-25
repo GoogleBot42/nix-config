@@ -1,5 +1,9 @@
 { config, pkgs, lib, ... }:
 
+# Being migrated to kif in phases. Phase 2 moved: thelounge, drastikbot,
+# tmp.neet.dev, pgs, ntfy, gatus. Remaining here until later phases:
+# nextcloud (3), matrix (4), gitea (5), mailserver (6).
+
 {
   imports = [
     ./hardware-configuration.nix
@@ -29,31 +33,6 @@
     };
   };
 
-  # IRC
-  services.thelounge = {
-    enable = true;
-    port = 9000;
-    fileUploadBaseUrl = "https://files.neet.cloud/irc/";
-    host = "irc.neet.dev";
-    fileHost = {
-      host = "files.neet.cloud";
-      path = "/irc";
-    };
-  };
-
-  # IRC bot
-  services.drastikbot = {
-    enable = true;
-    wolframAppIdFile = "/run/agenix/wolframalpha";
-  };
-  age.secrets.wolframalpha = {
-    file = ../../secrets/wolframalpha.age;
-    owner = config.services.drastikbot.user;
-  };
-  backup.group."dailybot".paths = [
-    config.services.drastikbot.dataDir
-  ];
-
   # matrix home server
   services.matrix = {
     enable = true;
@@ -75,46 +54,11 @@
       secret = "a8369a0e96922abf72494bb888c85831b";
     };
   };
-  # pin postgresql for matrix (will need to migrate eventually)
+  # pin postgresql for matrix (kif restores into an unpinned postgres in phase 4)
   services.postgresql.package = pkgs.postgresql_15;
 
   # proxied web services
   services.nginx.enable = true;
-
-  # TODO replace with a proper file hosting service
-  services.nginx.virtualHosts."tmp.neet.dev" = {
-    useACMEHost = "neet.dev";
-    forceSSL = true;
-    root = "/var/www/tmp";
-  };
-
-  # pgs static site hosting
-  services.pgs = {
-    enable = true;
-    domain = "sites.neet.dev";
-    sshHost = config.services.nginx.tailscaleListenAddress;
-    maxSize = 1024 * 1024 * 1024;
-    maxAssetSize = 100 * 1024 * 1024;
-    initialUsers.jeremy = config.machines.ssh.userKeys;
-    initialUsers.hermes = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILCUueCIRiGWWWsDrwi828G32afRHHpBOisbbYJzRFjn"
-    ];
-    initialUsers.claude = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIOLN3ec0oA0Md/9RZEpcoWv3hgWo1aRBco9PZSkWWQl"
-    ];
-    initialUsers.bevy_voxel = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMR32OsK8nVYi7GruL6J4JszDzb+nrBwEBYBhrRIdyx7"
-    ];
-    nginx.enable = true;
-  };
-
-  # push notifications
-  services.ntfy-sh.enable = true;
-  services.ntfy-sh.hostname = "ntfy.neet.dev";
-
-  # uptime monitoring
-  services.gatus.enable = true;
-  services.gatus.hostname = "status.neet.dev";
 
   # Keep public web listeners open overall, but pin selected vhosts to the tailnet address.
   services.nginx.virtualHosts."runyan.org" = {
@@ -136,10 +80,6 @@
       client_max_body_size 1g;
     '';
   };
-  services.nginx.virtualHosts."irc.neet.dev" = {
-    tailscaleOnly = true;
-    useACMEHost = "neet.dev";
-  };
   services.nginx.virtualHosts."neet.space" = {
     tailscaleOnly = true;
     useACMEHost = "neet.space";
@@ -151,13 +91,6 @@
   services.nginx.virtualHosts."turn.neet.space" = {
     tailscaleOnly = true;
     useACMEHost = "neet.space";
-  };
-  services.nginx.virtualHosts."status.neet.dev" = {
-    tailscaleOnly = true;
-    useACMEHost = "neet.dev";
-  };
-  services.nginx.virtualHosts."ntfy.neet.dev" = {
-    useACMEHost = "neet.dev";
   };
 
 }

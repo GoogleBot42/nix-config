@@ -19,6 +19,7 @@ let
 
   tailscaleIps = {
     ponyo = "100.76.85.13";
+    kif = "100.89.83.99";
     fry = "100.117.73.96";
     s0 = "100.112.73.53";
   };
@@ -141,7 +142,7 @@ in
     ++ commonMailRecords hosts.mail
     ++ [
       (mkCNAME "cast" hosts.ponyo 300)
-      (mkCNAME "files" hosts.ponyo 300)
+      (mkCNAME "files" "kif.neet.dev." 300)
       (mkTXT "mail._domainkey" dkim."neet.cloud".mail 3600)
       (mkTXT "pic._domainkey" dkim."neet.cloud".pic 3600)
     ]
@@ -149,27 +150,28 @@ in
 
   "neet.dev" = zone [
     (mkA "*.fry" tailscaleIps.fry 3600)
+    (mkA "*.kif" tailscaleIps.kif 300)
     (mkA "*.ponyo" tailscaleIps.ponyo 300)
     (mkA "*.s0" tailscaleIps.s0 3600)
-    (mkA "*.sites" tailscaleIps.ponyo 300)
+    (mkA "*.sites" tailscaleIps.kif 300)
     (mkA "@" publicIps.ponyo 300)
     (mkMX "@" 10 absoluteHosts.mail 14400)
     (mkTXT "@" txt.spf 3600)
     (mkTXT "_dmarc" txt.dmarcNone 3600)
     (mkA "fry" tailscaleIps.fry 3600)
     (mkCNAME "git" absoluteHosts.gitPonyo 300)
-    (mkCNAME "irc" absoluteHosts.ircPonyo 300)
+    (mkCNAME "irc" "irc.kif.neet.dev." 300)
     (mkTXT "krs._domainkey" dkim."neet.dev".krs 3600)
     (mkA "mail" publicIps.ponyo 30)
     (mkTXT "mail._domainkey" dkim."neet.dev".mail 3600)
-    (mkCNAME "ntfy" absoluteHosts.ponyo 300)
+    (mkCNAME "ntfy" "kif.neet.dev." 300)
     (mkA "kif" publicIps.kif 300)
     (mkAAAA "kif" publicIps.kifIPv6 300)
     (mkCNAME "ponyo" "@" 300)
     (mkA "s0" tailscaleIps.s0 3600)
-    (mkA "sites" tailscaleIps.ponyo 300)
-    (mkCNAME "status" absoluteHosts.statusPonyo 300)
-    (mkCNAME "tmp" "@" 300)
+    (mkA "sites" tailscaleIps.kif 300)
+    (mkCNAME "status" "status.kif.neet.dev." 300)
+    (mkCNAME "tmp" "kif.neet.dev." 300)
     (mkCNAME "unlock.kif" "kif.neet.dev." 300)
     (mkCNAME "unlock.ponyo" absoluteHosts.ponyo 300)
   ];
