@@ -71,6 +71,14 @@
 			"dst": ["tag:server"],
 			"ip":  ["2222"],
 		},
+
+		// TEMPORARY (ponyo->kif migration): allow server-to-server ssh for
+		// tailnet rsync state syncs. Remove at migration phase 7 (decommission).
+		{
+			"src": ["tag:server"],
+			"dst": ["tag:server"],
+			"ip":  ["22"],
+		},
 		// ===========================================
 		// DEV TOOLS
 		// iperf3 (5201) - workstations only
