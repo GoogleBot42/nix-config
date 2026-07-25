@@ -2,7 +2,6 @@
   hostNames = [
     "ponyo"
     "ponyo.neet.dev"
-    "git.neet.dev"
   ];
 
   arch = "x86_64-linux";

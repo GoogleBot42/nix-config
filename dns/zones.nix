@@ -38,6 +38,7 @@ let
     mail = "mail.neet.dev.";
     ponyo = "ponyo.neet.dev.";
     kif = "kif.neet.dev.";
+    gitKif = "git.kif.neet.dev.";
     ircKif = "irc.kif.neet.dev.";
     statusKif = "status.kif.neet.dev.";
     gitPonyo = "git.ponyo.neet.dev.";
@@ -165,7 +166,7 @@ in
     (mkTXT "@" txt.spf 3600)
     (mkTXT "_dmarc" txt.dmarcNone 3600)
     (mkA "fry" tailscaleIps.fry 3600)
-    (mkCNAME "git" absoluteHosts.gitPonyo 300)
+    (mkCNAME "git" absoluteHosts.gitKif 300)
     (mkCNAME "irc" absoluteHosts.ircKif 300)
     (mkTXT "krs._domainkey" dkim."neet.dev".krs 3600)
     (mkA "mail" publicIps.ponyo 30)

@@ -32,6 +32,16 @@
   # fleet-wide -> postgres 15).
   services.postgresql.package = pkgs.postgresql_17;
 
+  # git
+  services.gitea = {
+    enable = true;
+    hostname = "git.neet.dev";
+    settings = {
+      "repository.upload".FILE_MAX_SIZE = 1024;
+      attachment.MAX_SIZE = 1024;
+    };
+  };
+
   # matrix home server
   services.matrix = {
     enable = true;
@@ -142,6 +152,13 @@
   services.nginx.virtualHosts."turn.neet.space" = {
     tailscaleOnly = true;
     useACMEHost = "neet.space";
+  };
+  services.nginx.virtualHosts."git.neet.dev" = {
+    tailscaleOnly = true;
+    useACMEHost = "neet.dev";
+    extraConfig = ''
+      client_max_body_size 1g;
+    '';
   };
   services.nginx.virtualHosts."irc.neet.dev" = {
     tailscaleOnly = true;

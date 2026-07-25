@@ -1,8 +1,7 @@
 { config, pkgs, lib, ... }:
 
-# Being migrated to kif in phases. Phases 2-4 moved: thelounge, drastikbot,
-# tmp.neet.dev, pgs, ntfy, gatus, nextcloud, matrix. Remaining here:
-# gitea (5), mailserver (6).
+# Being migrated to kif in phases. Phases 2-5 moved everything except the
+# mailserver (phase 6), after which this machine is decommissioned.
 
 {
   imports = [
@@ -20,26 +19,9 @@
   # email server
   mailserver.enable = true;
 
-  # git
-  services.gitea = {
-    enable = true;
-    hostname = "git.neet.dev";
-    settings = {
-      "repository.upload".FILE_MAX_SIZE = 1024;
-      attachment.MAX_SIZE = 1024;
-    };
-  };
-
   # proxied web services
   services.nginx.enable = true;
 
   # Keep public web listeners open overall, but pin selected vhosts to the tailnet address.
-  services.nginx.virtualHosts."git.neet.dev" = {
-    tailscaleOnly = true;
-    useACMEHost = "neet.dev";
-    extraConfig = ''
-      client_max_body_size 1g;
-    '';
-  };
 
 }
