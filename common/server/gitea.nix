@@ -28,6 +28,9 @@ in
         };
         service = {
           DISABLE_REGISTRATION = true;
+          # Off by default in gitea; without it no watcher/mention emails are
+          # ever sent even with a working mailer.
+          ENABLE_NOTIFY_MAIL = true;
         };
         session = {
           COOKIE_SECURE = true;
