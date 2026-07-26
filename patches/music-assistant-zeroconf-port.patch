@@ -1,16 +1,16 @@
 diff --git a/music_assistant/providers/spotify_connect/__init__.py b/music_assistant/providers/spotify_connect/__init__.py
-index 1111111..2222222 100644
+index 85305a0..469d2f0 100644
 --- a/music_assistant/providers/spotify_connect/__init__.py
 +++ b/music_assistant/providers/spotify_connect/__init__.py
-@@ -51,6 +51,7 @@ CONNECT_ITEM_ID = "spotify_connect"
+@@ -52,6 +52,7 @@ if TYPE_CHECKING:
+ 
+ CONF_MASS_PLAYER_ID = "mass_player_id"
  CONF_PUBLISH_NAME = "publish_name"
- CONF_ALLOW_PLAYER_SWITCH = "allow_player_switch"
-
 +CONF_ZEROCONF_PORT = "zeroconf_port"
+ 
  # Special value for auto player selection
  PLAYER_ID_AUTO = "__auto__"
-
-@@ -117,6 +118,15 @@ async def get_config_entries(
+@@ -148,6 +149,15 @@ async def get_config_entries(
              description="How should this Spotify Connect device be named in the Spotify app?",
              default_value="Music Assistant",
          ),
@@ -23,18 +23,17 @@ index 1111111..2222222 100644
 +            "devices on the network to discover this player. 0 = random port.",
 +            default_value=0,
 +        ),
-         # ConfigEntry(
-         #     key=CONF_HANDOFF_MODE,
-         #     type=ConfigEntryType.BOOLEAN,
-@@ -677,6 +687,11 @@ class SpotifyConnectProvider(PluginProvider):
-                 "--onevent",
-                 str(EVENTS_SCRIPT),
-                 "--emit-sink-events",
-+                *(
-+                    ["--zeroconf-port", str(zeroconf_port)]
-+                    if (zeroconf_port := int(self.config.get_value(CONF_ZEROCONF_PORT) or 0)) > 0
-+                    else []
-+                ),
-             ]
-             self._librespot_proc = librespot = AsyncProcess(
-                 args, stdout=False, stderr=True, name=f"librespot[{self.name}]", env=env
+     )
+ 
+ 
+@@ -683,6 +693,10 @@ class SpotifyConnectProvider(PluginProvider):
+             "credentials": {"type": "zeroconf", "zeroconf": {"persist_credentials": True}},
+             "server": {"enabled": True, "address": "127.0.0.1", "port": self._api_port},
+         }
++        # Pin the zeroconf discovery port when configured (0 = random), so it can
++        # be opened in a firewall for cross-subnet Spotify Connect discovery.
++        if (zeroconf_port := int(self.config.get_value(CONF_ZEROCONF_PORT) or 0)) > 0:
++            config["zeroconf_port"] = zeroconf_port
+         # Advertise the Spotify Connect device only on the interface the streams
+         # server binds to, so it lands on the right network on multi-homed hosts.
+         # go-librespot selects advertise interfaces by name, so map the IP to one.

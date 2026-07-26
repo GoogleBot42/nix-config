@@ -25,7 +25,13 @@
     8095
     8097
 
-    # Music assistant: Spotify Connect zeroconf discovery (one per librespot instance)
+    # Music assistant: Spotify Connect zeroconf discovery (one per librespot
+    # instance). Each of these MUST match the "Zeroconf port" set on the
+    # corresponding Spotify Connect provider instance in the MA UI (the option
+    # added by patches/music-assistant-zeroconf-port.patch, which pins
+    # go-librespot's otherwise-random zeroconf_port). Pinning + opening the port
+    # is what stops the firewall's logRefusedConnections dmesg spam; if the
+    # ports here and the provider config drift apart, the spam returns.
     44200
     44201
   ];

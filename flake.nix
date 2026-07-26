@@ -127,7 +127,6 @@
       # packages; those belong in overlays). Remove this whole mechanism once
       # https://github.com/NixOS/nix/issues/3920 is solved.
       nixpkgsPatches = [
-        ./patches/openvino-2026.2.0-for-ai-edge-litert.patch
       ];
 
       # Re-import the patched tree as a flake with a real `self` fixpoint so

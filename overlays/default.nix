@@ -37,11 +37,23 @@ final: prev:
     ];
   });
 
-  # Add --zeroconf-port support to Spotify Connect plugin so librespot
-  # binds to a fixed port that can be opened in the firewall.
+  # Add a fixed zeroconf-port option to the Spotify Connect plugin so
+  # discovery binds to a stable port that can be opened in the firewall. As of
+  # MA 2.9.x the plugin drives go-librespot via a config.yml, so the option now
+  # sets go-librespot's `zeroconf_port` key (0 = random) instead of a CLI flag.
+  # Purpose: pinning the port lets it be allowed in the firewall, which stops
+  # logRefusedConnections dmesg spam from the network-facing discovery listener.
+  # The pinned values live in the MA UI per provider instance and must match the
+  # ports opened in machines/storage/s0/home-automation.nix.
   music-assistant = prev.music-assistant.overrideAttrs (old: {
     patches = (old.patches or [ ]) ++ [
       ../patches/music-assistant-zeroconf-port.patch
+    ];
+    # test_emit_does_no_disk_io asserts logging never touches disk, but linecache
+    # legitimately reads source files present in the store build, so it fails in
+    # the sandbox. Unrelated to our patch; skip it.
+    disabledTests = (old.disabledTests or [ ]) ++ [
+      "test_emit_does_no_disk_io"
     ];
   });
 
@@ -60,34 +72,44 @@ final: prev:
     inherit (prev) lib fetchFromGitLab pkg-config sdl3 libcec wayland;
   };
 
-  # Keep Logseq building after nixpkgs updates until upstream moves off
-  # electron_39, which is now blocked as insecure. The yauzl patch is pulled
-  # forward from nixpkgs master so Electron's zip can still be extracted under
-  # the newer Node.js used by the current package set.
-  logseq = (prev.logseq.override {
+  # Keep Logseq building until upstream moves off electron_39, which is now
+  # blocked as insecure (EOL). The yauzl fix we used to carry forward as
+  # logseq-bump-yauzl.patch is now applied by nixpkgs itself
+  # (pkgs/by-name/lo/logseq/package.nix: ./bump-yauzl.patch), so the override
+  # is just the electron bump now.
+  logseq = prev.logseq.override {
     electron_39 = final.electron_41;
-  }).overrideAttrs (old: {
-    patches = (old.patches or [ ]) ++ [
-      ../patches/logseq-bump-yauzl.patch
-    ];
-
-    yarnOfflineCacheStaticResources = prev.fetchYarnDeps {
-      name = "logseq-${old.version}-yarn-deps-static-resources";
-      src = old.src;
-      patches = (old.patches or [ ]) ++ [
-        ../patches/logseq-bump-yauzl.patch
-      ];
-      postPatch = "cd ./static";
-      hash = "sha256-TFisR5GwcKmuddGhe0i6rAmr2wDWzed/mXnxVGARYK0=";
-    };
-  });
-
-  # Vikunja 2.3.0 in nixos-unstable still asks for the package-specific
-  # pnpm_10_29_2 attr, which is now blocked as insecure. Build it with the
-  # current pnpm 10.x package until nixpkgs updates the Vikunja expression.
-  vikunja = prev.vikunja.override {
-    pnpm_10_29_2 = final.pnpm_10;
   };
+
+  # cheetah3 is published upstream under the distribution name "ct3" (its
+  # wheel metadata is ct3-*.dist-info), but nixpkgs sets pname = "cheetah3".
+  # The pythonMetadataCheckHook looks up importlib.metadata.version("cheetah3")
+  # and fails with PackageNotFoundError. Skip that check until nixpkgs aligns
+  # the pname with the real dist name. Pulled in via esphome on s0.
+  pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
+    (pyfinal: pyprev: {
+      cheetah3 = pyprev.cheetah3.overrideAttrs (_: {
+        dontCheckPythonMetadata = true;
+      });
+    })
+  ];
+
+  # deskflow's SettingsTests::checkValidSettings asserts a locale-derived
+  # default that QLocale resolves to "" in the build sandbox (no system
+  # locale), so the test expects "ko" but gets "". Skip just that suite in
+  # checkPhase; every other unit test still runs. Drop once upstream makes
+  # the test sandbox-independent.
+  deskflow = prev.deskflow.overrideAttrs (old: {
+    checkPhase = ''
+      runHook preCheck
+
+      export QT_QPA_PLATFORM=offscreen
+      ctest --test-dir "src/unittests" --output-on-failure -E SettingsTests
+      ./bin/legacytests
+
+      runHook postCheck
+    '';
+  });
 
   pgs = prev.callPackage ../pkgs/pgs { };
 

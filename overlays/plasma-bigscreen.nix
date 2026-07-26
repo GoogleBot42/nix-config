@@ -27,6 +27,9 @@ mkKdeDerivation {
 
   patches = [
     ../patches/plasma-bigscreen-input-handler-app-id.patch
+    # Newer Qt/KDE headers dropped the transitive <QtQml> include, so the
+    # KCMs calling qmlRegister* fail to compile without it.
+    ../patches/plasma-bigscreen-qtqml-include.patch
   ];
 
   extraNativeBuildInputs = [ pkg-config ];

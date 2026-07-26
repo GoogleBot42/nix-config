@@ -1,0 +1,42 @@
+Add missing <QtQml> includes so the qmlRegister* functions are declared.
+
+Newer Qt/KDE headers no longer pull in <QtQml> transitively, so the KCMs
+that call qmlRegisterType / qmlRegisterAnonymousType / qmlRegisterSingletonType
+fail to compile with "was not declared in this scope". Include it explicitly.
+
+diff --git a/kcms/bluetooth/bluetooth.cpp b/kcms/bluetooth/bluetooth.cpp
+index 1111111..2222222 100644
+--- a/kcms/bluetooth/bluetooth.cpp
++++ b/kcms/bluetooth/bluetooth.cpp
+@@ -5,6 +5,7 @@
+
+ #include <KPluginFactory>
+ #include <QAbstractItemModel>
++#include <QtQml>
+
+ #include <QFile>
+ #include <QRandomGenerator>
+diff --git a/kcms/display/displaysettings.cpp b/kcms/display/displaysettings.cpp
+index 1111111..2222222 100644
+--- a/kcms/display/displaysettings.cpp
++++ b/kcms/display/displaysettings.cpp
+@@ -6,6 +6,7 @@
+
+ #include <KPluginFactory>
+ #include <KQuickConfigModule>
++#include <QtQml>
+ #include "displaysettings.h"
+ #include "displaymodel.h"
+
+diff --git a/kcms/webapps/webappskcm.cpp b/kcms/webapps/webappskcm.cpp
+index 1111111..2222222 100644
+--- a/kcms/webapps/webappskcm.cpp
++++ b/kcms/webapps/webappskcm.cpp
+@@ -2,6 +2,7 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+
+ #include "webappskcm.h"
++#include <QtQml>
+
+ #include "webappcreator.h"
+ #include "webappmanager.h"
