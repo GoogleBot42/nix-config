@@ -80,9 +80,8 @@ let
 
       addDevices = ''
         incus config device add ${containerName} eth0 nic nictype=bridged parent=${bridgeName} hwaddr=${mac}
-        incus config device add ${containerName} workspace disk source=/home/googlebot/sandboxed/${name}/workspace path=/home/googlebot/workspace shift=true
+        incus config device add ${containerName} home disk source=/home/googlebot/sandboxed/${name}/home path=/home/googlebot shift=true
         incus config device add ${containerName} ssh-keys disk source=/home/googlebot/sandboxed/${name}/ssh-host-keys path=/etc/ssh-host-keys shift=true
-        incus config device add ${containerName} claude-config disk source=/home/googlebot/sandboxed/${name}/claude-config path=/home/googlebot/claude-config shift=true
         incus config device add ${containerName} attic-netrc disk source=/run/agenix/attic-netrc path=/etc/attic-netrc shift=false
         ${lib.optionalString ws.passHostGpu ''
           incus config device add ${containerName} gpu gpu

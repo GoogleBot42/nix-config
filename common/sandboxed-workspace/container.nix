@@ -39,16 +39,12 @@ in
         hostBridge = config.networking.sandbox.bridgeName;
 
         bindMounts = {
-          "/home/googlebot/workspace" = {
-            hostPath = "/home/googlebot/sandboxed/${name}/workspace";
+          "/home/googlebot" = {
+            hostPath = "/home/googlebot/sandboxed/${name}/home";
             isReadOnly = false;
           };
           "/etc/ssh-host-keys" = {
             hostPath = "/home/googlebot/sandboxed/${name}/ssh-host-keys";
-            isReadOnly = false;
-          };
-          "/home/googlebot/claude-config" = {
-            hostPath = "/home/googlebot/sandboxed/${name}/claude-config";
             isReadOnly = false;
           };
           # Binary cache auth expected at /etc/attic-netrc by base.nix

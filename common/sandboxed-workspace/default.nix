@@ -120,8 +120,8 @@ in
             });
             default = { };
             description = ''
-              Additional host→workspace bind mounts beyond the default workspace/,
-              ssh-host-keys/, and claude-config/ mounts. Useful for persisting state
+              Additional host→workspace bind mounts beyond the default home/ and
+              ssh-host-keys/ mounts. Useful for persisting service state
               (e.g. /var/lib/hermes) across container recreations on nixos-rebuild.
               Only honored by the "incus" backend currently.
             '';
@@ -188,42 +188,41 @@ in
 
     # Automatically generate SSH host keys and directories for all workspaces
     systemd.services = lib.mapAttrs'
-        (name: ws:
-          let
-            serviceName =
-              if ws.type == "vm" then "microvm@${name}"
-              else if ws.type == "incus" then "incus-workspace-${name}"
-              else "container@${name}";
-          in
-          lib.nameValuePair "workspace-${name}-setup" {
-            description = "Setup directories and SSH keys for workspace ${name}";
-            wantedBy = [ "multi-user.target" ];
-            before = [ "${serviceName}.service" ];
+      (name: ws:
+        let
+          serviceName =
+            if ws.type == "vm" then "microvm@${name}"
+            else if ws.type == "incus" then "incus-workspace-${name}"
+            else "container@${name}";
+        in
+        lib.nameValuePair "workspace-${name}-setup" {
+          description = "Setup directories and SSH keys for workspace ${name}";
+          wantedBy = [ "multi-user.target" ];
+          before = [ "${serviceName}.service" ];
 
-            serviceConfig = {
-              Type = "oneshot";
-              RemainAfterExit = true;
-            };
+          serviceConfig = {
+            Type = "oneshot";
+            RemainAfterExit = true;
+          };
 
-            script = ''
-              # Create directories if they don't exist
-              mkdir -p /home/googlebot/sandboxed/${name}/workspace
-              mkdir -p /home/googlebot/sandboxed/${name}/ssh-host-keys
-              mkdir -p /home/googlebot/sandboxed/${name}/claude-config
-              ${lib.concatMapStrings (m: "mkdir -p ${m.hostPath}\n  ") (lib.filter (m: m.createHostPath) (lib.attrValues ws.extraMounts))}
-              # Fix ownership
-              chown -R googlebot:users /home/googlebot/sandboxed/${name}
+          script = ''
+            # Create directories if they don't exist
+            mkdir -p /home/googlebot/sandboxed/${name}/home/workspace
+            mkdir -p /home/googlebot/sandboxed/${name}/ssh-host-keys
+            ${lib.concatMapStrings (m: "mkdir -p ${m.hostPath}\n  ") (lib.filter (m: m.createHostPath) (lib.attrValues ws.extraMounts))}
+            # Fix ownership
+            chown -R googlebot:users /home/googlebot/sandboxed/${name}
 
-              # Generate SSH host key if it doesn't exist
-              if [ ! -f /home/googlebot/sandboxed/${name}/ssh-host-keys/ssh_host_ed25519_key ]; then
-                ${pkgs.openssh}/bin/ssh-keygen -t ed25519 -N "" \
-                  -f /home/googlebot/sandboxed/${name}/ssh-host-keys/ssh_host_ed25519_key
-                chown googlebot:users /home/googlebot/sandboxed/${name}/ssh-host-keys/ssh_host_ed25519_key*
-                echo "Generated SSH host key for workspace ${name}"
-              fi
-            '';
-          }
-        )
-        cfg.workspaces;
+            # Generate SSH host key if it doesn't exist
+            if [ ! -f /home/googlebot/sandboxed/${name}/ssh-host-keys/ssh_host_ed25519_key ]; then
+              ${pkgs.openssh}/bin/ssh-keygen -t ed25519 -N "" \
+                -f /home/googlebot/sandboxed/${name}/ssh-host-keys/ssh_host_ed25519_key
+              chown googlebot:users /home/googlebot/sandboxed/${name}/ssh-host-keys/ssh_host_ed25519_key*
+              echo "Generated SSH host key for workspace ${name}"
+            fi
+          '';
+        }
+      )
+      cfg.workspaces;
   };
 }

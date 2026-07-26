@@ -45,12 +45,6 @@
     ll = "eza -l";
   };
 
-  # Environment variables for Claude Code
-  home.sessionVariables = {
-    # Isolate Claude config to a specific directory on the host
-    CLAUDE_CONFIG_DIR = "/home/googlebot/claude-config";
-  };
-
   # Additional packages for development
   home.packages = with pkgs; [
     # Add packages as needed per workspace

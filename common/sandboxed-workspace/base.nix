@@ -150,8 +150,8 @@ in
       Group = "users";
     };
     script = ''
-      if [ ! -f /home/googlebot/claude-config/.claude.json ]; then
-        cp ${claudeConfigFile} /home/googlebot/claude-config/.claude.json
+      if [ ! -f /home/googlebot/.claude.json ]; then
+        install -m 600 ${claudeConfigFile} /home/googlebot/.claude.json
       fi
     '';
   };

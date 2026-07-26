@@ -89,21 +89,15 @@ let
             }
             {
               proto = "virtiofs";
-              tag = "workspace";
-              source = "/home/googlebot/sandboxed/${name}/workspace";
-              mountPoint = "/home/googlebot/workspace";
+              tag = "home";
+              source = "/home/googlebot/sandboxed/${name}/home";
+              mountPoint = "/home/googlebot";
             }
             {
               proto = "virtiofs";
               tag = "ssh-host-keys";
               source = "/home/googlebot/sandboxed/${name}/ssh-host-keys";
               mountPoint = "/etc/ssh-host-keys";
-            }
-            {
-              proto = "virtiofs";
-              tag = "claude-config";
-              source = "/home/googlebot/sandboxed/${name}/claude-config";
-              mountPoint = "/home/googlebot/claude-config";
             }
             {
               # Binary cache auth, staged by microvm-workspace-netrc.service
