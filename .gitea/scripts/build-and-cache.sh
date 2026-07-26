@@ -28,12 +28,7 @@ roots=$(nix build --no-link --print-out-paths --print-build-logs --log-format ba
 echo "Built ${#installables[@]} roots:"
 echo "$roots"
 
-# Push to cache (only locally-built paths >= 0.5MB)
-paths=$(echo "$roots" \
-  | xargs nix path-info -r --json \
-  | jq -r '[to_entries[] | select(
-      (.value.signatures | all(startswith("cache.nixos.org") | not))
-      and .value.narSize >= 524288
-    ) | .key] | unique[]')
-echo "Pushing $(echo "$paths" | wc -l) unique paths to cache"
-echo "$paths" | xargs attic push -j 4 local:nixos
+# Push the full runtime closures. attic skips paths already cached or
+# available upstream; a missing path, however small, forces clients to
+# rebuild its parent derivation.
+echo "$roots" | xargs attic push -j 8 local:nixos
