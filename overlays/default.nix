@@ -7,12 +7,6 @@ final: prev:
   # https://github.com/NixOS/nixpkgs/issues/442652
   samba4Full = prev.samba4Full.override { enableCephFS = false; };
 
-  # Fix incus-lts doc build: `incus manpage` tries to create
-  # ~/.config/incus, but HOME is /homeless-shelter in the nix sandbox.
-  incus-lts = prev.incus-lts.overrideAttrs (old: {
-    nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ prev.writableTmpDirAsHomeHook ];
-  });
-
   # Skip the upstream test suite: test_amd_pstate_upower is timing-sensitive
   # ("timed out waiting for ...") and intermittently fails on loaded CI
   # runners while the same derivation builds fine elsewhere.
