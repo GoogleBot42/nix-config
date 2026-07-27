@@ -7,7 +7,7 @@
       environmentFile = config.age.secrets.atticd-credentials.path;
       settings = {
         listen = "[::]:28338";
-        database.url = "postgresql:///atticd?host=/run/postgresql";
+        database.url = "postgresql:///atticd?host=/run/postgresql&user=atticd";
         require-proof-of-possession = false;
 
         # Disable chunking — the dedup savings don't justify the CPU/IO
