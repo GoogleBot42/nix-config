@@ -60,6 +60,10 @@ in
           # every other push behind it. Builds share the host nix-daemon,
           # which locks derivations, so overlapping jobs dedupe work.
           settings.runner.capacity = 2;
+          # act_runner kills jobs at its own config timeout (default 3h)
+          # regardless of the workflow's timeout-minutes; keep this at least
+          # as large as the longest workflow timeout (check-flake: 360 min).
+          settings.runner.timeout = "6h";
         };
 
         # Disable dynamic user so runner state persists via bind mount.

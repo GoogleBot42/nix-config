@@ -112,6 +112,10 @@ in
       tokenFile = config.age.secrets.gitea-actions-runner-token.path;
       labels = [ "nixos-podman:docker://${runnerImageName}:${runnerImageTag}" ];
       settings = {
+        # act_runner kills jobs at its own config timeout (default 3h)
+        # regardless of the workflow's timeout-minutes; keep this at least
+        # as large as the longest workflow timeout (check-flake: 360 min).
+        runner.timeout = "6h";
         container = {
           force_pull = false;
           require_docker = true;
@@ -151,6 +155,7 @@ in
         "ubuntu-24.04:docker://ghcr.io/catthehacker/ubuntu:act-24.04"
         "ubuntu-22.04:docker://ghcr.io/catthehacker/ubuntu:act-22.04"
       ];
+      settings.runner.timeout = "6h";
       settings.container = {
         # Only pull when the image is missing; images update via autoPrune
         # cycling out old layers rather than pulling on every job.
