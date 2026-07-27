@@ -175,6 +175,9 @@ in
               RestartSteps = 6;
               RestartMaxDelaySec = "10m";
               RuntimeMaxSec = "30d";
+              # Initial setup may wait for a downstream service container's
+              # onPortForwarded hook; the systemd default 90s is too short.
+              TimeoutStartSec = "180s";
             };
 
             script = ''
