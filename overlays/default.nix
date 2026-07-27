@@ -16,6 +16,16 @@ final: prev:
     mesonFlags = (old.mesonFlags or [ ]) ++ [ "-Dtests=false" ];
   });
 
+  # Skip the upstream test suite: upower's checkPhase runs the umockdev/dbusmock
+  # integration tests via `meson test`, and ~two dozen of them hit the meson
+  # per-test timeout on loaded CI runners (all TIMEOUT, none Fail), while the
+  # same derivation builds fine elsewhere. doCheck = false skips the whole
+  # checkPhase, including its preCheck/postCheck libupower-glib.so symlink dance.
+  upower = prev.upower.overrideAttrs {
+    doCheck = false;
+    doInstallCheck = false;
+  };
+
   # Skip the upstream test suite: the dynamiclauncher and notification
   # (test_sound_fd sound validator subprocess) integration tests fail in the
   # nix build sandbox on our builders.
