@@ -117,6 +117,7 @@ final: prev:
 
   pgs = prev.callPackage ../pkgs/pgs { };
 
-  # Hindsight agent-memory server, from the source-built hindsight-nix flake.
+  # Hindsight agent-memory server and web control plane, source-built by hindsight-nix.
   hindsight-api = inputs.hindsight-nix.packages.${prev.stdenv.hostPlatform.system}.hindsight-api;
+  hindsight-control-plane = inputs.hindsight-nix.packages.${prev.stdenv.hostPlatform.system}.hindsight-control-plane;
 }

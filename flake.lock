@@ -273,11 +273,11 @@
         "uv2nix": "uv2nix_2"
       },
       "locked": {
-        "lastModified": 1784876467,
-        "narHash": "sha256-xlAuDUWKz/SHkUGIt4VO8nlxOLSxQoVxTWInlfoC5+E=",
+        "lastModified": 1785359704,
+        "narHash": "sha256-cEH5wysDRSipXAXL8azeyv35NsgFuvPhUzJjF22PWmE=",
         "ref": "refs/heads/main",
-        "rev": "d204962ff0df1de65a130ff3a4706e868207c80b",
-        "revCount": 6,
+        "rev": "2d31f4680cffe2a3aa045c07055fdf2ea6e430e2",
+        "revCount": 7,
         "type": "git",
         "url": "https://git.neet.dev/zuckerberg/hindsight-nix"
       },

@@ -216,6 +216,23 @@ in
     };
   };
 
+  systemd.services.hindsight-control-plane = {
+    description = "Hindsight memory control plane";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "hindsight-api.service" ];
+    requires = [ "hindsight-api.service" ];
+    environment = {
+      HOSTNAME = "0.0.0.0";
+      PORT = "9999";
+      HINDSIGHT_CP_DATAPLANE_API_URL = "http://127.0.0.1:8888";
+    };
+    serviceConfig = mkService {
+      Type = "simple";
+      ExecStart = "${pkgs.hindsight-control-plane}/bin/hindsight-control-plane";
+      EnvironmentFile = "/etc/hindsight-control-plane-access-key";
+    };
+  };
+
   systemd.services.hindsight-worker = {
     description = "Hindsight background worker (async retain / reflect)";
     wantedBy = [ "multi-user.target" ];

@@ -251,6 +251,16 @@ in
             ];
             alerts = [{ type = "ntfy"; }];
           }
+          {
+            name = "Hermes Memories";
+            group = "fry";
+            url = "https://hermes-memories.fry.neet.dev/api/health";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
         ];
       };
     };

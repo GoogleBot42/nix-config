@@ -42,6 +42,12 @@ in
           createHostPath = false; # managed by agenix
           shift = false; # /run is tmpfs; idmapping not supported
         };
+        hindsight-control-plane-access-key = {
+          hostPath = "/run/agenix/hindsight-control-plane-access-key";
+          containerPath = "/etc/hindsight-control-plane-access-key";
+          createHostPath = false; # managed by agenix
+          shift = false; # /run is tmpfs; idmapping not supported
+        };
         ntfy-token = {
           hostPath = "/run/agenix/ntfy-token";
           containerPath = "/etc/ntfy-token";
@@ -62,6 +68,10 @@ in
   # "other" bits — the file shows up as nobody:nogroup over an un-shifted mount.
   age.secrets.hermes-env = {
     file = ../../secrets/hermes-env.age;
+    mode = "0444";
+  };
+  age.secrets.hindsight-control-plane-access-key = {
+    file = ../../secrets/hindsight-control-plane-access-key.age;
     mode = "0444";
   };
   age.secrets.ntfy-token = {
@@ -104,11 +114,13 @@ in
   services.nginx = {
     enable = true;
     openFirewall = false; # All nginx services are internal
+    tailscaleListenAddress = "100.117.73.96";
     virtualHosts =
       let
         mkHost = external: config:
           {
             ${external} = {
+              tailscaleOnly = true;
               useACMEHost = "fry.neet.dev"; # Use wildcard cert
               forceSSL = true;
               locations."/" = config;
@@ -123,6 +135,7 @@ in
       lib.mkMerge [
         (mkVirtualHost "chat.fry.neet.dev" "http://localhost:${toString config.services.open-webui.port}")
         (mkVirtualHost "hooks.fry.neet.dev" "http://${hermesWorkspaceIp}:8644")
+        (mkVirtualHost "hermes-memories.fry.neet.dev" "http://${hermesWorkspaceIp}:9999")
       ];
   };
 

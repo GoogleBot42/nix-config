@@ -214,9 +214,19 @@
             statusCheck = true;
             id = "7_836_ntfy";
           };
+          hermes-memories = {
+            title = "Hermes Memories";
+            description = "Hindsight memory control plane";
+            icon = "fas fa-brain";
+            url = "https://hermes-memories.fry.neet.dev";
+            target = "sametab";
+            statusCheck = true;
+            id = "8_836_hermes_memories";
+          };
         };
         servicesList = [
           servicesItems.ntfy
+          servicesItems.hermes-memories
         ];
       in
       {
