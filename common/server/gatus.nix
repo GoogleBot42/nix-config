@@ -51,6 +51,16 @@ in
             alerts = [{ type = "ntfy"; }];
           }
           {
+            name = "Hermes Dashboard";
+            group = "fry";
+            url = "https://hermes.fry.neet.dev/api/status";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
             name = "Jellyfin";
             group = "s0";
             url = "https://jellyfin.s0.neet.dev";

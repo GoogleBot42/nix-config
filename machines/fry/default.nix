@@ -42,6 +42,12 @@ in
           createHostPath = false; # managed by agenix
           shift = false; # /run is tmpfs; idmapping not supported
         };
+        hermes-dashboard-env = {
+          hostPath = "/run/agenix/hermes-dashboard-env";
+          containerPath = "/etc/hermes-dashboard-env";
+          createHostPath = false; # managed by agenix
+          shift = false; # /run is tmpfs; idmapping not supported
+        };
         hindsight-control-plane-access-key = {
           hostPath = "/run/agenix/hindsight-control-plane-access-key";
           containerPath = "/etc/hindsight-control-plane-access-key";
@@ -68,6 +74,10 @@ in
   # "other" bits — the file shows up as nobody:nogroup over an un-shifted mount.
   age.secrets.hermes-env = {
     file = ../../secrets/hermes-env.age;
+    mode = "0444";
+  };
+  age.secrets.hermes-dashboard-env = {
+    file = ../../secrets/hermes-dashboard-env.age;
     mode = "0444";
   };
   age.secrets.hindsight-control-plane-access-key = {
@@ -134,8 +144,9 @@ in
       in
       lib.mkMerge [
         (mkVirtualHost "chat.fry.neet.dev" "http://localhost:${toString config.services.open-webui.port}")
-        (mkVirtualHost "hooks.fry.neet.dev" "http://${hermesWorkspaceIp}:8644")
+        (mkVirtualHost "hermes.fry.neet.dev" "http://${hermesWorkspaceIp}:9119")
         (mkVirtualHost "hermes-memories.fry.neet.dev" "http://${hermesWorkspaceIp}:9999")
+        (mkVirtualHost "hooks.fry.neet.dev" "http://${hermesWorkspaceIp}:8644")
       ];
   };
 

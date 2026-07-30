@@ -39,7 +39,7 @@ in
     createUser = false;
     workingDirectory = "/home/googlebot/workspace";
     extraPackages = with pkgs; [ nix git ripgrep fd jq codex himalaya tea ];
-    extraDependencyGroups = [ "hindsight" ];
+    extraDependencyGroups = [ "hindsight" "web" ];
 
     environment = {
       SIGNAL_HTTP_URL = "http://127.0.0.1:8080";
@@ -86,10 +86,35 @@ in
       approvals.mode = "off";
       memory.provider = "hindsight";
       agent.restart_drain_timeout = 180;
+      dashboard.public_url = "https://hermes.fry.neet.dev";
     };
   };
 
   systemd.services.hermes-agent.serviceConfig.TimeoutStopSec = 210;
+
+  systemd.services.hermes-dashboard = {
+    description = "Hermes Agent web dashboard";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    environment = {
+      HOME = hermesStateDir;
+      HERMES_HOME = "${hermesStateDir}/.hermes";
+    };
+    path = config.systemd.services.hermes-agent.path;
+    script = ''
+      exec hermes dashboard --host 0.0.0.0 --port 9119 --no-open --skip-build
+    '';
+    serviceConfig = mkService {
+      EnvironmentFile = "/etc/hermes-dashboard-env";
+      WorkingDirectory = "/home/googlebot/workspace";
+      NoNewPrivileges = true;
+      ProtectSystem = "strict";
+      ProtectHome = false;
+      ReadWritePaths = [ hermesStateDir "/home/googlebot/workspace" ];
+      PrivateTmp = true;
+    };
+  };
 
   home-manager.users.googlebot.home.sessionVariables = {
     HERMES_HOME = "${hermesStateDir}/.hermes";

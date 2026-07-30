@@ -223,10 +223,20 @@
             statusCheck = true;
             id = "8_836_hermes_memories";
           };
+          hermes = {
+            title = "Hermes";
+            description = "Hermes Agent dashboard";
+            icon = "fas fa-robot";
+            url = "https://hermes.fry.neet.dev";
+            target = "sametab";
+            statusCheck = true;
+            id = "9_836_hermes";
+          };
         };
         servicesList = [
           servicesItems.ntfy
           servicesItems.hermes-memories
+          servicesItems.hermes
         ];
       in
       {

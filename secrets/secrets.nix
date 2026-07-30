@@ -54,6 +54,7 @@ with roles;
 
   # Hermes agent
   "hermes-env.age".publicKeys = personal;
+  "hermes-dashboard-env.age".publicKeys = personal;
   "hindsight-control-plane-access-key.age".publicKeys = personal;
   "agent-email-pw.age".publicKeys = personal;
 
