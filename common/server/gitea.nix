@@ -47,6 +47,9 @@ in
         actions = {
           ENABLED = true;
         };
+        webhook = {
+          ALLOWED_HOST_LIST = "external,hooks.fry.neet.dev";
+        };
         indexer = {
           REPO_INDEXER_ENABLED = true;
         };
