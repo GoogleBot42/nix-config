@@ -160,7 +160,7 @@ in
             after = [ "network.target" "network-online.target" "systemd-networkd.service" "systemd-resolved.service" ];
             wantedBy = [ "multi-user.target" ];
 
-            path = scriptPkgs ++ [ pkgs.systemd ];
+            path = scriptPkgs ++ [ pkgs.systemd pkgs.iputils ];
 
             serviceConfig = {
               # notify: units ordered After= this one wait for actual VPN
@@ -175,6 +175,14 @@ in
               RestartSteps = 6;
               RestartMaxDelaySec = "10m";
               RuntimeMaxSec = "30d";
+              # The shell stays alive when PIA drops the WireGuard session, so
+              # Restart= alone never notices a dead tunnel. After readiness the
+              # script monitors handshake age and exits on a dead session so
+              # Restart= reconnects (see watchPIATunnel); the watchdog is a
+              # backstop that only fires if the monitor itself wedges, since a
+              # healthy loop pets it every 15s and a dead tunnel exits within
+              # ~60s of the first stale reading.
+              WatchdogSec = "2min";
             };
 
             script = ''
@@ -184,7 +192,10 @@ in
               trap 'cleanupVpn ${cfg.interfaceName}' EXIT
               # Bash does not run the EXIT trap on an unhandled fatal signal;
               # translate TERM/INT into a normal exit so cleanup runs on stop.
+              # ABRT is what systemd sends on watchdog timeout; exit nonzero so
+              # cleanup runs while the unit still records the failure.
               trap 'exit 0' TERM INT
+              trap 'exit 1' ABRT
               cleanupVpn ${cfg.interfaceName}
 
               proxy="${proxy}"
@@ -257,10 +268,9 @@ in
               echo "PIA VPN setup complete"
               systemd-notify --ready
 
-              # Keep the shell alive instead of exec'ing sleep: exec would
-              # replace the shell and silently discard the cleanup trap.
-              sleep infinity &
-              wait $!
+              # Stay alive as the tunnel's liveness monitor (also keeps the
+              # cleanup trap armed — exec'ing would silently discard it).
+              watchPIATunnel ${cfg.interfaceName}
             '';
 
           };

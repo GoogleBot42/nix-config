@@ -238,6 +238,73 @@ in
       echo "Loaded port renewal data from $portRenewalFile"
     }
 
+    # With PersistentKeepalive set, a healthy tunnel always carries traffic,
+    # so WireGuard rekeys on the first send after a session is 120s old
+    # (REKEY_AFTER_TIME) and a healthy latest-handshake age cycles between 0
+    # and ~145s. The protocol never uses session keys older than 180s
+    # (REJECT_AFTER_TIME), so an age beyond that means there is no working
+    # session — independent of DNS, ICMP filtering, or any external probe.
+    piaTunnelHealthy() {
+      local interfaceName=$1
+      local maxAge=$2
+      local handshake now age
+      handshake=$(wg show "$interfaceName" latest-handshakes | cut -f2)
+      if ! [[ "$handshake" =~ ^[0-9]+$ ]] || [[ "$handshake" -eq 0 ]]; then
+        return 1
+      fi
+      now=$(date +%s)
+      age=$((now - handshake))
+      [[ "$age" -le "$maxAge" ]]
+    }
+
+    # One watchdog iteration: pet systemd's watchdog only while the tunnel is
+    # healthy. On a stale handshake, withhold the pet, induce tunnel traffic
+    # (a session only rekeys when something is sent), and return nonzero so
+    # the caller can count consecutive failures.
+    piaWatchdogTick() {
+      local interfaceName=$1
+      local maxAge=$2
+      if piaTunnelHealthy "$interfaceName" "$maxAge"; then
+        systemd-notify WATCHDOG=1
+        return 0
+      fi
+      echo "WireGuard handshake on $interfaceName is stale or missing; withholding watchdog ping" >&2
+      ping -c1 -W5 1.1.1.1 >/dev/null 2>&1 || true
+      return 1
+    }
+
+    # Fails (for the service's Restart= policy to reconnect) once the
+    # handshake has been stale for maxStale consecutive checks. An expired
+    # session is not necessarily a dead peer: WireGuard retries handshakes
+    # every 5s, so after transient packet loss or a clock step the tunnel
+    # recovers in place — same server, session, and forwarded port — as soon
+    # as an induced-traffic rekey goes through. Only a peer that stopped
+    # answering handshakes entirely (e.g. PIA dropped the key registration)
+    # stays stale through the grace ticks; that is detected within roughly
+    # maxAge + maxStale*interval seconds, well before the WatchdogSec
+    # backstop would fire.
+    watchPIATunnel() {
+      local interfaceName=$1
+      local maxAge="''${PIA_WATCHDOG_MAX_HANDSHAKE_AGE:-180}"
+      local interval="''${PIA_WATCHDOG_INTERVAL:-15}"
+      local maxStale="''${PIA_WATCHDOG_MAX_STALE_TICKS:-3}"
+      local stale=0
+      while true; do
+        # Background sleep + wait keeps the shell responsive to signal traps.
+        sleep "$interval" &
+        wait $!
+        if piaWatchdogTick "$interfaceName" "$maxAge"; then
+          stale=0
+        else
+          stale=$((stale + 1))
+          if [[ "$stale" -ge "$maxStale" ]]; then
+            echo "ERROR: WireGuard handshake on $interfaceName stale for $stale consecutive checks; exiting to reconnect" >&2
+            return 1
+          fi
+        fi
+      done
+    }
+
     refreshPIAPort() {
       local bindPortResponse status rc attempt
       local max_attempts="''${PIA_PORT_REFRESH_MAX_ATTEMPTS:-3}"
