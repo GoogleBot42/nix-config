@@ -9,10 +9,16 @@ in
     enable = mkEnableOption "enable x86_64 firmware";
   };
 
-  config = mkIf cfg.x86_64.enable {
-    hardware.cpu.intel.updateMicrocode = true;
-    hardware.cpu.amd.updateMicrocode = true;
-  };
-
-  # services.fwupd.enable = true;
+  config = mkMerge [
+    (mkIf cfg.x86_64.enable {
+      hardware.cpu.intel.updateMicrocode = true;
+      hardware.cpu.amd.updateMicrocode = true;
+    })
+    (mkIf config.services.fwupd.enable {
+      systemd.services.fwupd-refresh = {
+        wants = [ "fwupd.service" ];
+        after = [ "fwupd.service" ];
+      };
+    })
+  ];
 }
