@@ -11,6 +11,8 @@ in
   # don't use remote builders
   nix.distributedBuilds = lib.mkForce false;
 
+  ntfy-alerts.ignoredUnitPatterns = [ "drkonqi-coredump-processor@*" ];
+
   # Upstream interface for sandbox networking (NAT)
   networking.sandbox.upstreamInterface = lib.mkDefault "enp191s0";
 
