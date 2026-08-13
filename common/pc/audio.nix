@@ -52,6 +52,19 @@ in
             };
           };
         }
+        # never suspend the mic: reopening the capture stream after idle
+        # suspend can leave it with a stale, high-latency buffer and eats
+        # the first moments of speech when apps grab the mic
+        {
+          matches = [
+            { "node.name" = "~alsa_input.usb-.*Arctis_Nova_Pro_Omni.*"; }
+          ];
+          actions = {
+            "update-props" = {
+              "session.suspend-timeout-seconds" = 0;
+            };
+          };
+        }
       ];
     };
 
