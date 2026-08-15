@@ -33,7 +33,10 @@ nix eval .#nixosConfigurations --apply 'x: builtins.attrNames x' --json
 nix build .#nixosConfigurations.<hostname>.config.system.build.toplevel --no-link
 ```
 
-Fix any build failures before continuing.
+Fix any build failures before continuing. If a build/eval fails in a way
+that looks environmental rather than a real breakage (aarch64 machines,
+i686 leaf derivations), see [references/build-gotchas.md](references/build-gotchas.md)
+before assuming the update itself is at fault.
 
 ### 4. Summary
 
