@@ -2,6 +2,15 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Workflow
+
+- Work in a git worktree for every change — never directly on the main checkout. If told to use a worktree and it fails, stop and report the failure; do not fall back to the main tree. Procedure and gotchas: the `worktree-workflow` skill.
+- Finish every change by committing, pushing, and opening a Gitea PR — without being asked. Mechanics: the `git-forges` skill.
+- When spawning subagents, prefer the cheaper Opus or Sonnet models (via the Agent tool's `model` parameter) wherever the task allows — searches, exploration, mechanical edits. Reserve the session's default model for work that genuinely needs it.
+- When the user says "update" a machine or the config, they mean pull to tip of master and redeploy at the current pin — never touch `flake.lock` unless explicitly asked to update inputs.
+- Before deploying to a remote machine, read the `deploy` skill — first-deploy rollback traps and smoke-test rules live there.
+- After substantial work, run the `reflect` skill to catch stale or missing guidance ("no changes needed" is the normal outcome).
+
 ## What This Is
 
 A NixOS flake managing multiple machines. All machines import `/common` for shared config, and each machine has its own directory under `/machines/<hostname>/` with a `default.nix` (machine-specific config), `hardware-configuration.nix`, and `properties.nix` (metadata: hostnames, arch, roles, SSH keys).
@@ -84,3 +93,5 @@ When adding or removing a web-facing service, update both:
 - Always use `--no-link` when running `nix build`
 - Don't use `nix build --dry-run` unless you only need evaluation — it skips the actual build
 - Avoid `2>&1` on nix commands — it can cause error output to be missed
+- Never pipe deploy or other long-running commands through `tail`/`head`/`grep` — it masks failures and hides hangs; run them bare
+- Code comments state standing constraints only — never migration history or how a value came to be; that belongs in commit messages
