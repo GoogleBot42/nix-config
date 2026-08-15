@@ -1,2 +1,4 @@
 result
 .claude/worktrees
+.claude/settings.local.json
+__pycache__/
