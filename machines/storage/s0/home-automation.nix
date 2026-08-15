@@ -111,6 +111,10 @@
 
       # Enable reverse proxy support
       http = {
+        # nixpkgs' home-assistant module no longer declares a server_port
+        # option with a default; set it explicitly since the firewall and
+        # nginx config reference it.
+        server_port = 8123;
         use_x_forwarded_for = true;
         trusted_proxies = [
           "127.0.0.1"
