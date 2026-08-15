@@ -20,6 +20,9 @@ let
     HINDSIGHT_API_LLM_PROVIDER = "openai-codex";
     HINDSIGHT_API_EMBEDDINGS_PROVIDER = "local";
     HINDSIGHT_API_RERANKER_PROVIDER = "local";
+    # The openai-codex LLM provider resolves ~/.codex/auth.json via Python's
+    # Path.home(), not via an env var hindsight reads directly — HOME must
+    # point at the directory that contains .codex.
     HOME = hermesStateDir;
     HF_HOME = "${hermesStateDir}/.cache/huggingface";
   };

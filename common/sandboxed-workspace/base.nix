@@ -131,6 +131,10 @@ in
   nix.settings.trusted-public-keys = hostConfig.nix.settings.trusted-public-keys;
   nix.settings.fallback = true;
   nix.settings.netrc-file = "/etc/attic-netrc";
+  # The workspace's /nix/store is an overlay over the host's store, so a
+  # path being present locally says nothing about whether it's in the
+  # binary cache. Check cache state over HTTP (a narinfo request using this
+  # netrc), never by querying the local store.
 
   # Make nixpkgs available in NIX_PATH and registry (like the NixOS ISO)
   # This allows `nix-shell -p`, `nix repl '<nixpkgs>'`, etc. to work
