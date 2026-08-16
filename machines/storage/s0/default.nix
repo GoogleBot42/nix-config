@@ -102,6 +102,26 @@
         systemd.services.transmission.serviceConfig = {
           RootDirectoryStartOnly = lib.mkForce (lib.mkForce false);
           RootDirectory = lib.mkForce (lib.mkForce "");
+          TimeoutStopSec = "30s";
+        };
+        systemd.services.transmission-health-check = {
+          description = "Restart Transmission when its RPC endpoint hangs";
+          after = [ "transmission.service" ];
+          serviceConfig.Type = "oneshot";
+          script = ''
+            if ! ${pkgs.curl}/bin/curl --silent --show-error --max-time 10 \
+              --output /dev/null http://127.0.0.1:8080/transmission/rpc; then
+              systemctl restart transmission.service
+            fi
+          '';
+        };
+        systemd.timers.transmission-health-check = {
+          wantedBy = [ "timers.target" ];
+          timerConfig = {
+            OnBootSec = "5m";
+            OnUnitActiveSec = "2m";
+            Unit = "transmission-health-check.service";
+          };
         };
 
         users.groups.public_data.gid = 994;
