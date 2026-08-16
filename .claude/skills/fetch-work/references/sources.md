@@ -50,3 +50,7 @@ fleet). If that option is ever moved or removed, grep
 don't assume kif still owns it. A red/failing monitor there is a live
 signal, not a backlog item — treat it as higher-readiness than anything in
 TODO.md.
+
+Statuses come from `GET /api/v1/endpoints/statuses` (JSON). The agent
+workspace has no `jq` or `python3` on PATH — parse with
+`nix run nixpkgs#jq -- ...`.
