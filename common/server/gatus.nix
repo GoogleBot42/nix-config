@@ -51,6 +51,96 @@ in
             alerts = [{ type = "ntfy"; }];
           }
           {
+            name = "Gitea";
+            group = "kif";
+            url = "https://git.neet.dev/api/healthz";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Matrix";
+            group = "kif";
+            url = "https://neet.space/health";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Element";
+            group = "kif";
+            url = "https://chat.neet.space";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Nextcloud";
+            group = "kif";
+            url = "https://runyan.org/status.php";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "Roundcube";
+            group = "kif";
+            url = "https://mail.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "SMTP";
+            group = "kif";
+            url = "tcp://mail.neet.dev:465";
+            interval = "5m";
+            conditions = [
+              "[CONNECTED] == true"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "IMAP";
+            group = "kif";
+            url = "tcp://mail.neet.dev:993";
+            interval = "5m";
+            conditions = [
+              "[CONNECTED] == true"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "TheLounge";
+            group = "kif";
+            url = "https://irc.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "pgs";
+            group = "kif";
+            url = "https://sites.neet.dev";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
             name = "Hermes Dashboard";
             group = "fry";
             url = "https://hermes.fry.neet.dev/api/status";

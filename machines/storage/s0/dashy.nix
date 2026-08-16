@@ -232,11 +232,81 @@
             statusCheck = true;
             id = "9_836_hermes";
           };
+          gitea = {
+            title = "Gitea";
+            description = "git.neet.dev";
+            icon = "hl-gitea";
+            url = "https://git.neet.dev";
+            target = "sametab";
+            statusCheck = false;
+            id = "10_836_gitea";
+          };
+          element = {
+            title = "Element";
+            description = "chat.neet.space";
+            icon = "hl-element";
+            url = "https://chat.neet.space";
+            target = "sametab";
+            statusCheck = false;
+            id = "11_836_element";
+          };
+          nextcloud = {
+            title = "Nextcloud";
+            description = "runyan.org";
+            icon = "hl-nextcloud";
+            url = "https://runyan.org";
+            target = "sametab";
+            statusCheck = false;
+            id = "12_836_nextcloud";
+          };
+          roundcube = {
+            title = "Roundcube";
+            description = "mail.neet.dev";
+            icon = "hl-roundcube";
+            url = "https://mail.neet.dev";
+            target = "sametab";
+            statusCheck = false;
+            id = "13_836_roundcube";
+          };
+          thelounge = {
+            title = "TheLounge";
+            description = "irc.neet.dev";
+            icon = "hl-thelounge";
+            url = "https://irc.neet.dev";
+            target = "sametab";
+            statusCheck = false;
+            id = "14_836_thelounge";
+          };
+          pgs = {
+            title = "pgs";
+            description = "sites.neet.dev";
+            icon = "fas fa-globe";
+            url = "https://sites.neet.dev";
+            target = "sametab";
+            statusCheck = false;
+            id = "15_836_pgs";
+          };
+          status = {
+            title = "Status";
+            description = "status.neet.dev";
+            icon = "hl-gatus";
+            url = "https://status.neet.dev";
+            target = "sametab";
+            statusCheck = false;
+            id = "16_836_status";
+          };
         };
         servicesList = [
           servicesItems.ntfy
           servicesItems.hermes-memories
           servicesItems.hermes
+          servicesItems.gitea
+          servicesItems.element
+          servicesItems.nextcloud
+          servicesItems.roundcube
+          servicesItems.thelounge
+          servicesItems.pgs
+          servicesItems.status
         ];
       in
       {
