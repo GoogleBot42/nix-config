@@ -3,7 +3,7 @@
 ### Prepare Shell If Needed
 
 ```sh
-nix-shell -p nixFlakes git
+nix-shell -p nix git
 ```
 
 ### Disk Setup
@@ -19,7 +19,8 @@ mkswap -L swap /dev/vg/swap
 swapon /dev/vg/swap
 mkfs.btrfs /dev/vg/root
 mount /dev/vg/root /mnt
-mkfs.ext3 boot
+mkfs.ext4 /dev/vda1 # BIOS/grub; for UEFI use a vfat ESP instead: mkfs.vfat /dev/vda1
+mkdir /mnt/boot
 mount /dev/vda1 /mnt/boot
 ```
 
