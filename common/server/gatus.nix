@@ -253,7 +253,7 @@ in
           {
             name = "Frigate";
             group = "s0";
-            url = "https://frigate.s0.neet.dev";
+            url = "https://frigate.s0.neet.dev/api/version";
             interval = "5m";
             conditions = [
               "[STATUS] == 200"
