@@ -51,6 +51,23 @@ in
       description = "Shell glob unit name patterns to skip failure notifications for.";
     };
 
+    recoveryChecks = lib.mkOption {
+      type = lib.types.attrsOf (lib.types.submodule {
+        options = {
+          delaySec = lib.mkOption {
+            type = lib.types.ints.unsigned;
+            description = "Seconds to wait after the unit fails before running the check.";
+          };
+          check = lib.mkOption {
+            type = lib.types.lines;
+            description = "Shell snippet that exits 0 when the unit has recovered on its own.";
+          };
+        };
+      });
+      default = { };
+      description = "Per-unit delayed checks; a passing check suppresses the failure notification.";
+    };
+
     ignoreTransientContainerUnitFailures = lib.mkEnableOption "ignoring generated transient Podman/container unit failures";
 
     hostLabel = lib.mkOption {

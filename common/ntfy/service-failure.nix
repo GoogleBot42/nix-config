@@ -2,6 +2,8 @@
 
 let
   cfg = config.ntfy-alerts;
+  recoveryTimeoutSec = lib.foldl' lib.max 0
+    (lib.mapAttrsToList (_: check: check.delaySec) cfg.recoveryChecks) + 60;
 in
 {
   config = lib.mkIf config.thisMachine.hasRole."ntfy" {
@@ -12,6 +14,7 @@ in
       serviceConfig = {
         Type = "oneshot";
         EnvironmentFile = "/run/agenix/ntfy-token";
+        TimeoutStartSec = recoveryTimeoutSec;
         ExecStart = "${pkgs.writeShellScript "ntfy-failure-notify" ''
           unit="$1"
           # Prevent infinite recursion if this service itself fails
@@ -28,6 +31,16 @@ in
               exit 0
             fi
           done
+          ${lib.concatStringsSep "\n" (lib.mapAttrsToList (unit: check: ''
+            if [[ "$unit" == ${lib.escapeShellArg unit} ]]; then
+              sleep ${toString check.delaySec}
+              if (
+                ${check.check}
+              ); then
+                exit 0
+              fi
+            fi
+          '') cfg.recoveryChecks)}
           logfile=$(mktemp)
           trap 'rm -f "$logfile"' EXIT
           ${pkgs.systemd}/bin/journalctl -u "$unit" -n 50 --no-pager -o short > "$logfile" 2>/dev/null \

@@ -12,6 +12,15 @@
 
   ntfy-alerts.ignoredUnits = [ "logrotate" ];
   ntfy-alerts.ignoreTransientContainerUnitFailures = true;
+  # FlareSolverr's Chromium startup self-test fails on boot and systemd
+  # restarts it fine; only alert if it is still unhealthy after settling.
+  ntfy-alerts.recoveryChecks.flaresolverr = {
+    delaySec = 180;
+    check = ''
+      ${pkgs.curl}/bin/curl --silent --fail --max-time 10 \
+        --output /dev/null http://127.0.0.1:48072/health
+    '';
+  };
   ntfy-alerts.dimmTempCheck.enable = true;
 
   # system.autoUpgrade.enable = true;
