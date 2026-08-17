@@ -249,11 +249,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1786826671,
-        "narHash": "sha256-0+DIen1h8OsyIWJgV1rC751VnSko7ED5B5nV8Hd86c0=",
+        "lastModified": 1786944271,
+        "narHash": "sha256-YNesSUmEPnFdt7nABYdQ9vD+9vd16fofBxKPO7Z7siU=",
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "0c50bdbdea57f3d63571e58ae70b3520c4f8b62e",
+        "rev": "93ed11379b6a7203f87ca8a9cb3e4e33dda4e6a7",
         "type": "github"
       },
       "original": {
@@ -271,11 +271,11 @@
         "uv2nix": "uv2nix_2"
       },
       "locked": {
-        "lastModified": 1786862198,
-        "narHash": "sha256-rJObjZyqaBPixXVaexsMVg03nbMygoZ1aW8FMRtSj8U=",
+        "lastModified": 1786863721,
+        "narHash": "sha256-UBIpeVWajtkgIX+WAnKsj2SV/hg+45v4wflRynln/bQ=",
         "ref": "refs/heads/main",
-        "rev": "4219b37b6fc5de3e25ee23b5c004d40fb08f1e99",
-        "revCount": 10,
+        "rev": "0f8a06e63ca25a9d098c3c27de0dce49ac899854",
+        "revCount": 11,
         "type": "git",
         "url": "https://git.neet.dev/zuckerberg/hindsight-nix"
       },
@@ -287,11 +287,11 @@
     "hindsight-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1786764588,
-        "narHash": "sha256-3hv8HBxE6tNapL56v8AWJAMyDa3tTb5nUI4EBPYA4JA=",
+        "lastModified": 1786851277,
+        "narHash": "sha256-eXLZZmWJnQp8N25LtCmJB/Fv6I6AxGWaVamjah7NAUo=",
         "owner": "vectorize-io",
         "repo": "hindsight",
-        "rev": "396f63aafc9b618f04d446e2465cac95aa1cb426",
+        "rev": "205e47b4e965f5fa77794c64695308dc2a58fe18",
         "type": "github"
       },
       "original": {
@@ -307,11 +307,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1786826571,
-        "narHash": "sha256-nNqmXIFmESRnU91KARtiekSox0+o+E3AS0d1TuUQ/9o=",
+        "lastModified": 1786929086,
+        "narHash": "sha256-kzpwMyT7i2fTQ41tf/WlsIHuJtf3e0leRBEPkBhUzBY=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "c8058ecc1329a71a3c99c4d0353dba4009a66152",
+        "rev": "aac4965ddb7ea2ff0f3cadd9502c7042b7aa07ba",
         "type": "github"
       },
       "original": {
@@ -349,11 +349,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1786249295,
-        "narHash": "sha256-Y2mSr+HLKYoOsjiackgilxkHXe8gkJ3z4hFFekjQX3I=",
+        "lastModified": 1786852476,
+        "narHash": "sha256-IM5CYtf86W4w8eUPpKcY/LpdHElmVBtJhaKnoTKxZEA=",
         "owner": "Mic92",
         "repo": "nix-index-database",
-        "rev": "14d55b8069119e3b88da7aa2f6c97f86a2cd3cd6",
+        "rev": "c7962dc97b45129df8d751bedaf37beb5a17706e",
         "type": "github"
       },
       "original": {
@@ -369,11 +369,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1786717298,
-        "narHash": "sha256-asdPlqtM0AweQ5YNLad6eY4tSYW55YNr1uyayf7mOMQ=",
+        "lastModified": 1786867632,
+        "narHash": "sha256-ez+ubZlA1RtdjCB18a6zJ9M4u8qoPDy08EcnsW5M3Xw=",
         "owner": "NixOS",
         "repo": "nixos-hardware",
-        "rev": "2dda192987ab6815e44df0130f03d6c907b79134",
+        "rev": "ff17823245ab9ff7bcae6acf950bd89cba82c38c",
         "type": "github"
       },
       "original": {
@@ -401,11 +401,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1786599213,
-        "narHash": "sha256-yNJd40f11EzXBjSByCB7IPpeFFAdeoSKKM67dGkfFoU=",
+        "lastModified": 1786862985,
+        "narHash": "sha256-FBJRXmbGXiSUDvYEbfLYRkckayyZ6SK1UEqhCrIZ2Cs=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "0e251e24a4f24e036a084b6b4b2d2491af4167f4",
+        "rev": "e5bdc4a41d4c072fe1e3787eaa0320a384741d44",
         "type": "github"
       },
       "original": {
