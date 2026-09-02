@@ -40,6 +40,9 @@ let
 
   # Container-side accounts pinned to the same ids as the host so ownership of
   # the bind-mounted state and library resolves identically on both sides.
+  # This relies on the containers running without a user namespace
+  # (`privateUsers = "no"`, the nixos-containers default); enabling
+  # `--private-users` would shift every id on the bind mounts.
   mkServiceUsers = names: {
     users.groups.public_data.gid = config.users.groups.public_data.gid;
     users.users = mkUsers names;
