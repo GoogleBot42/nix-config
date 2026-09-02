@@ -29,12 +29,25 @@ let
     )
   );
 
+  # Nix settings for jobs. act parses the image's Env as dotenv lines, so a
+  # multi-line NIX_CONFIG breaks every image variable; ship a nix.conf instead.
+  # The host substituters are repeated here because the job container has
+  # its own /etc; the host store itself is visible through the /nix overlay.
+  runnerNixConf = pkgs.writeTextDir "etc/nix/nix.conf" (''
+    experimental-features = nix-command flakes
+    sandbox = false
+    substituters = ${toString config.nix.settings.substituters}
+    trusted-public-keys = ${toString config.nix.settings.trusted-public-keys}
+  '' + lib.optionalString (config.boot.binfmt.emulatedSystems != [ ]) ''
+    extra-platforms = ${toString config.boot.binfmt.emulatedSystems}
+  '');
+
   runnerImage = pkgs.dockerTools.buildImageWithNixDb {
     name = runnerImageName;
     tag = runnerImageTag;
     copyToRoot = pkgs.buildEnv {
       name = "gitea-runner-image-root";
-      pathsToLink = [ "/bin" ];
+      pathsToLink = [ "/bin" "/etc" ];
       paths = (with pkgs; [
         attic-client
         bashInteractive
@@ -54,18 +67,19 @@ let
         openssh
         xz
         zstd
-      ]) ++ binfmtInterpreterRoots;
+      ]) ++ [ runnerNixConf ] ++ binfmtInterpreterRoots;
     };
+    # Go, git and nix all derive their state directories from HOME, which act
+    # does not set for job containers.
+    extraCommands = "mkdir -m 0700 -p root";
     config = {
       Env = [
         "PATH=/bin"
         "USER=root"
+        "HOME=/root"
         "NIX_PAGER=cat"
         "SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
         "NIX_SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
-        ("NIX_CONFIG=experimental-features = nix-command flakes\nsandbox = false"
-          + lib.optionalString (config.boot.binfmt.emulatedSystems != [ ])
-          "\nextra-platforms = ${toString config.boot.binfmt.emulatedSystems}")
       ];
       Cmd = [ "${pkgs.bashInteractive}/bin/bash" ];
     };
@@ -125,6 +139,9 @@ in
           # /nix/store, so the copied-up Nix DB remains consistent with the
           # visible store paths while writes still stay out of the host store.
           options = "--volume /nix:/nix:O";
+          # act drops every bind that is not allow-listed here, silently apart
+          # from a per-job log line, so the overlay above depends on this.
+          valid_volumes = [ "/nix" ];
         };
       };
     };
