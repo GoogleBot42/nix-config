@@ -43,7 +43,7 @@ git worktree remove --force <stale-path>
 
 ```bash
 nix build .#nixosConfigurations.<hostname>.config.system.build.toplevel --no-link
-nixpkgs-fmt <changed-file>.nix
+nix run nixpkgs#nixpkgs-fmt -- <changed-file>.nix   # nixpkgs-fmt is not on PATH here
 ```
 
 ## Reviewing or updating an existing PR
