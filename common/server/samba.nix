@@ -42,8 +42,13 @@
           browseable = "yes";
           "read only" = "no";
           "guest ok" = "no";
-          "create mask" = "0644";
-          "directory mask" = "0755";
+          # Group-writable so the media services (own users, public_data as
+          # primary group) can hand files created over SMB to each other; the
+          # setgid bit keeps new directories in the group.
+          "create mask" = "0664";
+          "force create mode" = "0664";
+          "directory mask" = "2775";
+          "force directory mode" = "2775";
           "force user" = "public_data";
           "force group" = "public_data";
         };
