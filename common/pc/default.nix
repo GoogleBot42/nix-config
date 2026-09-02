@@ -40,7 +40,7 @@ in
       mpv
       nextcloud-client
       signal-desktop
-      libreoffice-fresh
+      libreoffice-stable
       thunderbird
       spotify
       arduino
