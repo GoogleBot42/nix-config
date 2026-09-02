@@ -2,11 +2,6 @@
 final: prev:
 
 {
-  # Disable CephFS support in samba to work around upstream nixpkgs bug:
-  # ceph is pinned to python3.11 which is incompatible with sphinx >= 9.1.0.
-  # https://github.com/NixOS/nixpkgs/issues/442652
-  samba4Full = prev.samba4Full.override { enableCephFS = false; };
-
   # Skip the upstream test suite: test_amd_pstate_upower is timing-sensitive
   # ("timed out waiting for ...") and intermittently fails on loaded CI
   # runners while the same derivation builds fine elsewhere.
@@ -53,12 +48,6 @@ final: prev:
     patches = (old.patches or [ ]) ++ [
       ../patches/music-assistant-zeroconf-port.patch
     ];
-    # test_emit_does_no_disk_io asserts logging never touches disk, but linecache
-    # legitimately reads source files present in the store build, so it fails in
-    # the sandbox. Unrelated to our patch; skip it.
-    disabledTests = (old.disabledTests or [ ]) ++ [
-      "test_emit_does_no_disk_io"
-    ];
   });
 
   # Ignore stale Avahi pidfiles when resolvconf refreshes static DNS at boot.
@@ -72,7 +61,7 @@ final: prev:
   plasma-bigscreen = import ./plasma-bigscreen.nix {
     inherit (prev.kdePackages)
       mkKdeDerivation plasma-workspace plasma-wayland-protocols
-      qtmultimedia qtwayland qtwebengine qcoro;
+      kdeconnect-kde qtmultimedia qtwayland qtwebengine qcoro;
     inherit (prev) lib fetchFromGitLab pkg-config sdl3 libcec wayland;
   };
 
@@ -84,36 +73,6 @@ final: prev:
   logseq = prev.logseq.override {
     electron_39 = final.electron_41;
   };
-
-  # cheetah3 is published upstream under the distribution name "ct3" (its
-  # wheel metadata is ct3-*.dist-info), but nixpkgs sets pname = "cheetah3".
-  # The pythonMetadataCheckHook looks up importlib.metadata.version("cheetah3")
-  # and fails with PackageNotFoundError. Skip that check until nixpkgs aligns
-  # the pname with the real dist name. Pulled in via esphome on s0.
-  pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
-    (pyfinal: pyprev: {
-      cheetah3 = pyprev.cheetah3.overrideAttrs (_: {
-        dontCheckPythonMetadata = true;
-      });
-    })
-  ];
-
-  # deskflow's SettingsTests::checkValidSettings asserts a locale-derived
-  # default that QLocale resolves to "" in the build sandbox (no system
-  # locale), so the test expects "ko" but gets "". Skip just that suite in
-  # checkPhase; every other unit test still runs. Drop once upstream makes
-  # the test sandbox-independent.
-  deskflow = prev.deskflow.overrideAttrs (old: {
-    checkPhase = ''
-      runHook preCheck
-
-      export QT_QPA_PLATFORM=offscreen
-      ctest --test-dir "src/unittests" --output-on-failure -E SettingsTests
-      ./bin/legacytests
-
-      runHook postCheck
-    '';
-  });
 
   pgs = prev.callPackage ../pkgs/pgs { };
 

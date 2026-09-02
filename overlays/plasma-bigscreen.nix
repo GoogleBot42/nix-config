@@ -4,6 +4,7 @@
   fetchFromGitLab,
   pkg-config,
   plasma-workspace,
+  kdeconnect-kde,
   qtmultimedia,
   qtwayland,
   qtwebengine,
@@ -15,26 +16,21 @@
 }:
 mkKdeDerivation {
   pname = "plasma-bigscreen";
-  version = "unstable-2026-03-07";
+  version = "unstable-2026-09-01";
 
   src = fetchFromGitLab {
     domain = "invent.kde.org";
     owner = "plasma";
     repo = "plasma-bigscreen";
-    rev = "bd143fea7e386bac1652b8150a3ed3d5ef7cf93c";
-    hash = "sha256-y439IX7e0+XqxqFj/4+P5le0hA7DiwA+smDsD0UH/fI=";
+    rev = "d08c7701692c5c96b5aa7e50545bae09f543e39b";
+    hash = "sha256-eWq2p2LhVOPP6Ax/Te6bByWW36WzltWBr2eEEcU/Q8o=";
   };
-
-  patches = [
-    ../patches/plasma-bigscreen-input-handler-app-id.patch
-    # Newer Qt/KDE headers dropped the transitive <QtQml> include, so the
-    # KCMs calling qmlRegister* fail to compile without it.
-    ../patches/plasma-bigscreen-qtqml-include.patch
-  ];
 
   extraNativeBuildInputs = [ pkg-config ];
 
   extraBuildInputs = [
+    # The launcher imports the org.kde.kdeconnect QML module at configure time
+    kdeconnect-kde
     qtmultimedia
     qtwayland
     qtwebengine
@@ -48,7 +44,7 @@ mkKdeDerivation {
   # Match project version to installed Plasma release so cmake version checks pass
   postPatch = ''
     substituteInPlace CMakeLists.txt \
-      --replace-fail 'set(PROJECT_VERSION "6.5.80")' \
+      --replace-fail 'set(PROJECT_VERSION "6.7.80")' \
                      'set(PROJECT_VERSION "${plasma-workspace.version}")'
 
     # Upstream references a nonexistent startplasma-waylandsession binary.
