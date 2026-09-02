@@ -178,6 +178,26 @@
   # I could not figure out how to allow the container to access the encoder
   services.jellyfin.enable = true;
   users.users.${config.services.jellyfin.user}.extraGroups = [ "public_data" ];
+  systemd.services.jellyfin-health-check = {
+    description = "Restart Jellyfin when its health endpoint hangs";
+    after = [ "jellyfin.service" ];
+    serviceConfig.Type = "oneshot";
+    script = ''
+      if systemctl is-active --quiet jellyfin.service && \
+        ! ${pkgs.curl}/bin/curl --silent --show-error --fail --max-time 10 \
+          --output /dev/null http://127.0.0.1:8096/health; then
+        systemctl restart jellyfin.service
+      fi
+    '';
+  };
+  systemd.timers.jellyfin-health-check = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnBootSec = "10m";
+      OnUnitActiveSec = "2m";
+      Unit = "jellyfin-health-check.service";
+    };
+  };
   # VAAPI decode/encode comes from mesa's radeonsi driver (Ryzen 7900X iGPU),
   # which hardware.graphics.enable already provides
   hardware.graphics = {
