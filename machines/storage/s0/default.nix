@@ -270,7 +270,7 @@
           };
         }
         (mkVirtualHost "vacuum.s0.neet.dev" "http://192.168.1.125") # valetudo
-        (mkVirtualHost "sandman.s0.neet.dev" "http://192.168.9.14:3000") # es
+        (mkVirtualHost "sandman.s0.neet.dev" "http://192.168.0.109:3000") # es
         (mkVirtualHost "todo.s0.neet.dev" "http://localhost:${toString config.services.vikunja.port}")
         (mkVirtualHost "budget.s0.neet.dev" "http://localhost:${toString config.services.actual.settings.port}") # actual budget
         (mkVirtualHost "linkwarden.s0.neet.dev" "http://localhost:${toString config.services.linkwarden.port}")
