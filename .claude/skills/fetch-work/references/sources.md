@@ -25,6 +25,23 @@ tea issues list --repo zuckerberg/nix-config
 tea pr list --repo zuckerberg/nix-config
 ```
 
+The list shows titles and labels only; that is not enough to rank. Read
+every open issue body in one call and check what each references against
+current master before ranking (token from `~/.config/tea/config.yml`):
+
+```sh
+curl -s -H "Authorization: token $TOKEN" \
+  "https://git.neet.dev/api/v1/repos/zuckerberg/nix-config/issues?state=open&type=issues&limit=50" \
+  | nix run nixpkgs#jq -- -r '.[] | "== #\(.number) \(.title)\n\(.body)\n"'
+```
+
+Then grep the repo for each path or value an issue cites. Issues whose
+subject no longer exists are closable and should be reported as such, and
+a `needs-human` label may be stale (e.g. creating a new agenix secret only
+needs public keys, so the repo side of a "rotate secret" issue is
+agent-doable). Open PRs also carry review comments: a user question on an
+agent PR is a high-readiness item in its own right.
+
 Open PRs awaiting merge or review are higher-readiness than open issues
 with no branch yet.
 
@@ -54,3 +71,11 @@ TODO.md.
 Statuses come from `GET /api/v1/endpoints/statuses` (JSON). The agent
 workspace has no `jq` or `python3` on PATH — parse with
 `nix run nixpkgs#jq -- ...`.
+
+That list keeps only the last ~50 probe results per endpoint (about four
+hours at a 5-minute interval). For "did this actually go down on date X"
+questions use the per-endpoint history instead: `GET
+/api/v1/endpoints/<group>_<name-slug>/statuses` (e.g. `s0_zigbee2mqtt`)
+returns an `events` array of HEALTHY/UNHEALTHY transitions with timestamps
+that goes back months (sqlite-backed on kif). Compare against a sibling
+endpoint on the same host to tell a service outage from a host-wide one.
