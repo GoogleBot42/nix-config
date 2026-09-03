@@ -28,6 +28,21 @@ final: prev:
     doCheck = false;
   };
 
+  # Ceph pins its Python env to python312, which hydra does not fully cache, so
+  # its dependency closure gets built here (reached on s0 via sambaFull ->
+  # ceph -> openai). inline-snapshot's documentation tests (tests/test_docs.py)
+  # diff rendered pytest output against text embedded in the docs and fail on
+  # our builders while the library itself is fine. Scoped to python312 only:
+  # inline-snapshot is a check input of pydantic, so a global override would
+  # invalidate the cached pydantic closure for every interpreter.
+  python312 = prev.python312.override {
+    packageOverrides = pyfinal: pyprev: {
+      inline-snapshot = pyprev.inline-snapshot.overridePythonAttrs (old: {
+        disabledTestPaths = (old.disabledTestPaths or [ ]) ++ [ "tests/test_docs.py" ];
+      });
+    };
+  };
+
   # Retry on push failure to work around hyper connection pool race condition.
   # https://github.com/zhaofengli/attic/pull/246
   attic-client = prev.attic-client.overrideAttrs (old: {
