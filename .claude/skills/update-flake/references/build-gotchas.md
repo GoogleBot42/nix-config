@@ -75,3 +75,41 @@ This works because the daemon executes i686-linux code directly on an
 x86_64-linux host (no emulation needed, just a permissive platform
 allowlist), and a trusted user is allowed to widen `extra-platforms` for
 the invocation.
+
+## Expected long local builds (not regressions)
+
+Run `nix flake update` and every machine build with `run_in_background` —
+the update alone can exceed the Bash tool's 10-minute foreground timeout
+while unpacking inputs, and the builds below take hours.
+
+- **fry and howl rebuild Firefox from source on every update.**
+  `common/pc/firefox.nix` overrides `firefox-unwrapped` with
+  `privacySupport = true`, so the result is never in cache.nixos.org, and
+  the build is PGO (two compile passes plus an xvfb profiling run) — about
+  two hours on this workspace. Both machines share the derivation, so the
+  second one waits on the first's lock; that is not a hang.
+- **s0 compiles Ceph and its Python 3.12 closure.** `sambaFull` pulls in
+  ceph, which pins `python312`; hydra does not fully cache that interpreter's
+  package set, so the whole `openai -> sqlframe -> narwhals -> ...` chain
+  builds here and any upstream test flake in it fails the s0 build.
+- **zoidberg needs `--extra-platforms i686-linux`** (see above) for Steam.
+
+## Scoping Python test-skip overrides
+
+When a locally-built Python package fails its tests, do NOT skip them via a
+global `pythonPackagesExtensions` entry. Many test-only packages
+(`inline-snapshot` is a check input of `pydantic`) sit in the closure of
+widely cached libraries, so a global override changes their store paths on
+every interpreter, invalidates the upstream cache for the whole downstream
+set, and surfaces a cascade of unrelated local test failures. Scope the
+override to the interpreter that is actually uncached instead:
+
+```nix
+python312 = prev.python312.override {
+  packageOverrides = pyfinal: pyprev: { <pkg> = pyprev.<pkg>.overridePythonAttrs (...); };
+};
+```
+
+Verify the scope before rebuilding: the default interpreter's `pydantic`
+`outPath` must be unchanged and still return 200 from
+`https://cache.nixos.org/<hash>.narinfo`.
