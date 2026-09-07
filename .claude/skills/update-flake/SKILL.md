@@ -26,10 +26,20 @@ Build errors typically fall into these categories:
 
 ### 3. Build All Machines
 
-See [references/machines.md](references/machines.md). Get machine list and build each:
+See [references/machines.md](references/machines.md). Get the machine list,
+then **evaluate every machine before building any of them** — an evaluation
+error (a renamed package argument, a removed option) surfaces in a couple of
+minutes per machine, whereas the same break found mid-build costs the hours
+that `references/build-gotchas.md` documents:
 
 ```bash
 nix eval .#nixosConfigurations --apply 'x: builtins.attrNames x' --json
+nix eval --raw .#nixosConfigurations.<hostname>.config.system.build.toplevel.drvPath
+```
+
+Once all machines evaluate, build each:
+
+```bash
 nix build .#nixosConfigurations.<hostname>.config.system.build.toplevel --no-link
 ```
 

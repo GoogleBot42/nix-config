@@ -82,12 +82,13 @@ Run `nix flake update` and every machine build with `run_in_background` —
 the update alone can exceed the Bash tool's 10-minute foreground timeout
 while unpacking inputs, and the builds below take hours.
 
-- **fry and howl rebuild Firefox from source on every update.**
-  `common/pc/firefox.nix` overrides `firefox-unwrapped` with
-  `privacySupport = true`, so the result is never in cache.nixos.org, and
-  the build is PGO (two compile passes plus an xvfb profiling run) — about
-  two hours on this workspace. Both machines share the derivation, so the
-  second one waits on the first's lock; that is not a hang.
+- **Every `personal` machine rebuilds Firefox from source on every update.**
+  `common/pc/firefox.nix` overrides `firefox-unwrapped` with non-default
+  privacy flags, so the result is never in cache.nixos.org, and the build is
+  PGO (two compile passes plus an xvfb profiling run) — about 1.5 hours on
+  this workspace. fry, howl and zoidberg all share the one derivation, so
+  whichever is built first absorbs the cost and the rest finish in minutes;
+  a later machine sitting on the first one's lock is not a hang.
 - **s0 compiles Ceph and its Python 3.12 closure.** `sambaFull` pulls in
   ceph, which pins `python312`; hydra does not fully cache that interpreter's
   package set, so the whole `openai -> sqlframe -> narwhals -> ...` chain
