@@ -15,8 +15,11 @@ let
   cfg = config.de;
 
   somewhatPrivateFF = pkgs.firefox-unwrapped.override {
-    privacySupport = true;
-    webrtcSupport = true; # mostly private ;)
+    # Disabling data reporting also disables the crash reporter, and
+    # disabling location also disables necko-wifi.
+    enableDataReporting = false;
+    enableLocation = false;
+    enableWebRTC = true; # mostly private ;)
   };
 
   firefox = pkgs.wrapFirefox somewhatPrivateFF {
