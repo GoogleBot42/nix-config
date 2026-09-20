@@ -37,10 +37,17 @@ in
       };
     };
 
-    # Arctis Nova Pro Omni: always open the headset in its 96kHz/24-bit mode
-    # (the mic only does 48kHz mono, so only the output node is matched)
+    # Arctis Nova Pro Omni. The card runs on the pro-audio profile, which turns
+    # on IRQ-driven scheduling (api.alsa.disable-tsched) for every node. In that
+    # mode PipeWire never corrects the capture buffer level: whatever offset the
+    # USB stream starts with, plus anything a late IRQ leaves behind, stays for
+    # the life of the node (spa/plugins/alsa/alsa-pcm.c, update_time). Timer
+    # scheduling keeps the level at target, halves the period for batch (USB)
+    # devices and adds headroom, so keep both nodes on it.
     services.pipewire.wireplumber.extraConfig."51-arctis-nova-pro-hires" = {
       "monitor.alsa.rules" = [
+        # always open the headset output in its 96kHz/24-bit mode
+        # (the mic only does 48kHz mono, so only the output node is matched)
         {
           matches = [
             { "node.name" = "~alsa_output.usb-.*Arctis_Nova_Pro_Omni.*"; }
@@ -49,12 +56,12 @@ in
             "update-props" = {
               "audio.rate" = 96000;
               "audio.format" = "S24LE";
+              "api.alsa.disable-tsched" = false;
             };
           };
         }
         # never suspend the mic: reopening the capture stream after idle
-        # suspend can leave it with a stale, high-latency buffer and eats
-        # the first moments of speech when apps grab the mic
+        # suspend eats the first moments of speech when apps grab the mic
         {
           matches = [
             { "node.name" = "~alsa_input.usb-.*Arctis_Nova_Pro_Omni.*"; }
@@ -62,6 +69,7 @@ in
           actions = {
             "update-props" = {
               "session.suspend-timeout-seconds" = 0;
+              "api.alsa.disable-tsched" = false;
             };
           };
         }
