@@ -22,6 +22,13 @@
         --output /dev/null http://127.0.0.1:48072/health
     '';
   };
+  ntfy-alerts.recoveryChecks.transmission = {
+    delaySec = 45;
+    check = ''
+      ${pkgs.curl}/bin/curl --silent --show-error --max-time 10 \
+        --output /dev/null http://transmission.containers:8080/transmission/rpc
+    '';
+  };
   ntfy-alerts.dimmTempCheck.enable = true;
 
   # system.autoUpgrade.enable = true;
