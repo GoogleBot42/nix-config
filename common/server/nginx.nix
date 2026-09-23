@@ -14,6 +14,10 @@ let
     group = lib.mkDefault cfg.group;
     dnsResolver = "1.1.1.1:53";
     dnsPropagationCheck = false;
+    extraLegoFlags = [
+      "--dns.propagation-wait"
+      "90s"
+    ];
   };
 in
 {
