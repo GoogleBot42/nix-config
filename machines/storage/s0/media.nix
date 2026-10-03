@@ -19,6 +19,9 @@ let
   mediaDir = "/data/samba/Public/Media";
   downloadDir = "${mediaDir}/Transmission";
 
+  transmissionIp = "10.100.0.10";
+  servarrIp = "10.100.0.11";
+
   # bazarr has no static id in nixpkgs, and the containers are ephemeral so a
   # dynamically allocated uid would not survive a restart. 399 sits above the
   # static ids nixpkgs assigns and below its dynamic range (400-999).
@@ -63,7 +66,7 @@ in
     serverLocation = "swiss";
 
     containers.transmission = {
-      ip = "10.100.0.10";
+      ip = transmissionIp;
       # Transmission only writes to its own download folder; the *arr apps pull
       # from it, so it needs nothing else from the library. Mounting all of
       # /var/lib would hand the most internet-exposed container write access
@@ -102,9 +105,15 @@ in
             "rpc-enabled" = true;
             "rpc-port" = 8080;
             "rpc-bind-address" = "0.0.0.0";
-            # Only nginx on the host and the port-forward hook in the VPN
-            # container talk to the RPC socket.
-            "rpc-whitelist" = "127.0.0.1,${cfg.hostAddress},${cfg.vpnAddress}";
+            # The RPC socket is reached by nginx on the host, the port-forward
+            # hook in the VPN container, and the *arr apps in the servarr
+            # container, which share the bridge and connect from their own IP.
+            "rpc-whitelist" = lib.concatStringsSep "," [
+              "127.0.0.1"
+              cfg.hostAddress
+              cfg.vpnAddress
+              servarrIp
+            ];
             "rpc-host-whitelist-enabled" = false;
 
             "port-forwarding-enabled" = true;
@@ -156,7 +165,7 @@ in
     };
 
     containers.servarr = {
-      ip = "10.100.0.11";
+      ip = servarrIp;
       # Persist only the state of the services in this container (see note on
       # the transmission container). Prowlarr uses DynamicUser, so its state
       # lives under /var/lib/private.
