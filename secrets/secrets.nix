@@ -43,6 +43,11 @@ with roles;
   "backblaze-s3-backups.age".publicKeys = everyone;
   "restic-password.age".publicKeys = everyone;
 
+  # fleet metrics (Grafana)
+  "grafana-admin-password.age".publicKeys = metrics;
+  "grafana-secret-key.age".publicKeys = metrics;
+  "grafana-renderer-env.age".publicKeys = metrics;
+
   # ntfy alerts
   "ntfy-token.age".publicKeys = everyone;
 

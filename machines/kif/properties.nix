@@ -17,6 +17,7 @@
     "gitea"
     "dns-challenge"
     "ntfy"
+    "metrics"
   ];
 
   publicIP = "15.204.91.158";
