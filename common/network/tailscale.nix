@@ -8,6 +8,12 @@ in
 {
   options.services.tailscale.exitNode = mkEnableOption "Enable exit node support";
 
+  options.services.tailscale.tailnetDomain = mkOption {
+    type = types.str;
+    default = "koi-bebop.ts.net";
+    description = "MagicDNS domain of the tailnet every machine joins.";
+  };
+
   config.services.tailscale.enable = mkDefault (!config.boot.isContainer);
 
   # Trust Tailscale interface - access control is handled by Tailscale ACLs.
@@ -16,7 +22,7 @@ in
 
   # MagicDNS
   config.networking.nameservers = mkIf cfg.enable [ "1.1.1.1" "8.8.8.8" ];
-  config.networking.search = mkIf cfg.enable [ "koi-bebop.ts.net" ];
+  config.networking.search = mkIf cfg.enable [ cfg.tailnetDomain ];
 
   # exit node
   config.networking.firewall.checkReversePath = mkIf cfg.exitNode "loose";

@@ -295,6 +295,24 @@
             statusCheck = false;
             id = "16_836_status";
           };
+          grafana = {
+            title = "Grafana";
+            description = "grafana.kif.neet.dev";
+            icon = "hl-grafana";
+            url = "https://grafana.kif.neet.dev";
+            target = "sametab";
+            statusCheck = false;
+            id = "17_836_grafana";
+          };
+          metrics = {
+            title = "VictoriaMetrics";
+            description = "metrics.kif.neet.dev";
+            icon = "hl-victoriametrics";
+            url = "https://metrics.kif.neet.dev/vmui";
+            target = "sametab";
+            statusCheck = false;
+            id = "18_836_metrics";
+          };
         };
         servicesList = [
           servicesItems.ntfy
@@ -307,6 +325,8 @@
           servicesItems.thelounge
           servicesItems.pgs
           servicesItems.status
+          servicesItems.grafana
+          servicesItems.metrics
         ];
       in
       {

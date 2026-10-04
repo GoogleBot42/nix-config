@@ -16,5 +16,6 @@
     ./ntfy.nix
     ./gatus.nix
     ./pgs.nix
+    ./metrics.nix
   ];
 }

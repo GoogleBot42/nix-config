@@ -141,6 +141,26 @@ in
             alerts = [{ type = "ntfy"; }];
           }
           {
+            name = "Grafana";
+            group = "kif";
+            url = "https://grafana.kif.neet.dev/api/health";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
+            name = "VictoriaMetrics";
+            group = "kif";
+            url = "https://metrics.kif.neet.dev/health";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
             name = "Hermes Dashboard";
             group = "fry";
             url = "https://hermes.fry.neet.dev/api/status";

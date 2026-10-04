@@ -123,6 +123,12 @@
   services.gatus.enable = true;
   services.gatus.hostname = "status.neet.dev";
 
+  # fleet metrics
+  services.victoriametrics.enable = true;
+  services.victoriametrics.hostname = "metrics.kif.neet.dev";
+  services.grafana.enable = true;
+  services.grafana.hostname = "grafana.kif.neet.dev";
+
   # Keep public web listeners open overall, but pin selected vhosts to the
   # tailnet address.
   services.nginx.virtualHosts."runyan.org" = {
@@ -163,6 +169,14 @@
   services.nginx.virtualHosts."status.neet.dev" = {
     tailscaleOnly = true;
     useACMEHost = "neet.dev";
+  };
+  services.nginx.virtualHosts."metrics.kif.neet.dev" = {
+    tailscaleOnly = true;
+    useACMEHost = "kif.neet.dev";
+  };
+  services.nginx.virtualHosts."grafana.kif.neet.dev" = {
+    tailscaleOnly = true;
+    useACMEHost = "kif.neet.dev";
   };
   services.nginx.virtualHosts."ntfy.neet.dev" = {
     useACMEHost = "neet.dev";

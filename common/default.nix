@@ -7,6 +7,7 @@
     ./flakes.nix
     ./auto-update.nix
     ./ntfy
+    ./node-exporter.nix
     ./shell.nix
     ./network
     ./boot
