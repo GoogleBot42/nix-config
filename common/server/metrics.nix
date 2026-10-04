@@ -64,7 +64,7 @@ in
           ] ++ lib.optional config.services.pgs.enable {
             job_name = "pgs";
             static_configs = [{
-              targets = [ "127.0.0.1:${toString config.services.pgs.prometheusPort}" ];
+              targets = [ "${config.services.pgs.sshHost}:${toString config.services.pgs.prometheusPort}" ];
               labels.instance = hostName;
             }];
           };
