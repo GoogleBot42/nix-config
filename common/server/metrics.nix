@@ -33,10 +33,7 @@ let
       # /nix/store is a bind mount of / on every host, so it would alert twice.
       usage = ''100 * (1 - node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|ramfs", mountpoint!="/nix/store"} / node_filesystem_size_bytes)'';
       hostFilter = lib.optionalString (hosts != null)
-        " and on(instance) up{job=\"node\", instance=~\"${lib.concatStringsSep "|" hosts}\"}"; |
-      overlay|squashfs|ramfs"} / node_filesystem_size_bytes)'';
-      hostFilter = lib.optionalString (hosts != null)
-        '' and on(instance) up{job="node", instance=~"${lib.concatStringsSep "|" hosts}"}'';
+        " and on(instance) up{job=\"node\", instance=~\"${lib.concatStringsSep "|" hosts}\"}";
     in
     {
       inherit uid;
@@ -113,17 +110,15 @@ in
       services.victoriametrics = {
         listenAddress = "127.0.0.1:${toString vmPort}";
         retentionPeriod = "5y";
-        extraOptions = [ "-selfScrapeInterval = 30 s " ];
+        extraOptions = [ "-selfScrapeInterval=30s" ];
         prometheusConfig = {
-          global.scrape_interval = " 30
-        s ";
-        scrape_configs = [
-          {
-            job_name = "
-        node ";
-        static_configs = map
-          (host: {
-            targets = [ "${host}.${tailnet}:${toString config.services.prometheus.exporters.node.port}" ];
+          global.scrape_interval = "30s";
+          scrape_configs = [
+            {
+              job_name = "node";
+              static_configs = map
+                (host: {
+                  targets = [ "${host}.${tailnet}:${toString config.services.prometheus.exporters.node.port}" ];
                   labels.instance = host;
                 })
                 (lib.attrNames config.machines.hosts);
@@ -279,11 +274,10 @@ in
         enableACME = lib.mkDefault true;
         forceSSL = true;
         locations."/" = {
-          proxyPass = "http://127.0.0.1:${toString grafanaPort}" ;
+          proxyPass = "http://127.0.0.1:${toString grafanaPort}";
           proxyWebsockets = true;
         };
       };
     })
   ];
 }
-
