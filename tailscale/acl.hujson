@@ -21,6 +21,8 @@
 	// │ iperf3             │ ✓           │ ✗        │ ✗      │ ✗   │
 	// ├────────────────────┼─────────────┼──────────┼────────┼─────┤
 	// │ IoT control        │ ✓           │ ✗        │ ✓      │ ✗   │
+	// ├────────────────────┼─────────────┼──────────┼────────┼─────┤
+	// │ node_exporter      │ ✗           │ ✗        │ ✓      │ ✗   │
 	// └────────────────────┴─────────────┴──────────┴────────┴─────┘
 
 	"tagOwners": {
@@ -109,6 +111,14 @@
 			"src": ["tag:server", "tag:workstation"],
 			"dst": ["tag:iot"],
 			"ip":  ["*"],
+		},
+		// ===========================================
+		// NODE EXPORTER (9100) - scraped by the metrics server
+		// ===========================================
+		{
+			"src": ["tag:server"],
+			"dst": ["tag:server", "tag:workstation"],
+			"ip":  ["9100"],
 		},
 		// ===========================================
 		// EXIT NODE
@@ -325,6 +335,25 @@
 		{
 			"src":  "tag:iot",
 			"deny": ["tag:external:22", "tag:external:80"],
+		},
+		// ===========================================
+		// NODE EXPORTER TESTS
+		// ===========================================
+		{
+			"src":    "tag:server",
+			"accept": ["tag:server:9100", "tag:workstation:9100"],
+		},
+		{
+			"src":  "tag:workstation",
+			"deny": ["tag:server:9100"],
+		},
+		{
+			"src":  "tag:external",
+			"deny": ["tag:server:9100", "tag:workstation:9100"],
+		},
+		{
+			"src":  "tag:iot",
+			"deny": ["tag:server:9100", "tag:workstation:9100"],
 		},
 		// ===========================================
 		// DATABASE TESTS (always denied)
