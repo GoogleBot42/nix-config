@@ -128,6 +128,7 @@
   services.victoriametrics.hostname = "metrics.kif.neet.dev";
   services.grafana.enable = true;
   services.grafana.hostname = "grafana.kif.neet.dev";
+  services.grafana.diskAlerts.warningHosts = [ "kif" "s0" ];
 
   # Keep public web listeners open overall, but pin selected vhosts to the
   # tailnet address.

@@ -23,6 +23,53 @@ let
     mkdir -p $out
     cp ${nodeExporterFullDashboard} $out/node-exporter-full.json
   '';
+
+  diskCfg = grafanaCfg.diskAlerts;
+
+  # Filesystem usage in percent, per host and mountpoint, filtered to the
+  # series above `threshold`; `hosts` (null = every host) narrows it by instance.
+  mkDiskRule = { uid, severity, threshold, hosts }:
+    let
+      # /nix/store is a bind mount of / on every host, so it would alert twice.
+      usage = ''100 * (1 - node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|ramfs", mountpoint!="/nix/store"} / node_filesystem_size_bytes)'';
+      hostFilter = lib.optionalString (hosts != null)
+        " and on(instance) up{job=\"node\", instance=~\"${lib.concatStringsSep "|" hosts}\"}"; |
+      overlay|squashfs|ramfs"} / node_filesystem_size_bytes)'';
+      hostFilter = lib.optionalString (hosts != null)
+        '' and on(instance) up{job="node", instance=~"${lib.concatStringsSep "|" hosts}"}'';
+    in
+    {
+      inherit uid;
+      title = "Filesystem above ${toString threshold}%${lib.optionalString (hosts != null) " (${lib.concatStringsSep ", " hosts})"}";
+      condition = "C";
+      data = [
+        {
+          refId = "A";
+          relativeTimeRange = { from = 300; to = 0; };
+          datasourceUid = "victoriametrics";
+          model = {
+            refId = "A";
+            instant = true;
+            expr = "(${usage} > ${toString threshold})${hostFilter}";
+          };
+        }
+        {
+          refId = "C";
+          datasourceUid = "__expr__";
+          model = {
+            refId = "C";
+            type = "threshold";
+            expression = "A";
+            conditions = [{ evaluator = { type = "gt"; params = [ 0 ]; }; }];
+          };
+        }
+      ];
+      for = "10m";
+      noDataState = "OK";
+      execErrState = "Error";
+      labels = { inherit severity; };
+      annotations.summary = ''{{ $labels.instance }}:{{ $labels.mountpoint }} is {{ printf "%.0f" $values.A.Value }}% full'';
+    };
 in
 {
   options.services.victoriametrics.hostname = lib.mkOption {
@@ -41,6 +88,24 @@ in
       default = "grafana";
       description = "ntfy topic the provisioned alerting contact point publishes to.";
     };
+    diskAlerts = {
+      critical = lib.mkOption {
+        type = lib.types.ints.between 1 100;
+        default = 90;
+        description = "Filesystem usage percentage at which every host raises a critical alert.";
+      };
+      warning = lib.mkOption {
+        type = lib.types.ints.between 1 100;
+        default = 50;
+        description = "Filesystem usage percentage at which the hosts in warningHosts raise an early warning.";
+      };
+      warningHosts = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [ ];
+        example = [ "kif" "s0" ];
+        description = "Hosts (instance labels) that also get the early-warning alert.";
+      };
+    };
   };
 
   config = lib.mkMerge [
@@ -48,15 +113,17 @@ in
       services.victoriametrics = {
         listenAddress = "127.0.0.1:${toString vmPort}";
         retentionPeriod = "5y";
-        extraOptions = [ "-selfScrapeInterval=30s" ];
+        extraOptions = [ "-selfScrapeInterval = 30 s " ];
         prometheusConfig = {
-          global.scrape_interval = "30s";
-          scrape_configs = [
-            {
-              job_name = "node";
-              static_configs = map
-                (host: {
-                  targets = [ "${host}.${tailnet}:${toString config.services.prometheus.exporters.node.port}" ];
+          global.scrape_interval = " 30
+        s ";
+        scrape_configs = [
+          {
+            job_name = "
+        node ";
+        static_configs = map
+          (host: {
+            targets = [ "${host}.${tailnet}:${toString config.services.prometheus.exporters.node.port}" ];
                   labels.instance = host;
                 })
                 (lib.attrNames config.machines.hosts);
@@ -150,6 +217,28 @@ in
                 receiver = "ntfy";
               }];
             };
+            rules.settings = {
+              apiVersion = 1;
+              groups = [{
+                orgId = 1;
+                name = "fleet";
+                folder = "Fleet";
+                interval = "1m";
+                rules = [
+                  (mkDiskRule {
+                    uid = "fleet-disk-critical";
+                    severity = "critical";
+                    threshold = diskCfg.critical;
+                    hosts = null;
+                  })
+                ] ++ lib.optional (diskCfg.warningHosts != [ ]) (mkDiskRule {
+                  uid = "fleet-disk-warning";
+                  severity = "warning";
+                  threshold = diskCfg.warning;
+                  hosts = diskCfg.warningHosts;
+                });
+              }];
+            };
           };
         };
       };
@@ -190,10 +279,11 @@ in
         enableACME = lib.mkDefault true;
         forceSSL = true;
         locations."/" = {
-          proxyPass = "http://127.0.0.1:${toString grafanaPort}";
+          proxyPass = "http://127.0.0.1:${toString grafanaPort}" ;
           proxyWebsockets = true;
         };
       };
     })
   ];
 }
+
