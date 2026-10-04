@@ -26,7 +26,16 @@ in
   config = lib.mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
       # https://github.com/NixOS/nixpkgs/pull/328086#issuecomment-2235384618
-      gparted
+      # gparted runs as root via pkexec, which strips the user's environment and
+      # GTK config, so the wrapper has to carry the Plasma GTK theme itself
+      (gparted.overrideAttrs (old: {
+        preFixup = old.preFixup + ''
+          gappsWrapperArgs+=(
+            --set GTK_THEME Breeze-Dark
+            --prefix XDG_DATA_DIRS : "${kdePackages.breeze-gtk}/share"
+          )
+        '';
+      }))
     ];
 
     # gparted's launcher escalates through pkexec, which needs the setuid wrapper
