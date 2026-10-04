@@ -29,6 +29,9 @@ in
       gparted
     ];
 
+    # gparted's launcher escalates through pkexec, which needs the setuid wrapper
+    security.polkit.enablePkexecWrapper = true;
+
     # Applications
     users.users.googlebot.packages = with pkgs; [
       chromium
