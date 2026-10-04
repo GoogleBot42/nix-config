@@ -9,7 +9,8 @@ let
   vmCfg = config.services.victoriametrics;
   grafanaCfg = config.services.grafana;
   vmPort = 8428;
-  grafanaPort = 3000;
+  # Not 3000: Gitea owns that on kif.
+  grafanaPort = 3031;
   tailnet = config.services.tailscale.tailnetDomain;
   hostName = config.networking.hostName;
 
