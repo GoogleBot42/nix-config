@@ -101,7 +101,9 @@
 
     # Hermes agent (Nous Research)
     hermes-agent = {
-      url = "github:NousResearch/hermes-agent";
+      # Keep Hindsight in the sealed Nix venv until the catalog-plugin migration is packaged.
+      # Cleanup: https://git.neet.dev/zuckerberg/nix-config/issues/58
+      url = "github:NousResearch/hermes-agent/cfdbbb6e35010ace89fbe8243ee82fa4de143e10";
       inputs = {
         nixpkgs.follows = "nixpkgs";
         # Collapse duplicate copies of pyproject-nix and uv2nix that the

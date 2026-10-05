@@ -1,39 +1,54 @@
-diff --git a/music_assistant/providers/spotify_connect/__init__.py b/music_assistant/providers/spotify_connect/__init__.py
-index 85305a0..469d2f0 100644
---- a/music_assistant/providers/spotify_connect/__init__.py
-+++ b/music_assistant/providers/spotify_connect/__init__.py
-@@ -52,6 +52,7 @@ if TYPE_CHECKING:
- 
- CONF_MASS_PLAYER_ID = "mass_player_id"
- CONF_PUBLISH_NAME = "publish_name"
+diff --git a/music_assistant/providers/spotify_connect/go_librespot/backend.py b/music_assistant/providers/spotify_connect/go_librespot/backend.py
+index 34a152a..522d6d1 100644
+--- a/music_assistant/providers/spotify_connect/go_librespot/backend.py
++++ b/music_assistant/providers/spotify_connect/go_librespot/backend.py
+@@ -84,0 +85 @@ class GoLibrespotBackend(SpotifyConnectBackend):
++        zeroconf_port: int = 0,
+@@ -103,0 +105,2 @@ class GoLibrespotBackend(SpotifyConnectBackend):
++        :param zeroconf_port: Fixed TCP port for Spotify Connect discovery
++            (0 lets go-librespot select a random port).
+@@ -113,0 +117 @@ class GoLibrespotBackend(SpotifyConnectBackend):
++        self._zeroconf_port = zeroconf_port
+@@ -290,0 +295,4 @@ class GoLibrespotBackend(SpotifyConnectBackend):
++        # Pin the discovery listener when configured so the firewall can allow it.
++        if getattr(self, "_zeroconf_port", 0) > 0:
++            config["zeroconf_port"] = self._zeroconf_port
++
+diff --git a/music_assistant/providers/spotify_connect/provider.py b/music_assistant/providers/spotify_connect/provider.py
+index d039016..82a7818 100644
+--- a/music_assistant/providers/spotify_connect/provider.py
++++ b/music_assistant/providers/spotify_connect/provider.py
+@@ -87,0 +88 @@ CONF_AUDIO_QUALITY = "audio_quality"
 +CONF_ZEROCONF_PORT = "zeroconf_port"
- 
- # Special value for auto player selection
- PLAYER_ID_AUTO = "__auto__"
-@@ -148,6 +149,15 @@ async def get_config_entries(
-             description="How should this Spotify Connect device be named in the Spotify app?",
-             default_value="Music Assistant",
-         ),
-+        ConfigEntry(
-+            key=CONF_ZEROCONF_PORT,
-+            type=ConfigEntryType.INTEGER,
-+            label="Zeroconf port",
-+            description="Fixed TCP port for Spotify Connect discovery (zeroconf). "
-+            "Set to a specific port and open it in your firewall to allow "
-+            "devices on the network to discover this player. 0 = random port.",
-+            default_value=0,
-+        ),
-     )
- 
- 
-@@ -683,6 +693,10 @@ class SpotifyConnectProvider(PluginProvider):
-             "credentials": {"type": "zeroconf", "zeroconf": {"persist_credentials": True}},
-             "server": {"enabled": True, "address": "127.0.0.1", "port": self._api_port},
-         }
-+        # Pin the zeroconf discovery port when configured (0 = random), so it can
-+        # be opened in a firewall for cross-subnet Spotify Connect discovery.
-+        if (zeroconf_port := int(self.config.get_value(CONF_ZEROCONF_PORT) or 0)) > 0:
-+            config["zeroconf_port"] = zeroconf_port
-         # Advertise the Spotify Connect device only on the interface the streams
-         # server binds to, so it lands on the right network on multi-homed hosts.
-         # go-librespot selects advertise interfaces by name, so map the IP to one.
+@@ -264,0 +266,5 @@ class SpotifyConnectProvider(PluginProvider):
++            ConfigEntry(
++                key=CONF_ZEROCONF_PORT,
++                type=ConfigEntryType.INTEGER,
++                default_value=0,
++            ),
+@@ -781,0 +788 @@ class SpotifyConnectProvider(PluginProvider):
++            zeroconf_port=self._resolve_zeroconf_port(),
+@@ -807,0 +815,5 @@ class SpotifyConnectProvider(PluginProvider):
++    def _resolve_zeroconf_port(self) -> int:
++        """Return the fixed zeroconf discovery port (0 = random)."""
++        value = cast("int | None", self.config.get_value(CONF_ZEROCONF_PORT))
++        return max(0, min(int(value or 0), 65535))
++
+diff --git a/music_assistant/providers/spotify_connect/strings.json b/music_assistant/providers/spotify_connect/strings.json
+index 1af7c77..41cd0bd 100644
+--- a/music_assistant/providers/spotify_connect/strings.json
++++ b/music_assistant/providers/spotify_connect/strings.json
+@@ -56 +56,5 @@
+-    }
++    },
++    "zeroconf_port": {
++      "label": "Zeroconf port",
++      "description": "Fixed TCP port for Spotify Connect discovery. Set this to a specific port and open it in your firewall to allow devices on the network to discover this player. Use 0 for a random port."
++    }
+diff --git a/music_assistant/translations/en.json b/music_assistant/translations/en.json
+index 6d4b302..0f4c345 100644
+--- a/music_assistant/translations/en.json
++++ b/music_assistant/translations/en.json
+@@ -2405,0 +2406,2 @@
++  "provider.spotify_connect.config_entries.zeroconf_port.description": "Fixed TCP port for Spotify Connect discovery. Set this to a specific port and open it in your firewall to allow devices on the network to discover this player. Use 0 for a random port.",
++  "provider.spotify_connect.config_entries.zeroconf_port.label": "Zeroconf port",

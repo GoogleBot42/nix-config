@@ -1,0 +1,29 @@
+diff --git a/resources/package.json b/resources/package.json
+index d42b7fb..48788ec 100644
+--- a/resources/package.json
++++ b/resources/package.json
+@@ -25,7 +25,7 @@
+     "@logseq/rsapi": "0.0.92",
+     "@sentry/electron": "2.5.1",
+     "abort-controller": "3.0.0",
+-    "better-sqlite3": "12.8.0",
++    "better-sqlite3": "12.11.1",
+     "chokidar": "^3.5.1",
+     "command-exists": "1.2.9",
+     "diff-match-patch": "1.0.5",
+diff --git a/static/yarn.lock b/static/yarn.lock
+index 4738ef9..2bf18aa 100644
+--- a/static/yarn.lock
++++ b/static/yarn.lock
+@@ -1646,7 +1646,7 @@
+-better-sqlite3@12.8.0:
+-  version "12.8.0"
+-  resolved "https://registry.yarnpkg.com/better-sqlite3/-/better-sqlite3-12.8.0.tgz#ec9ccd4a426a35f3b9355c147af6c92a6ddd6862"
+-  integrity sha512-RxD2Vd96sQDjQr20kdP+F+dK/1OUNiVOl200vKBZY8u0vTwysfolF6Hq+3ZK2+h8My9YvZhHsF+RSGZW2VYrPQ==
++better-sqlite3@12.11.1:
++  version "12.11.1"
++  resolved "https://registry.yarnpkg.com/better-sqlite3/-/better-sqlite3-12.11.1.tgz#067846efabf7671957fc8a9e8df3be39c6cc0b84"
++  integrity sha512-dq9AtApgg5PGFtBzPFSBl3HZQjHok5gaQCM6zh2Yk0aSmDCs1CbnVI8/HgASQkNKsWFpseIO9beg5xxpYhbIfA==
+   dependencies:
+     bindings "^1.5.0"
+     prebuild-install "^7.1.1"

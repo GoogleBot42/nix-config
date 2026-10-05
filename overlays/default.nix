@@ -28,6 +28,19 @@ final: prev:
     doCheck = false;
   };
 
+  # Vikunja's frontend suite imports the full app in a beforeEach hook. On
+  # loaded builders that can exceed Vitest's 10-second default even though the
+  # tests themselves pass, so retain the suite with a less brittle hook limit.
+  vikunja = prev.vikunja.overrideAttrs (old: {
+    frontend = old.frontend.overrideAttrs {
+      checkPhase = ''
+        runHook preCheck
+        pnpm run test:unit --run --hookTimeout=60000
+        runHook postCheck
+      '';
+    };
+  });
+
   # Ceph pins its Python env to python312, which hydra does not fully cache, so
   # its dependency closure gets built here (reached on s0 via sambaFull ->
   # ceph -> openai). inline-snapshot's documentation tests (tests/test_docs.py)
@@ -81,13 +94,22 @@ final: prev:
   };
 
   # Keep Logseq building until upstream moves off electron_39, which is now
-  # blocked as insecure (EOL). The yauzl fix we used to carry forward as
-  # logseq-bump-yauzl.patch is now applied by nixpkgs itself
-  # (pkgs/by-name/lo/logseq/package.nix: ./bump-yauzl.patch), so the override
-  # is just the electron bump now.
-  logseq = prev.logseq.override {
-    electron_39 = final.electron_41;
-  };
+  # blocked as insecure (EOL). Electron 42 also requires better-sqlite3 12.10.1+.
+  # Cleanup: https://git.neet.dev/zuckerberg/nix-config/issues/58
+  logseq = (prev.logseq.override {
+    electron_39 = final.electron_42;
+  }).overrideAttrs (old: rec {
+    patches = (old.patches or [ ]) ++ [
+      ../patches/logseq-better-sqlite3-12.11.1.patch
+    ];
+    yarnOfflineCacheStaticResources = prev.fetchYarnDeps {
+      name = "logseq-${old.version}-yarn-deps-static-resources";
+      inherit (old) src;
+      inherit patches;
+      postPatch = "cd ./static";
+      hash = "sha256-jF3mGuLYL2NZ96w+tPRgB77pfdnviKF/s63TuiHOyfQ=";
+    };
+  });
 
   pgs = prev.callPackage ../pkgs/pgs { };
 
