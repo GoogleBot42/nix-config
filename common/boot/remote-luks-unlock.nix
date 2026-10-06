@@ -40,9 +40,23 @@ in
     };
   };
 
+  # A remote unlock may need several passphrase attempts; systemd-cryptsetup's
+  # default of three leaves the initrd stuck with no prompt left to answer.
+  options.boot.initrd.luks.devices = lib.mkOption {
+    type = lib.types.attrsOf (lib.types.submodule {
+      config.crypttabExtraOpts = lib.mkIf cfg.enable [ "tries=0" ];
+    });
+  };
+
   config = lib.mkIf cfg.enable {
     # Unlock LUKS disk over ssh
     boot.initrd.network.enable = true;
+
+    # The filesystems inside the LUKS volume only appear once someone has
+    # entered the passphrase, which over ssh can take arbitrarily long. The
+    # initrd's default DefaultDeviceTimeoutSec (90s) would fail their device
+    # units first, pulling in emergency.target as soon as the unlock finishes.
+    boot.initrd.systemd.settings.Manager.DefaultDeviceTimeoutSec = "infinity";
     boot.initrd.kernelModules = cfg.kernelModules;
     boot.initrd.network.ssh = {
       enable = true;
