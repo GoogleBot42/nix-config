@@ -13,6 +13,7 @@ in
     ./pithos.nix
     ./discord.nix
     ./steam.nix
+    ./steamvr.nix
     ./touchpad.nix
     ./mount-samba.nix
     ./udev.nix
