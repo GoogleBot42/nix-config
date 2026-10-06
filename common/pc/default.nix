@@ -41,6 +41,11 @@ in
     # gparted's launcher escalates through pkexec, which needs the setuid wrapper
     security.polkit.enablePkexecWrapper = true;
 
+    # Wi-Fi 6E clients need a pinned regulatory domain: with the world domain
+    # the 6 GHz band is disabled, and driver hints alone flip it back and forth
+    boot.extraModprobeConfig = "options cfg80211 ieee80211_regdom=US";
+    hardware.wirelessRegulatoryDatabase = true;
+
     # Applications
     users.users.googlebot.packages = with pkgs; [
       chromium
