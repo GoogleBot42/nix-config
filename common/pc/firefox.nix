@@ -89,5 +89,7 @@ in
         };
       };
     };
+
+    home-manager.users.googlebot.home.file.".mozilla/firefox/profiles.ini".force = true;
   };
 }
