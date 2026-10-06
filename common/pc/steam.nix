@@ -8,6 +8,10 @@ in
     programs.steam.enable = true;
     hardware.steam-hardware.enable = true; # steam controller
 
+    # Remote Play hosts (Steam Link, Steam Frame over LAN or its wireless
+    # adapter) must accept discovery and stream traffic on every interface
+    programs.steam.remotePlay.openFirewall = true;
+
     # Login DE Option: Steam Gamescope (Steam Deck-like session)
     programs.gamescope = {
       enable = true;
