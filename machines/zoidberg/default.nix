@@ -3,6 +3,7 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ./steamvr.nix
   ];
 
   # Login DE Option: Kodi
