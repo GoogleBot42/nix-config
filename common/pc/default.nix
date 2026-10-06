@@ -81,6 +81,12 @@ in
 
     # Networking
     networking.networkmanager.enable = true;
+    # DNS must not go through openresolv on NetworkManager + tailscale
+    # machines: its resolvconf shell script deadlocks against nscd and
+    # tailscaled's DNS lock on every link change, stalling each wifi
+    # disconnect, reconnect and suspend by ~10s. resolved is driven over
+    # D-Bus by both daemons instead.
+    services.resolved.enable = true;
 
     # Printing
     services.printing.enable = true;
