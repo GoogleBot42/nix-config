@@ -5,6 +5,8 @@
     ./hardware-configuration.nix
   ];
 
+  steamvr.amdgpuHighPriority = true;
+
   # Login DE Option: Kodi
   services.xserver.desktopManager.kodi.enable = true;
   services.xserver.desktopManager.kodi.package =

@@ -9,9 +9,21 @@ let
   users = lib.filter (u: u.isNormalUser) (lib.attrValues config.users.users);
   launcherOf = u: "${u.home}/.local/share/Steam/steamapps/common/SteamVR/bin/linux64/vrcompositor-launcher";
   niceLevel = "-20";
+  vrCfg = config.steamvr;
 in
 {
+  options.steamvr.amdgpuHighPriority = lib.mkEnableOption (""
+    + "a kernel patch letting any process create high-priority amdgpu contexts. "
+    + "SteamVR's compositor needs one to preempt the game for on-time "
+    + "reprojection, but Steam's sandbox strips the CAP_SYS_NICE the stock "
+    + "kernel requires. Rebuilds the kernel locally");
+
   config = lib.mkIf cfg.enable {
+    boot.kernelPatches = lib.mkIf vrCfg.amdgpuHighPriority [{
+      name = "amdgpu-allow-high-priority";
+      patch = ./amdgpu-allow-high-priority.patch;
+    }];
+
     # SteamVR's setup script prompts for root on every start unless the
     # launcher already carries cap_sys_nice; SteamVR updates replace the file
     systemd.paths = lib.listToAttrs (map

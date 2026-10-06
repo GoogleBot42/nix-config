@@ -8,6 +8,8 @@ in
     ./hardware-configuration.nix
   ];
 
+  steamvr.amdgpuHighPriority = true;
+
   # don't use remote builders
   nix.distributedBuilds = lib.mkForce false;
 

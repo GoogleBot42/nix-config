@@ -1,0 +1,22 @@
+--- a/drivers/gpu/drm/amd/amdgpu/amdgpu_ctx.c	2026-10-06 17:11:57.984254281 -0600
++++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_ctx.c	2026-10-06 17:11:57.988716866 -0600
+@@ -100,17 +100,8 @@
+ static int amdgpu_ctx_priority_permit(struct drm_file *filp,
+ 				      int32_t priority)
+ {
+-	/* NORMAL and below are accessible by everyone */
+-	if (priority <= AMDGPU_CTX_PRIORITY_NORMAL)
+-		return 0;
+-
+-	if (capable(CAP_SYS_NICE))
+-		return 0;
+-
+-	if (drm_is_current_master(filp))
+-		return 0;
+-
+-	return -EACCES;
++	/* Any process may request any context priority */
++	return 0;
+ }
+ 
+ static enum amdgpu_gfx_pipe_priority amdgpu_ctx_prio_to_gfx_pipe_prio(int32_t prio)
