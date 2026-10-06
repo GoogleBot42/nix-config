@@ -49,6 +49,9 @@
     isNormalUser = true;
     inherit (config.users.users.googlebot) hashedPassword packages;
     uid = 1002;
+    # Steam creates the Steam Frame dongle connection system-wide and
+    # NetworkManager only skips the polkit password prompt for this group
+    extraGroups = [ "networkmanager" ];
   };
 
   # Auto login into Plasma Bigscreen in john zoidberg account
