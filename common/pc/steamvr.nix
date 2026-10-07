@@ -19,10 +19,6 @@ in
     + "kernel requires. Rebuilds the kernel locally");
 
   config = lib.mkIf cfg.enable {
-    # SteamVR's vrwebhelper (dashboard and Mongoose web UI client) links
-    # against the GTK accessibility bridge, which the Steam FHS env lacks
-    programs.steam.extraPackages = [ pkgs.at-spi2-atk pkgs.atk ];
-
     boot.kernelPatches = lib.mkIf vrCfg.amdgpuHighPriority [{
       name = "amdgpu-allow-high-priority";
       patch = ./amdgpu-allow-high-priority.patch;
