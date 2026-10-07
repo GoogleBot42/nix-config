@@ -281,10 +281,10 @@
         pkgs = import nixpkgsFor.aarch64-linux.flake {
           system = "aarch64-linux";
           config.allowUnfree = true;
-          overlays = [
-            self.overlays.default
-            inputs.claude-code-nix.overlays.default
-          ];
+          # Only what the home config needs: the repo overlay patches low-level
+          # packages (openresolv, upower) and would force aarch64 rebuilds of
+          # everything above them on the headset
+          overlays = [ inputs.claude-code-nix.overlays.default ];
         };
         extraSpecialArgs.osConfig = null;
         modules = [
