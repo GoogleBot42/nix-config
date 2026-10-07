@@ -45,7 +45,7 @@ in
     environment.systemPackages = [ pkgs.gamescope-wsi ];
 
     users.users.googlebot.packages = [
-      pkgs.steam
+      config.programs.steam.package
     ];
   };
 }
