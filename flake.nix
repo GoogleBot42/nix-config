@@ -26,6 +26,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Declarative /etc files for standalone home-manager on SteamOS (Steam Frame).
+    # Pinned to an audited revision: its steamos-etc command writes /etc as root.
+    steamos-etc = {
+      url = "github:JRMurr/steamos-etc-nix/e33b7fa2606971294c0e7ac44b8c54920920363c";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
+
     # Mail Server
     simple-nixos-mailserver = {
       url = "gitlab:simple-nixos-mailserver/nixos-mailserver";
@@ -266,6 +274,25 @@
             };
         in
         nixpkgs.lib.genAttrs supportedSystems mkPackages;
+
+      # Standalone home-manager for non-NixOS devices, applied on the device
+      # with: home-manager switch --flake .#steamos@frame
+      homeConfigurations."steamos@frame" = inputs.home-manager.lib.homeManagerConfiguration {
+        pkgs = import nixpkgsFor.aarch64-linux.flake {
+          system = "aarch64-linux";
+          config.allowUnfree = true;
+          overlays = [
+            self.overlays.default
+            inputs.claude-code-nix.overlays.default
+          ];
+        };
+        extraSpecialArgs.osConfig = null;
+        modules = [
+          ./home/googlebot.nix
+          inputs.steamos-etc.homeManagerModules.default
+          ./home/steamos-frame.nix
+        ];
+      };
 
       overlays.default = import ./overlays { inherit inputs; };
       nixosModules.kernel-modules = import ./overlays/kernel-modules;

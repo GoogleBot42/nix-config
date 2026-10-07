@@ -1,15 +1,16 @@
-{ lib, pkgs, osConfig, ... }:
+{ lib, pkgs, osConfig ? null, ... }:
 
 # https://home-manager-options.extranix.com/
 # https://nix-community.github.io/home-manager/options.xhtml
 
 let
-  # Check if the current machine has the role "personal"
-  thisMachineIsPersonal = osConfig.thisMachine.hasRole."personal";
+  onNixOS = osConfig != null;
+  # Standalone (non-NixOS) installs are personal devices
+  thisMachineIsPersonal = !onNixOS || osConfig.thisMachine.hasRole."personal";
 in
 {
-  home.username = "googlebot";
-  home.homeDirectory = "/home/googlebot";
+  home.username = lib.mkDefault "googlebot";
+  home.homeDirectory = lib.mkDefault "/home/googlebot";
 
   home.stateVersion = "24.11";
   programs.home-manager.enable = true;
@@ -49,8 +50,10 @@ in
   # tldr: Simplified, example based and community-driven man pages.
   programs.tealdeer.enable = true;
 
-  home.shellAliases = {
-    sudo = "doas";
+  home.shellAliases = lib.optionalAttrs onNixOS
+    {
+      sudo = "doas";
+    } // {
     ls2 = "eza";
     explorer = "broot";
   };
