@@ -2,7 +2,7 @@
 # Nix is installed with NixOS/nix-installer's steam-deck planner, which keeps
 # the store at /home/nix. After each switch, run `steamos-etc` to install the
 # root-owned /etc files below (it prompts for sudo).
-{ ... }:
+{ pkgs, ... }:
 
 {
   home.username = "steamos";
@@ -10,6 +10,10 @@
 
   # Non-NixOS host: export Nix profile paths to the desktop session
   targets.genericLinux.enable = true;
+
+  home.packages = [
+    pkgs.signal-desktop
+  ];
 
   programs.steamos-etc = {
     enable = true;
