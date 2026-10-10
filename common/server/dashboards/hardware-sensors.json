@@ -1,0 +1,153 @@
+{
+  "uid": "hardware-sensors",
+  "title": "Hardware sensors",
+  "description": "PSU rails, Vcore, fans, temperatures and ECC memory error counters from node_exporter's hwmon and edac collectors. Rail voltages come from a Nuvoton NCT67xx Super I/O, which reports +5V and +12V through fixed dividers; the panels undo the scaling.",
+  "tags": ["fleet", "hardware"],
+  "editable": true,
+  "graphTooltip": 1,
+  "refresh": "1m",
+  "schemaVersion": 39,
+  "time": { "from": "now-24h", "to": "now" },
+  "timezone": "browser",
+  "templating": {
+    "list": [
+      {
+        "name": "instance",
+        "label": "Host",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+        "query": "label_values(node_hwmon_chip_names, instance)",
+        "definition": "label_values(node_hwmon_chip_names, instance)",
+        "refresh": 1,
+        "sort": 1,
+        "current": { "text": "s0", "value": "s0" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1, "type": "stat", "title": "+12V",
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "expr": "node_hwmon_in_volts{instance=\"$instance\", sensor=\"in4\"} * on(instance, chip) group_left node_hwmon_chip_names{instance=\"$instance\", chip_name=~\"nct67.*\"} * 12" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area", "textMode": "value" },
+      "fieldConfig": { "defaults": { "unit": "volt", "decimals": 2, "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 11.4 }, { "color": "red", "value": 12.6 } ] } }, "overrides": [] }
+    },
+    {
+      "id": 2, "type": "stat", "title": "+5V",
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "expr": "node_hwmon_in_volts{instance=\"$instance\", sensor=\"in1\"} * on(instance, chip) group_left node_hwmon_chip_names{instance=\"$instance\", chip_name=~\"nct67.*\"} * 5" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area", "textMode": "value" },
+      "fieldConfig": { "defaults": { "unit": "volt", "decimals": 2, "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 4.75 }, { "color": "red", "value": 5.25 } ] } }, "overrides": [] }
+    },
+    {
+      "id": 3, "type": "stat", "title": "+3.3V",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "expr": "node_hwmon_in_volts{instance=\"$instance\", sensor=\"in3\"} * on(instance, chip) group_left node_hwmon_chip_names{instance=\"$instance\", chip_name=~\"nct67.*\"}" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area", "textMode": "value" },
+      "fieldConfig": { "defaults": { "unit": "volt", "decimals": 2, "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 3.135 }, { "color": "red", "value": 3.465 } ] } }, "overrides": [] }
+    },
+    {
+      "id": 4, "type": "stat", "title": "Vcore",
+      "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "expr": "node_hwmon_in_volts{instance=\"$instance\", sensor=\"in0\"} * on(instance, chip) group_left node_hwmon_chip_names{instance=\"$instance\", chip_name=~\"nct67.*\"}" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "none", "graphMode": "area", "textMode": "value" },
+      "fieldConfig": { "defaults": { "unit": "volt", "decimals": 3 }, "overrides": [] }
+    },
+    {
+      "id": 5, "type": "stat", "title": "ECC corrected (since boot)",
+      "gridPos": { "x": 16, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "expr": "sum(node_edac_correctable_errors_total{instance=\"$instance\"})" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "none", "textMode": "value", "noValue": "no EDAC" },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0, "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "orange", "value": 1 } ] } }, "overrides": [] }
+    },
+    {
+      "id": 6, "type": "stat", "title": "ECC uncorrected (since boot)",
+      "gridPos": { "x": 20, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "expr": "sum(node_edac_uncorrectable_errors_total{instance=\"$instance\"})" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "none", "textMode": "value", "noValue": "no EDAC" },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0, "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] } }, "overrides": [] }
+    },
+    {
+      "id": 10, "type": "timeseries", "title": "+12V rail",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "legendFormat": "+12V", "expr": "node_hwmon_in_volts{instance=\"$instance\", sensor=\"in4\"} * on(instance, chip) group_left node_hwmon_chip_names{instance=\"$instance\", chip_name=~\"nct67.*\"} * 12" }],
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi" } },
+      "fieldConfig": { "defaults": { "unit": "volt", "decimals": 2, "min": 11, "max": 13, "custom": { "lineWidth": 2, "fillOpacity": 0, "showPoints": "never" } }, "overrides": [] }
+    },
+    {
+      "id": 11, "type": "timeseries", "title": "+5V rail",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "legendFormat": "+5V", "expr": "node_hwmon_in_volts{instance=\"$instance\", sensor=\"in1\"} * on(instance, chip) group_left node_hwmon_chip_names{instance=\"$instance\", chip_name=~\"nct67.*\"} * 5" }],
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi" } },
+      "fieldConfig": { "defaults": { "unit": "volt", "decimals": 2, "min": 4.5, "max": 5.5, "custom": { "lineWidth": 2, "fillOpacity": 0, "showPoints": "never" } }, "overrides": [] }
+    },
+    {
+      "id": 12, "type": "timeseries", "title": "+3.3V and AVCC",
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [
+        { "refId": "A", "legendFormat": "+3.3V", "expr": "node_hwmon_in_volts{instance=\"$instance\", sensor=\"in3\"} * on(instance, chip) group_left node_hwmon_chip_names{instance=\"$instance\", chip_name=~\"nct67.*\"}" },
+        { "refId": "B", "legendFormat": "AVCC", "expr": "node_hwmon_in_volts{instance=\"$instance\", sensor=\"in2\"} * on(instance, chip) group_left node_hwmon_chip_names{instance=\"$instance\", chip_name=~\"nct67.*\"}" }
+      ],
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi" } },
+      "fieldConfig": { "defaults": { "unit": "volt", "decimals": 2, "min": 3, "max": 3.6, "custom": { "lineWidth": 2, "fillOpacity": 0, "showPoints": "never" } }, "overrides": [] }
+    },
+    {
+      "id": 13, "type": "timeseries", "title": "CPU Vcore",
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "legendFormat": "Vcore", "expr": "node_hwmon_in_volts{instance=\"$instance\", sensor=\"in0\"} * on(instance, chip) group_left node_hwmon_chip_names{instance=\"$instance\", chip_name=~\"nct67.*\"}" }],
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi" } },
+      "fieldConfig": { "defaults": { "unit": "volt", "decimals": 3, "custom": { "lineWidth": 2, "fillOpacity": 0, "showPoints": "never" } }, "overrides": [] }
+    },
+    {
+      "id": 20, "type": "timeseries", "title": "Fan speed",
+      "gridPos": { "x": 0, "y": 20, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "legendFormat": "{{sensor}}", "expr": "node_hwmon_fan_rpm{instance=\"$instance\"} * on(instance, chip) group_left node_hwmon_chip_names{instance=\"$instance\", chip_name=~\"nct67.*\"}" }],
+      "options": { "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["lastNotNull"] }, "tooltip": { "mode": "multi" } },
+      "fieldConfig": { "defaults": { "unit": "rotrpm", "decimals": 0, "min": 0, "custom": { "lineWidth": 2, "fillOpacity": 0, "showPoints": "never" } }, "overrides": [] }
+    },
+    {
+      "id": 21, "type": "timeseries", "title": "Temperatures",
+      "gridPos": { "x": 12, "y": 20, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [
+        { "refId": "A", "legendFormat": "{{chip_name}} {{sensor}}", "expr": "node_hwmon_temp_celsius{instance=\"$instance\"} * on(instance, chip) group_left(chip_name) node_hwmon_chip_names{instance=\"$instance\", chip_name=~\"k10temp|spd5118\"}" },
+        { "refId": "B", "legendFormat": "board {{sensor}}", "expr": "node_hwmon_temp_celsius{instance=\"$instance\", sensor=~\"temp[12]\"} * on(instance, chip) group_left node_hwmon_chip_names{instance=\"$instance\", chip_name=~\"nct67.*\"}" }
+      ],
+      "options": { "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["lastNotNull", "max"] }, "tooltip": { "mode": "multi" } },
+      "fieldConfig": { "defaults": { "unit": "celsius", "decimals": 0, "custom": { "lineWidth": 2, "fillOpacity": 0, "showPoints": "never" } }, "overrides": [] }
+    },
+    {
+      "id": 30, "type": "timeseries", "title": "ECC errors since boot",
+      "gridPos": { "x": 0, "y": 28, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [
+        { "refId": "A", "legendFormat": "{{controller}} corrected", "expr": "node_edac_correctable_errors_total{instance=\"$instance\"}" },
+        { "refId": "B", "legendFormat": "{{controller}} uncorrected", "expr": "node_edac_uncorrectable_errors_total{instance=\"$instance\"}" }
+      ],
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi" } },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0, "min": 0, "custom": { "lineWidth": 2, "fillOpacity": 0, "showPoints": "never" } }, "overrides": [] }
+    },
+    {
+      "id": 31, "type": "timeseries", "title": "ECC errors per hour",
+      "gridPos": { "x": 12, "y": 28, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [
+        { "refId": "A", "legendFormat": "{{controller}} corrected", "expr": "increase(node_edac_correctable_errors_total{instance=\"$instance\"}[1h])" },
+        { "refId": "B", "legendFormat": "{{controller}} uncorrected", "expr": "increase(node_edac_uncorrectable_errors_total{instance=\"$instance\"}[1h])" }
+      ],
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi" } },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0, "min": 0, "custom": { "lineWidth": 2, "fillOpacity": 0, "showPoints": "never", "drawStyle": "bars" } }, "overrides": [] }
+    }
+  ]
+}

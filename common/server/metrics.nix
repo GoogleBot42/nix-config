@@ -22,6 +22,7 @@ let
   fleetDashboards = pkgs.runCommand "grafana-fleet-dashboards" { } ''
     mkdir -p $out
     cp ${nodeExporterFullDashboard} $out/node-exporter-full.json
+    cp ${./dashboards/hardware-sensors.json} $out/hardware-sensors.json
   '';
 
   diskCfg = grafanaCfg.diskAlerts;
