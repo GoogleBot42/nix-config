@@ -34,6 +34,8 @@ in
   targets.genericLinux.enable = true;
 
   home.packages = [
+    pkgs.keepassxc
+    pkgs.nextcloud-client
     pkgs.signal-desktop
   ];
 
