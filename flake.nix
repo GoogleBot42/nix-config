@@ -36,7 +36,7 @@
 
     # Mail Server
     simple-nixos-mailserver = {
-      url = "gitlab:simple-nixos-mailserver/nixos-mailserver";
+      url = "git+https://gitlab.com/simple-nixos-mailserver/nixos-mailserver.git";
       inputs = {
         nixpkgs.follows = "nixpkgs";
         flake-compat.follows = "flake-compat";
