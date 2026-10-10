@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, utils, ... }:
 
 # TODO: use tailscale instead of tor https://gist.github.com/antifuchs/e30d58a64988907f282c82231dde2cbc
 
@@ -7,6 +7,10 @@ let
   askPasswordShell = pkgs.writeShellScript "initrd-ask-password-shell" ''
     exec /bin/systemd-tty-ask-password-agent --watch
   '';
+
+  # ZFS pools that hold a filesystem needed to reach stage 2.
+  zfsRootPools = lib.unique (map (fs: lib.head (lib.splitString "/" fs.device))
+    (lib.filter (fs: fs.fsType == "zfs" && utils.fsNeededForBoot fs) (lib.attrValues config.fileSystems)));
 in
 {
   options.remoteLuksUnlock = {
@@ -80,41 +84,54 @@ in
       "/etc/tor/onion/bootup" = cfg.onionConfig;
     };
 
-    boot.initrd.systemd.services.tor-unlock = lib.mkIf cfg.enableTorUnlock (
-      let
-        torRc = pkgs.writeText "tor.rc" ''
-          DataDirectory /etc/tor
-          SOCKSPort 127.0.0.1:9050 IsolateDestAddr
-          SOCKSPort 127.0.0.1:9063
-          HiddenServiceDir /etc/tor/onion/bootup
-          HiddenServicePort 22 127.0.0.1:22
-        '';
-      in
+    boot.initrd.systemd.services = lib.mkMerge [
+      # A root pool's import unit is required by sysroot.mount and starts as
+      # soon as modules are loaded; its script polls for the pool 60 times
+      # and then exits 1, which fails sysroot.mount and drops the initrd to
+      # emergency while the passphrase prompt is still up. Hold the import
+      # until every crypttab device is open, however long that takes.
+      (lib.genAttrs (map (pool: "zfs-import-${pool}") zfsRootPools) (_: {
+        after = [ "cryptsetup.target" ];
+        requires = [ "cryptsetup.target" ];
+      }))
       {
-        description = "Tor Hidden Service for Boot Unlock";
-        wantedBy = [ "initrd.target" ];
-        after = [ "network.target" "sshd.service" ];
-        wants = [ "network.target" ];
+        tor-unlock = lib.mkIf cfg.enableTorUnlock (
+          let
+            torRc = pkgs.writeText "tor.rc" ''
+              DataDirectory /etc/tor
+              SOCKSPort 127.0.0.1:9050 IsolateDestAddr
+              SOCKSPort 127.0.0.1:9063
+              HiddenServiceDir /etc/tor/onion/bootup
+              HiddenServicePort 22 127.0.0.1:22
+            '';
+          in
+          {
+            description = "Tor Hidden Service for Boot Unlock";
+            wantedBy = [ "initrd.target" ];
+            after = [ "network.target" "sshd.service" ];
+            wants = [ "network.target" ];
 
-        # Stop cleanly before the root switch, otherwise tor is killed
-        # mid-transition and the unit is carried into stage 2 as failed.
-        before = [ "shutdown.target" "initrd-switch-root.target" ];
-        conflicts = [ "shutdown.target" "initrd-switch-root.target" ];
+            # Stop cleanly before the root switch, otherwise tor is killed
+            # mid-transition and the unit is carried into stage 2 as failed.
+            before = [ "shutdown.target" "initrd-switch-root.target" ];
+            conflicts = [ "shutdown.target" "initrd-switch-root.target" ];
 
-        unitConfig.DefaultDependencies = false;
+            unitConfig.DefaultDependencies = false;
 
-        preStart = ''
-          # Fix permissions for tor
-          chmod -R 700 /etc/tor
+            preStart = ''
+              # Fix permissions for tor
+              chmod -R 700 /etc/tor
 
-          ${pkgs.tor}/bin/tor -f ${torRc} --verify-config
-        '';
+              ${pkgs.tor}/bin/tor -f ${torRc} --verify-config
+            '';
 
-        serviceConfig = {
-          Type = "simple";
-          ExecStart = "${pkgs.tor}/bin/tor -f ${torRc}";
-        };
+            serviceConfig = {
+              Type = "simple";
+              ExecStart = "${pkgs.tor}/bin/tor -f ${torRc}";
+            };
+          }
+        );
       }
-    );
+    ];
   };
 }
