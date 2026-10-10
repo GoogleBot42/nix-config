@@ -9,13 +9,16 @@ in
     services.displayManager.sddm.wayland.enable = true;
     services.desktopManager.plasma6.enable = true;
 
-    services.displayManager.sessionPackages = [
+    # Plasma Bigscreen is only for media-center machines. It ships a "Plasma
+    # Bigscreen" app-launcher entry that swaps the running plasmashell into the
+    # TV shell in place, so it must stay off every other desktop.
+    services.displayManager.sessionPackages = lib.mkIf config.thisMachine.hasRole."media-center" [
       pkgs.plasma-bigscreen
     ];
 
     # Bigscreen binaries must be on PATH for autostart services, KCMs, and
     # internal plasmashell launches (settings, input handler, envmanager, etc.)
-    environment.systemPackages = [ pkgs.plasma-bigscreen ];
+    environment.systemPackages = lib.mkIf config.thisMachine.hasRole."media-center" [ pkgs.plasma-bigscreen ];
 
     # kde apps
     users.users.googlebot.packages = with pkgs; [
