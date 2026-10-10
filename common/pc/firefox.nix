@@ -6,9 +6,9 @@
 # Disable telemetry, etc.
 # BUT keeps on webrtc and DRM
 #
-# The release channel ignores the SearchEngines enterprise policy, so the
-# default search engine is set through a Home Manager managed profile
-# (search.json.mozlz4) instead of through the wrapper's policies.
+# Everything is configured through enterprise policies so that Firefox keeps
+# owning profiles.ini and the profile directories; a Home Manager managed
+# profile would point profiles.ini at a directory of its own choosing.
 #
 
 let
@@ -41,6 +41,21 @@ let
       OfferToSaveLogins = false;
       PasswordManagerEnabled = false;
       SearchSuggestEnabled = false;
+      # The SearchEngines policy has worked on the release channel since
+      # Firefox 139; it is no longer ESR-only.
+      SearchEngines = {
+        Default = "Brave";
+        DefaultPrivate = "Brave";
+        Add = [
+          {
+            Name = "Brave";
+            URLTemplate = "https://search.brave.com/search?q={searchTerms}";
+            Method = "GET";
+            IconURL = "https://search.brave.com/favicon.ico";
+            Alias = "@brave";
+          }
+        ];
+      };
       FirefoxHome = {
         Search = false;
         Highlights = false;
@@ -65,29 +80,6 @@ in
     home-manager.users.googlebot.programs.firefox = {
       enable = true;
       package = firefox;
-      # Keep profiles under ~/.mozilla/firefox; the XDG default would orphan
-      # the profile directory Firefox already uses on existing machines.
-      configPath = ".mozilla/firefox";
-
-      profiles.default = {
-        id = 0;
-        isDefault = true;
-
-        search = {
-          # Firefox rewrites search.json.mozlz4 on every launch; without
-          # force the managed file would lose to the profile's own copy.
-          force = true;
-          default = "brave";
-          privateDefault = "brave";
-          order = [ "brave" ];
-          engines.brave = {
-            name = "Brave";
-            urls = [{ template = "https://search.brave.com/search?q={searchTerms}"; }];
-            iconMapObj."16" = "https://search.brave.com/favicon.ico";
-            definedAliases = [ "@brave" ];
-          };
-        };
-      };
     };
   };
 }
