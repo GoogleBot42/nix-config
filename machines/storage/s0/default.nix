@@ -31,6 +31,10 @@
   };
   ntfy-alerts.dimmTempCheck.enable = true;
 
+  # Super I/O (NCT6799) rail voltages and fan speeds for node_exporter;
+  # the driver has no ACPI alias, so it is never autoloaded.
+  boot.kernelModules = [ "nct6775" ];
+
   # system.autoUpgrade.enable = true;
 
 
