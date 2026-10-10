@@ -30,6 +30,7 @@
     '';
   };
   ntfy-alerts.dimmTempCheck.enable = true;
+  ntfy-alerts.edacCheck.enable = true;
 
   # Super I/O (NCT6799) rail voltages and fan speeds for node_exporter;
   # the driver has no ACPI alias, so it is never autoloaded.

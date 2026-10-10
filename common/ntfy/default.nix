@@ -18,6 +18,7 @@ in
     ./ssh-login.nix
     ./zfs.nix
     ./dimm-temp.nix
+    ./edac.nix
   ];
 
   options.ntfy-alerts = {
