@@ -1,0 +1,102 @@
+{
+  "uid": "power",
+  "title": "Power",
+  "description": "Silicon power per machine: CPU/APU package watts from the kernel's RAPL energy counters (node_exporter rapl collector) and discrete-GPU watts from amdgpu's hwmon sensor. On AMD APUs and Raphael iGPUs the amdgpu sensor is the socket PPT, i.e. the same thing RAPL reports, so only chips off the CPU's internal 00:08.x bridge count as discrete GPUs. Not measured: motherboard, RAM, drives, fans, PSU losses, monitors — wall power is well above these numbers; a metering smart plug is the only way to see it. Energy integrates samples at the scraper's @scrapeIntervalSeconds@ s interval, so time a machine spends off counts as zero.",
+  "tags": ["fleet", "power"],
+  "editable": true,
+  "graphTooltip": 1,
+  "refresh": "1m",
+  "schemaVersion": 39,
+  "time": { "from": "now-24h", "to": "now" },
+  "timezone": "browser",
+  "templating": {
+    "list": [
+      {
+        "name": "price",
+        "label": "Electricity price per kWh",
+        "type": "textbox",
+        "query": "0.15",
+        "current": { "text": "0.15", "value": "0.15" }
+      },
+      {
+        "name": "dgpu",
+        "type": "constant",
+        "hide": 2,
+        "query": "max by(instance) (node_hwmon_power_average_watt{chip=~\"0000:.*\", chip!~\"0000:00:08_.*\"} or node_hwmon_power_watt{chip=~\"0000:.*\", chip!~\"0000:00:08_.*\"})",
+        "current": { "text": "", "value": "max by(instance) (node_hwmon_power_average_watt{chip=~\"0000:.*\", chip!~\"0000:00:08_.*\"} or node_hwmon_power_watt{chip=~\"0000:.*\", chip!~\"0000:00:08_.*\"})" }
+      },
+      {
+        "name": "pkg",
+        "type": "constant",
+        "hide": 2,
+        "query": "sum by(instance) (rate(node_rapl_package_joules_total[2m]))",
+        "current": { "text": "", "value": "sum by(instance) (rate(node_rapl_package_joules_total[2m]))" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1, "type": "stat", "title": "Measured power now",
+      "description": "CPU package plus discrete GPU, per machine.",
+      "gridPos": { "x": 0, "y": 0, "w": 8, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "instant": true, "legendFormat": "{{instance}}", "expr": "$pkg + ($dgpu or ($pkg * 0))" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "none", "graphMode": "area", "textMode": "value_and_name" },
+      "fieldConfig": { "defaults": { "unit": "watt", "decimals": 0 }, "overrides": [] }
+    },
+    {
+      "id": 2, "type": "stat", "title": "Energy over the selected range",
+      "description": "CPU package energy from the RAPL counters plus discrete-GPU watts summed per sample.",
+      "gridPos": { "x": 8, "y": 0, "w": 8, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "instant": true, "legendFormat": "{{instance}}", "expr": "(sum by(instance) (increase(node_rapl_package_joules_total[$__range])) + (sum by(instance) (sum_over_time((node_hwmon_power_average_watt{chip=~\"0000:.*\", chip!~\"0000:00:08_.*\"} or node_hwmon_power_watt{chip=~\"0000:.*\", chip!~\"0000:00:08_.*\"})[$__range])) * @scrapeIntervalSeconds@ or (sum by(instance) (increase(node_rapl_package_joules_total[$__range])) * 0))) / 3.6e6" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "none", "graphMode": "none", "textMode": "value_and_name" },
+      "fieldConfig": { "defaults": { "unit": "kwatth", "decimals": 2 }, "overrides": [] }
+    },
+    {
+      "id": 3, "type": "stat", "title": "Cost over the selected range",
+      "description": "Energy over the range times the price variable. Measured silicon only; the real bill is higher.",
+      "gridPos": { "x": 16, "y": 0, "w": 8, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "instant": true, "legendFormat": "{{instance}}", "expr": "(sum by(instance) (increase(node_rapl_package_joules_total[$__range])) + (sum by(instance) (sum_over_time((node_hwmon_power_average_watt{chip=~\"0000:.*\", chip!~\"0000:00:08_.*\"} or node_hwmon_power_watt{chip=~\"0000:.*\", chip!~\"0000:00:08_.*\"})[$__range])) * @scrapeIntervalSeconds@ or (sum by(instance) (increase(node_rapl_package_joules_total[$__range])) * 0))) / 3.6e6 * $price" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "none", "graphMode": "none", "textMode": "value_and_name" },
+      "fieldConfig": { "defaults": { "unit": "currencyUSD", "decimals": 2 }, "overrides": [] }
+    },
+    {
+      "id": 10, "type": "timeseries", "title": "CPU / APU package power",
+      "description": "RAPL package domain. On APUs this includes the integrated GPU.",
+      "gridPos": { "x": 0, "y": 5, "w": 12, "h": 9 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "legendFormat": "{{instance}}", "expr": "$pkg" }],
+      "options": { "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["mean", "lastNotNull", "max"] }, "tooltip": { "mode": "multi" } },
+      "fieldConfig": { "defaults": { "unit": "watt", "decimals": 1, "min": 0, "custom": { "lineWidth": 2, "fillOpacity": 0, "showPoints": "never" } }, "overrides": [] }
+    },
+    {
+      "id": 11, "type": "timeseries", "title": "Discrete GPU power",
+      "description": "amdgpu hwmon on cards not behind the CPU's internal PCIe bridge.",
+      "gridPos": { "x": 12, "y": 5, "w": 12, "h": 9 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "legendFormat": "{{instance}}", "expr": "$dgpu" }],
+      "options": { "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["mean", "lastNotNull", "max"] }, "tooltip": { "mode": "multi" } },
+      "fieldConfig": { "defaults": { "unit": "watt", "decimals": 1, "min": 0, "custom": { "lineWidth": 2, "fillOpacity": 0, "showPoints": "never" }, "noValue": "no discrete GPU" }, "overrides": [] }
+    },
+    {
+      "id": 12, "type": "timeseries", "title": "Measured power (package + discrete GPU)",
+      "gridPos": { "x": 0, "y": 14, "w": 12, "h": 9 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "legendFormat": "{{instance}}", "expr": "$pkg + ($dgpu or ($pkg * 0))" }],
+      "options": { "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["mean", "lastNotNull", "max"] }, "tooltip": { "mode": "multi" } },
+      "fieldConfig": { "defaults": { "unit": "watt", "decimals": 1, "min": 0, "custom": { "lineWidth": 2, "fillOpacity": 0, "showPoints": "never" } }, "overrides": [] }
+    },
+    {
+      "id": 13, "type": "timeseries", "title": "Daily energy",
+      "description": "kWh per day (UTC-aligned) of measured silicon power. Hours a machine is off count as zero.",
+      "gridPos": { "x": 12, "y": 14, "w": 12, "h": 9 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "interval": "1d",
+      "targets": [{ "refId": "A", "legendFormat": "{{instance}}", "interval": "1d", "expr": "(sum by(instance) (increase(node_rapl_package_joules_total[1d])) + (sum by(instance) (sum_over_time((node_hwmon_power_average_watt{chip=~\"0000:.*\", chip!~\"0000:00:08_.*\"} or node_hwmon_power_watt{chip=~\"0000:.*\", chip!~\"0000:00:08_.*\"})[1d])) * @scrapeIntervalSeconds@ or (sum by(instance) (increase(node_rapl_package_joules_total[1d])) * 0))) / 3.6e6" }],
+      "options": { "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["mean", "sum"] }, "tooltip": { "mode": "multi" } },
+      "fieldConfig": { "defaults": { "unit": "kwatth", "decimals": 2, "min": 0, "custom": { "lineWidth": 1, "fillOpacity": 60, "showPoints": "never", "drawStyle": "bars", "stacking": { "mode": "normal" } } }, "overrides": [] }
+    }
+  ]
+}

@@ -12,6 +12,7 @@ let
   # Not 3000: Gitea owns that on kif.
   grafanaPort = 3031;
   tailnet = config.services.tailscale.tailnetDomain;
+  scrapeInterval = 30;
   hostName = config.networking.hostName;
 
   # Node Exporter Full (grafana.com dashboard 1860), pinned by revision.
@@ -19,10 +20,15 @@ let
     url = "https://grafana.com/api/dashboards/1860/revisions/45/download";
     hash = "sha256-GExrdAnzBtp1Ul13cvcZRbEM6iOtFrXXjEaY6g6lGYY=";
   };
+  # Energy panels integrate watt samples, so they need the scrape interval.
+  powerDashboard = pkgs.replaceVars ./dashboards/power.json {
+    scrapeIntervalSeconds = toString scrapeInterval;
+  };
   fleetDashboards = pkgs.runCommand "grafana-fleet-dashboards" { } ''
     mkdir -p $out
     cp ${nodeExporterFullDashboard} $out/node-exporter-full.json
     cp ${./dashboards/hardware-sensors.json} $out/hardware-sensors.json
+    cp ${powerDashboard} $out/power.json
   '';
 
   diskCfg = grafanaCfg.diskAlerts;
@@ -111,9 +117,9 @@ in
       services.victoriametrics = {
         listenAddress = "127.0.0.1:${toString vmPort}";
         retentionPeriod = "5y";
-        extraOptions = [ "-selfScrapeInterval=30s" ];
+        extraOptions = [ "-selfScrapeInterval=${toString scrapeInterval}s" ];
         prometheusConfig = {
-          global.scrape_interval = "30s";
+          global.scrape_interval = "${toString scrapeInterval}s";
           scrape_configs = [
             {
               job_name = "node";
