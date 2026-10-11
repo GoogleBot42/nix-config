@@ -395,3 +395,8 @@ Then:
 
 - 2026-10-10: plan written; prep branch adds the root key, the version pin
   and `boot.supportedFilesystems` for bcachefs on s0. Nothing executed.
+  - **Passphrase copies.** The age file above is the canonical copy. Working
+    copies: fry `~/.ssh/s0-migration-luks.key` (persistent), s0
+    `/root/s0-migration-luks.key` (on rpool, so it disappears in Phase 3)
+    and s0 `/run/s0-migration-luks.key` (tmpfs, gone after a reboot).
+    Re-create a working copy with `agenix -d` before opening anything.
