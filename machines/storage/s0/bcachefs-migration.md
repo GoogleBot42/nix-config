@@ -62,10 +62,11 @@ Motherboard ASUS ProArt B650-CREATOR, Ryzen 9 7900X, 124 GB ECC RAM, kernel
 | sdf | "Linux File-Stor Gadget", 0 B | some USB gadget | ignore |
 
 Stepping stones the owner will attach: one external 16 TB USB HDD and two
-4 TB HDDs. The chipset reports eight ATA ports with four in use, but confirm
-with the owner that two SATA connectors and power leads are actually free;
-otherwise the 4 TB drives go in USB enclosures. Identify every stepping stone
-by `/dev/disk/by-id` serial before touching it. Letters move between boots.
+4 TB HDDs, **all three over USB-to-SATA adapters**. The board's own SATA
+connectors are full, and the owner's 4-port PCIe SATA card must stay out of
+the machine: with anything attached to it the board does not POST. Identify
+every stepping stone by `/dev/disk/by-id` serial before touching it. Letters
+move between boots, and USB devices re-enumerate on every replug.
 
 Which HDD becomes the spare does not matter technically. Pick the one with
 the worst SMART history (`smartctl -a`), confirm with the owner.
@@ -190,11 +191,21 @@ root is bcachefs; the LUKS and network parts stay.
   are where young filesystems get hurt (#1203 lost a journal entry with
   `metadata_replicas=1`). Keep `metadata_replicas=2`, and keep the restic
   backups and the shelf copy.
-- **USB stepping stones.** UAS resets under sustained load are common on
-  consumer enclosures. If `dmesg` shows resets, add `usb-storage.quirks` to
-  force BOT mode, or lower `zfs send` concurrency. A 19 TB pass over USB
-  takes a day or more; run it in `tmux` on s0, never in an ssh session's
-  foreground.
+- **USB stepping stones.** All three temporary drives are on USB-to-SATA
+  adapters, so the temporary pool's weakest link is USB. Spread the three
+  adapters across different controllers (the chipset USB 3.2 controller at
+  09:00.0 and the two CPU xHCI controllers at 0c:00.3 and 0c:00.4; `lsusb -t`
+  shows the tree), never behind one hub, each adapter on its own power
+  supply. UAS resets under sustained load are common on consumer adapters;
+  if `dmesg` shows them, pin the adapter to BOT with `usb-storage.quirks=
+  <vid>:<pid>:u` on the kernel command line. A USB drop suspends the pool:
+  set `zpool set failmode=continue tmppool`, use `zfs recv -s` so an
+  interrupted send resumes from its token (`zfs get receive_resume_token`),
+  and expect 19 TB to take well over a day at USB speeds. Run every long
+  transfer in `tmux` on s0, never in an ssh session's foreground. Scrub the
+  temporary pool after the copy precisely because the transport is flaky.
+- **Do not add the PCIe SATA card** to get more ports; the board does not
+  boot with it populated.
 - **rsync flags.** OS copies need `-aHAXS --numeric-ids` (hardlinks matter
   in /nix/store; ACLs and xattrs matter for capabilities and SELinux-free
   setuid bits). Copy from ZFS snapshots (`/.zfs/snapshot/<name>/`), not from
