@@ -35,6 +35,11 @@ with roles;
   "whiteboard-server-jwt-secret.age".publicKeys = nextcloud;
   "smb-secrets.age".publicKeys = personal ++ media-center;
 
+  # s0 storage migration: throwaway LUKS passphrase for the temporary
+  # stepping-stone pool and the first keyslot of the new NVMe members
+  # (machines/storage/s0/bcachefs-migration.md)
+  "s0-migration-luks-passphrase.age".publicKeys = storage;
+
   # services
   "wolframalpha.age".publicKeys = dailybot;
   "linkwarden-environment.age".publicKeys = linkwarden;
