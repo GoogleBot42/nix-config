@@ -85,6 +85,8 @@ final: prev:
     ];
   });
 
+  inherit (import ./bcachefs-tools.nix final prev) bcachefs-tools;
+
   # Plasma Bigscreen: TV-optimized KDE shell (not yet packaged in nixpkgs)
   plasma-bigscreen = import ./plasma-bigscreen.nix {
     inherit (prev.kdePackages)

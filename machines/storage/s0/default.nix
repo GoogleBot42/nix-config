@@ -10,6 +10,13 @@
 
   networking.hostName = "s0";
 
+  # Temporary root key for the agent running the bcachefs storage migration
+  # (private key: ~/.ssh/s0-migration on fry). Remove once the migration is
+  # complete.
+  users.users.root.openssh.authorizedKeys.keys = [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINZpJSpAV48G6lwKEZbjgno1nsftsov7SjBKllNqPtGb s0-migration-temp-2026-10-10"
+  ];
+
   ntfy-alerts.ignoredUnits = [ "logrotate" ];
   ntfy-alerts.ignoreTransientContainerUnitFailures = true;
   # FlareSolverr's Chromium startup self-test fails on boot and systemd

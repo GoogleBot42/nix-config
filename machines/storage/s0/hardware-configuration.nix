@@ -21,7 +21,10 @@
 
   # zfs
   networking.hostId = "5e6791f0";
-  boot.supportedFilesystems = [ "zfs" ];
+  # bcachefs is being brought up alongside zfs for the storage migration
+  # (machines/storage/s0/bcachefs-migration.md); the out-of-tree module and
+  # tools come from overlays/bcachefs-tools.nix.
+  boot.supportedFilesystems = [ "zfs" "bcachefs" ];
   boot.zfs.forceImportRoot = false;
 
   # luks
