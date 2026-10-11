@@ -6,7 +6,6 @@
     ./frigate.nix
     ./home-automation.nix
     ./media.nix
-    ./minecraft-create.nix
   ];
 
   networking.hostName = "s0";

@@ -6,6 +6,7 @@ in
 {
   imports = [
     ./kde.nix
+    ./power-profile.nix
     ./yubikey.nix
     ./chromium.nix
     ./firefox.nix
