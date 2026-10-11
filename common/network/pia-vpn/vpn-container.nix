@@ -37,12 +37,6 @@ let
         iptables -t nat -A pia-nat-pre -i ${cfg.interfaceName} -p udp --dport $PORT -j DNAT --to ${dnatTarget}
         iptables -A pia-fwd -i ${cfg.interfaceName} -d ${targetIp} -p udp --dport ${targetPort} -j ACCEPT
       '';
-      onPortForwarded = optionalString (forwardingContainer.onPortForwarded != null) ''
-        TARGET_IP="${targetIp}"
-        export PORT TARGET_IP
-        echo "Running onPortForwarded hook for ${forwardingContainerName} (port=$PORT, target=$TARGET_IP)"
-        ${forwardingContainer.onPortForwarded}
-      '';
     in
     ''
       if [ "$PORT" -lt 10000 ]; then
@@ -54,9 +48,26 @@ let
       fi
       ${tcpRules}
       ${udpRules}
-      ${onPortForwarded}
     ''
   );
+
+  # The hook talks to a service container that only starts once this container
+  # is Ready, and Ready is gated on pia-vpn-setup. Running it before readiness
+  # deadlocks on a cold start: the hook waits for the service container, the
+  # service container waits for this one, and the setup unit eventually hits
+  # its start timeout and tears the tunnel down. So the hook runs after
+  # systemd-notify --ready, in the background so the liveness monitor keeps
+  # petting the watchdog while the hook waits.
+  onPortForwardedScript = optionalString (portForwarding && forwardingContainer.onPortForwarded != null) ''
+    (
+      set +e
+      TARGET_IP="${forwardingContainer.ip}"
+      export PORT TARGET_IP
+      echo "Running onPortForwarded hook for ${forwardingContainerName} (port=$PORT, target=$TARGET_IP)"
+      ${forwardingContainer.onPortForwarded}
+      echo "onPortForwarded hook for ${forwardingContainerName} finished"
+    ) &
+  '';
 in
 {
   config = mkIf cfg.enable {
@@ -66,13 +77,20 @@ in
 
       # WireGuard interface lifecycle. Created in the host namespace so encrypted
       # UDP stays in the host netns; nspawn moves it into the container via
-      # `interfaces = [ ... ]`. Managed here (not in a separate oneshot unit)
-      # because the interface is destroyed with the container's netns on crash,
-      # and automatic Restart= cycles do not re-run a RemainAfterExit oneshot —
-      # the container would then fail to start with a missing interface.
+      # --network-interface (see extraFlags below). Managed here (not in a
+      # separate oneshot unit) because the interface is destroyed with the
+      # container's netns on crash, and automatic Restart= cycles do not re-run
+      # a RemainAfterExit oneshot — the container would then fail to start with
+      # a missing interface.
+      #
+      # nspawn refuses to move a link udev has not finished initialising
+      # ("Network interface piaw is not initialized yet"), and a freshly added
+      # link is usually in that state, so wait for udev before ExecStart.
+      path = [ config.systemd.package ];
       preStart = ''
         ip link show dev ${cfg.interfaceName} >/dev/null 2>&1 || \
           ip link add ${cfg.interfaceName} type wireguard
+        udevadm wait --settle --timeout=10 /sys/class/net/${cfg.interfaceName}
       '';
       postStop = ''
         ip link del dev ${cfg.interfaceName} 2>/dev/null || true
@@ -84,7 +102,11 @@ in
       ephemeral = true;
       privateNetwork = true;
       hostBridge = cfg.bridgeName;
-      interfaces = [ cfg.interfaceName ];
+      # Deliberately not `interfaces = [ ... ]`: nixos-containers turns that
+      # into Wants=/After= on the interface's .device unit, and since preStart
+      # is what creates the link, every start without an existing link first
+      # waits out the 90 s device-job timeout.
+      extraFlags = [ "--network-interface=${cfg.interfaceName}" ];
 
       # Bind only the needed secrets — mounting all of /run/agenix would expose
       # every host secret to the container that talks to the internet.
@@ -267,6 +289,8 @@ in
 
               echo "PIA VPN setup complete"
               systemd-notify --ready
+
+              ${onPortForwardedScript}
 
               # Stay alive as the tunnel's liveness monitor (also keeps the
               # cleanup trap armed — exec'ing would silently discard it).

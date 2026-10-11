@@ -89,6 +89,11 @@ let
     after = [ "container@pia-vpn.service" ];
     requires = [ "container@pia-vpn.service" ];
     partOf = [ "container@pia-vpn.service" ];
+    # PartOf= only propagates explicit stop/restart jobs. When the VPN container
+    # fails and comes back through its own Restart=, the service containers'
+    # start jobs have already failed on the dependency and nothing re-queues
+    # them; Upholds= makes the VPN container keep starting them while it is up.
+    upheldBy = [ "container@pia-vpn.service" ];
   };
 in
 {
