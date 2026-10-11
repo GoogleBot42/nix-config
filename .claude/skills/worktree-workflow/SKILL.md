@@ -46,6 +46,9 @@ nix build .#nixosConfigurations.<hostname>.config.system.build.toplevel --no-lin
 nix run nixpkgs#nixpkgs-fmt -- <changed-file>.nix   # nixpkgs-fmt is not on PATH here
 ```
 
+A flake build only sees files Git tracks: a brand-new file fails with
+`Path ... is not tracked by Git`. `git add` new files before building.
+
 ## Reviewing or updating an existing PR
 
 ```bash
