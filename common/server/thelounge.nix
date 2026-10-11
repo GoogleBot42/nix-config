@@ -47,6 +47,17 @@ in
       "/var/lib/thelounge/"
     ];
 
+    # The state directory holds secrets (VAPID keys, password hashes) that
+    # thelounge writes with the unit's umask; keep them owner-only.
+    systemd.services.thelounge.serviceConfig = {
+      UMask = "0077";
+      StateDirectoryMode = "0750";
+    };
+    systemd.tmpfiles.rules = [
+      "z /var/lib/thelounge/vapid.json 0600 thelounge thelounge -"
+      "z /var/lib/thelounge/users/*.json 0600 thelounge thelounge -"
+    ];
+
     # the lounge client
     services.nginx.virtualHosts.${cfg.host} = {
       enableACME = lib.mkDefault true;
