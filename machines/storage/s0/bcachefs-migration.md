@@ -295,10 +295,17 @@ stick again".
      subvolume option spelled.
    - `fileSystems."/data"` stays `rpool/nixos/data` on zfs for now.
    - `boot.initrd.supportedFilesystems.bcachefs = true`.
-   - `/boot` on nvme1's ESP by its new UUID, with
-     `boot.loader.systemd-boot.extraInstallCommands` mirroring the ESP to
-     nvme2's ESP (plain `rsync -a --delete` of the mounted second ESP), so
-     either NVMe boots the box.
+   - `/boot` on the L4S drive's ESP by its new UUID, the L4Z drive's ESP
+     mounted at `/boot-mirror`, and `boot.loader.systemd-boot.extraInstallCommands`
+     doing two things after every rebuild: `rsync -a --delete /boot/ /boot-mirror/`,
+     and an idempotent `efibootmgr` pass that guarantees two firmware entries,
+     labelled **"NixOS A (NVMe L4S)"** and **"NixOS B (NVMe L4Z)"**, each
+     pointing at `\EFI\systemd\systemd-bootx64.efi` on its own ESP (create
+     only when an entry with that label is missing; never delete entries you
+     did not create). The owner asked for distinguishable A/B names in the
+     BIOS. This needs `boot.loader.efi.canTouchEfiVariables = true` on s0,
+     which is off today (the USB stick boots through the nameless fallback
+     path). Set the order A, B in firmware once, with the owner present.
    - Keep `remoteLuksUnlock.enable = true`; drop nothing else yet.
 7. Install the bootloader into the new ESP from the running system with
    `nixos-enter --root /mnt` (bind-mount the ESP at /mnt/boot first) and
@@ -400,3 +407,13 @@ Then:
     `/root/s0-migration-luks.key` (on rpool, so it disappears in Phase 3)
     and s0 `/run/s0-migration-luks.key` (tmpfs, gone after a reboot).
     Re-create a working copy with `agenix -d` before opening anything.
+- 2026-10-11 22:50: the three stepping stones moved into a 3-bay USB 3.1
+  enclosure (three VIA VL817 bridges, 512-byte logical sectors; by-id names
+  come from the bridges, so identify drives by `lsblk -dno NAME,SERIAL` or
+  LUKS UUID). Both IronWolf 4 TB drives (ZGY79T43, ZGY68DX1; owner confirmed
+  disposable) are LUKS `s0-stone4a` f92d408f-74b3-4f3b-9770-d555220a5478 and
+  `s0-stone4b` 13884b48-876d-4aea-bd84-0c1080e44ca3 and were added to
+  `tmppool`, now 21.8 TiB over enc-stone16/4a/4b. The send was stopped for the
+  move (resume token kept), then resumed with `zfs send -t <token> | zfs recv
+  -s -u tmppool/data` at ~350 MB/s; projected to finish around 04:00 on
+  2026-10-12, after which: scrub `tmppool`, resume the OS rsync.
