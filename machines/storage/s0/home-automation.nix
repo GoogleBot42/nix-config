@@ -67,6 +67,16 @@
         host = "localhost";
         port = 55834;
       };
+      advanced = {
+        # Frame-level ASH logging stays on until the coordinator faults
+        # (ASH_NCP_FATAL_ERROR, ERROR_EXCEEDED_MAXIMUM_ACK_TIMEOUT_COUNT) are
+        # understood: the counters show the host's ACKs not reaching the
+        # coordinator, and only per-frame timestamps can tell a stalled
+        # process from a blocked serial transmit path.
+        log_namespaced_levels = {
+          "zh:ember:uart:ash" = "debug";
+        };
+      };
     };
   };
   age.secrets."zigbee2mqtt.yaml" = {
