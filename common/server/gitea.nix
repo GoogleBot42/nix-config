@@ -18,7 +18,6 @@ in
       settings = {
         server = {
           ROOT_URL = "https://${cfg.hostname}/";
-          DOMAIN = cfg.hostname;
         };
         other = {
           SHOW_FOOTER_VERSION = false;
@@ -46,6 +45,8 @@ in
         };
         actions = {
           ENABLED = true;
+          # Match the longest workflow and runner timeout.
+          ENDLESS_TASK_TIMEOUT = "6h";
         };
         webhook = {
           ALLOWED_HOST_LIST = "external,hooks.fry.neet.dev";
