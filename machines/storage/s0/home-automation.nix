@@ -1,7 +1,21 @@
-{ config, ... }:
+{ config, lib, pkgs, utils, ... }:
 
 {
   services.esphome.enable = true;
+  # nixpkgs' esphome module still launches the built-in dashboard, which
+  # ESPHome removed in favour of Device Builder. Replace only the command so
+  # the module's user, state dir, environment, and hardening stay in effect.
+  systemd.services.esphome.serviceConfig.ExecStart = lib.mkForce (utils.escapeSystemdExecArgs [
+    (lib.getExe pkgs.esphome-device-builder)
+    "--host"
+    config.services.esphome.address
+    "--port"
+    (toString config.services.esphome.port)
+    # No remote-build peers; keep the peer-link receiver off the LAN.
+    "--remote-build-host"
+    "localhost"
+    "/var/lib/esphome"
+  ]);
 
   services.mosquitto = {
     enable = true;
