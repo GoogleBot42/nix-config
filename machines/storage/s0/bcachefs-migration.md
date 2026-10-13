@@ -417,3 +417,22 @@ Then:
   move (resume token kept), then resumed with `zfs send -t <token> | zfs recv
   -s -u tmppool/data` at ~350 MB/s; projected to finish around 04:00 on
   2026-10-12, after which: scrub `tmppool`, resume the OS rsync.
+- 2026-10-12: **bulk copies done.** `zfs send` of `/data@mig1` completed
+  06:15 (EXIT=0, same snapshot guid on both sides, 17.4 TiB, resume token
+  cleared) after two enclosure dropouts caused by the enclosure's USB cable;
+  a shorter cable fixed it. Recovery from a dropout without rebooting is
+  `/root/migration/reattach-stones.sh` (rebuilds the crypt tables from the
+  LUKS headers, clears the pool), then restart the send from the resume
+  token. `zpool scrub tmppool` started 06:15, 0 errors so far, finishing
+  around 06:00 on the 13th; check `zpool status tmppool` before trusting the
+  copy. The OS rsync finished 21:37, all six jobs EXIT=0. On the NVMe
+  filesystem: 2.71 TB used at two replicas, 73% per device. **1.1 TB of it is
+  `/var/lib/transmission/.incomplete`, 34 stale partial torrents from 2023 to
+  2026-08**; the owner decides whether they are deleted or moved to /data
+  before the cutover, but they do not belong on the SSD tier. Frigate's
+  StateDirectory is tiny; its recordings are not under /var/lib. Hardware:
+  the SATA link of `ata6` (drive 3JH0HT6G) resets several times a day and has
+  for a month; SMART is clean on all four drives; see the hard-reset notes.
+  Name resolution: use `s0.koi-bebop.ts.net` for ssh; the bare name `s0`
+  sometimes resolves through the router to s0's management-VLAN lease, which
+  the router rejects.
