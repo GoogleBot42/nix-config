@@ -436,3 +436,24 @@ Then:
   Name resolution: use `s0.koi-bebop.ts.net` for ssh; the bare name `s0`
   sometimes resolves through the router to s0's management-VLAN lease, which
   the router rejects.
+- 2026-10-14 02:00: **Phase 1 Steps 1 and 2 done.** Branch `feat/s0-nvme-root`
+  carries the new disk stanza and `machines/storage/s0/rehearsal/`. Findings
+  the stanza now encodes: bcachefs's default `degraded=ask` fails a
+  non-interactive initrd mount outright, so the bcachefs mounts carry
+  `degraded=yes` (all data has two replicas), `x-systemd.requires/after=
+  cryptsetup.target` so every member is opened before mounting, and each
+  LUKS container is `nofail` with `x-systemd.device-timeout=10min` so a dead
+  member times out rather than inheriting the remote-unlock module's
+  indefinite device wait. Rehearsal results (QEMU, OVMF): unattended install
+  OK; normal boot OK; boot with one member absent OK (firmware fell through
+  to the other named entry, LUKS wait timed out, root mounted degraded on one
+  member); boot with the member returned OK (both members back, degraded
+  writes re-replicate). Harmless noise to expect on s0: `bcachefs (/dev/dm-N):
+  error reading superblock: EBUSY` from the module's native-encryption unlock
+  probe. Rehearsal gotchas: the fleet ISO is BIOS-only
+  (`image.modules.iso.isoImage.makeEfiBootable`), services must not write
+  /dev/ttyS0 directly, the prep PATH needs nixos-install-tools, nix and
+  efibootmgr. The loader hook registers the named entries at install time
+  and puts the newest first in BootOrder, so on s0 the order must be put
+  back to the USB stick right after Step 3 and only switched to "NixOS A" at
+  the Step 5 reboot. Second scrub of tmppool running.
