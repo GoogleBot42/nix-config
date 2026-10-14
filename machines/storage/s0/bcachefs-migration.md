@@ -381,7 +381,7 @@ Then:
 6. Cleanup in the repo: remove the root migration key and delete
    `~/.ssh/s0-migration` on fry; remove zfs root remnants
    (`services.zfs.*` for rpool, the import-ordering override no longer
-   applies); enable `services.bcachefs.autoScrub`; teach
+   applies); teach
    `common/backups.nix` to snapshot bcachefs subvolumes; add an HDD spin-state
    metric if wanted. Update CLAUDE.md's architecture notes if they mention
    ZFS on s0.

@@ -33,6 +33,15 @@
   services.zfs.autoScrub.enable = true;
   services.zfs.trim.enable = true;
 
+  # bcachefs verifies checksums only when it reads, so a periodic scrub is
+  # what finds latent damage on the mirror before the second copy is needed.
+  # Weekly while the filesystem is young; it reads every block, so once /data
+  # lives here it also means a few hours of HDD activity each week.
+  services.bcachefs.autoScrub = {
+    enable = true;
+    interval = "weekly";
+  };
+
   # luks. The remote-unlock module makes the initrd wait indefinitely for
   # devices (a passphrase can take a while to arrive); a dead member must not
   # inherit that, so each container gets its own bounded device timeout and
