@@ -2,8 +2,10 @@
 
 # bcachefs health: a member missing or not read-write, the filesystem not
 # read-write, entries in its error list, new device I/O errors, or data left
-# with fewer replicas than configured. Alerts once per distinct problem set
-# and once more on recovery; the sender spools if the network is not up yet.
+# with fewer replicas than configured. The facts come from the same probe
+# that feeds the metrics (common/bcachefs-metrics.nix), so an alert here
+# always matches what the dashboard shows. Alerts once per distinct problem
+# set and once more on recovery; the sender spools if the network is down.
 
 let
   cfg = config.ntfy-alerts;
@@ -13,76 +15,79 @@ let
 
   checkScript = pkgs.writeShellScript "bcachefs-health-check" ''
     set -u
-    PATH="${lib.makeBinPath [ pkgs.coreutils pkgs.gawk pkgs.gnugrep pkgs.util-linux pkgs.bcachefs-tools ]}"
+    PATH="${lib.makeBinPath [ pkgs.coreutils pkgs.gawk pkgs.gnugrep pkgs.gnused ]}"
     state="$STATE_DIRECTORY"
-    issues=""
+    facts=$(${config.bcachefs.probe})
+    issues=""   # states: reported when the set changes, and on recovery
+    events=""   # counter increases: reported every time they happen
     urgent=0
     : > "$state/io-errors.new"
 
     add() { issues="$issues"$'\n'"  $1"; }
+    event() { events="$events"$'\n'"  $1"; }
+    # value of the first sample whose name and labels match a regex
+    fact() { awk -v re="$1" '$0 ~ re { print $NF; exit }' <<< "$facts"; }
 
+    # A mounted filesystem the probe says nothing about is itself a problem:
+    # a silent probe must never read as healthy.
     for fs in /sys/fs/bcachefs/*/; do
       [ -d "$fs" ] || continue
-      uuid=$(basename "$fs")
-      short=''${uuid:0:8}
+      u=$(basename "$fs")
+      grep -q "^bcachefs_fs_members{fs=\"$u\"}" <<< "$facts" \
+        || { add "filesystem ''${u:0:8}: the metrics probe produced no facts for it"; urgent=1; }
+    done
 
-      blk=""
-      for d in "$fs"dev-*/; do
-        [ -d "$d" ] || continue
-        b=$(basename "$(readlink "$d/block")")
-        [ -n "$b" ] && { blk=$b; break; }
-      done
-      present=$(ls -d "$fs"dev-*/ 2>/dev/null | wc -l)
-      members=0
-      [ -n "$blk" ] && members=$(bcachefs show-super "/dev/$blk" 2>/dev/null | awk '/^Devices:/{print $2}')
-      if [ "''${members:-0}" -gt "$present" ]; then
+    for uuid in $(grep -o '^bcachefs_fs_members{fs="[^"]*"' <<< "$facts" | cut -d'"' -f2); do
+      short=''${uuid:0:8}
+      F="fs=\"$uuid\""
+
+      members=$(fact "^bcachefs_fs_members[{]$F[}]")
+      present=$(fact "^bcachefs_fs_members_present[{]$F[}]")
+      if [ "''${members:-0}" -gt "''${present:-0}" ]; then
         add "filesystem $short: only $present of $members member devices present"; urgent=1
       fi
 
-      if ! grep -qw rw "$fs/internal/flags"; then
-        add "filesystem $short is not read-write (flags: $(tr '\n' ' ' < "$fs/internal/flags"))"; urgent=1
+      if [ "$(fact "^bcachefs_fs_rw[{]$F[}]")" != 1 ]; then
+        add "filesystem $short is not read-write"; urgent=1
       fi
 
-      errs=$(grep -c . "$fs/errors" 2>/dev/null || true)
+      errs=$(fact "^bcachefs_fs_errors[{]$F[}]")
       if [ "''${errs:-0}" -gt 0 ]; then
-        add "filesystem $short lists $errs error(s): $(head -n 5 "$fs/errors" | tr '\n' ';')"; urgent=1
+        add "filesystem $short lists $errs error(s): $(head -n 5 "/sys/fs/bcachefs/$uuid/errors" | tr '\n' ';')"; urgent=1
       fi
 
-      for d in "$fs"dev-*/; do
-        [ -d "$d" ] || continue
-        label=$(cat "$d/label")
-        st=$(grep -o '\[[a-z]*\]' "$d/state" | tr -d '[]')
-        [ "$st" = rw ] || { add "device $label of $short is $st"; urgent=1; }
+      deg=$(awk -v f="$F" '$0 ~ "^bcachefs_fs_data_bytes[{]"f"," && $0 !~ /degraded="0"/ { s += $NF } END { printf "%d\n", s }' <<< "$facts")
+      if [ "''${deg:-0}" -gt 0 ]; then
+        add "filesystem $short has $(numfmt --to=iec "$deg") of data with fewer replicas than configured"
+      fi
 
-        read -r er ew ec < <(awk '
-          /since filesystem creation/ { f=1; next }
-          f && /read:/ { r=$2 } f && /write:/ { w=$2 }
-          f && /checksum:/ { sub(/checksum:/, ""); c=$1; print r+0, w+0, c+0; exit }' "$d/io_errors")
+      for label in $(grep -o "^bcachefs_device_rw{$F,label=\"[^\"]*\"" <<< "$facts" | sed 's/.*label="//; s/"$//'); do
+        D="$F,label=\"$label\""
+        if [ "$(fact "^bcachefs_device_rw[{]$D[}]")" != 1 ]; then
+          st=$(grep -o "^bcachefs_device_state{$D,state=\"[^\"]*\"" <<< "$facts" | sed 's/.*state="//; s/"$//')
+          add "device $label of $short is ''${st:-not read-write}"; urgent=1
+        fi
+        er=$(fact "^bcachefs_device_io_errors_total[{]$D,type=\"read\"[}]")
+        ew=$(fact "^bcachefs_device_io_errors_total[{]$D,type=\"write\"[}]")
+        ec=$(fact "^bcachefs_device_io_errors_total[{]$D,type=\"checksum\"[}]")
         key="$uuid/$label"
-        prev=$(awk -v k="$key" '$1==k {print $2, $3, $4}' "$state/io-errors" 2>/dev/null)
-        read -r pr pw pc <<< "''${prev:-0 0 0}"
-        if [ "$er" -gt "$pr" ] || [ "$ew" -gt "$pw" ] || [ "$ec" -gt "$pc" ]; then
-          add "device $label of $short: I/O errors read $er (+$((er - pr))) write $ew (+$((ew - pw))) checksum $ec (+$((ec - pc)))"
+        read -r pr pw pc <<< "$(awk -v k="$key" '$1==k { print $2, $3, $4 }' "$state/io-errors" 2>/dev/null)"
+        pr=''${pr:-0} pw=''${pw:-0} pc=''${pc:-0}
+        if [ "''${er:-0}" -gt "$pr" ] || [ "''${ew:-0}" -gt "$pw" ] || [ "''${ec:-0}" -gt "$pc" ]; then
+          event "device $label of $short: I/O errors read $er (+$((er - pr))) write $ew (+$((ew - pw))) checksum $ec (+$((ec - pc)))"
         fi
-        echo "$key $er $ew $ec" >> "$state/io-errors.new"
+        echo "$key ''${er:-0} ''${ew:-0} ''${ec:-0}" >> "$state/io-errors.new"
       done
-
-      mp=$(findmnt -t bcachefs -no TARGET,SOURCE | awk -v d="/dev/$blk" 'index($2, d) { print $1; exit }')
-      if [ -n "$mp" ]; then
-        deg=$(bcachefs fs usage "$mp" 2>/dev/null | awk '
-          /^[[:space:]]+undegraded/ { acct=1; next }
-          acct && /^Device label/ { acct=0 }
-          acct && /^[0-9]+x:/ { for (i = 3; i <= NF; i++) if ($i + 0 > 0) sum += $i }
-          END { printf "%d\n", sum + 0 }')
-        if [ "''${deg:-0}" -gt 0 ]; then
-          add "filesystem $short has $(numfmt --to=iec "$deg") of data with fewer replicas than configured"
-        fi
-      fi
     done
     mv "$state/io-errors.new" "$state/io-errors"
 
     prev_issues=$(cat "$state/last-issues" 2>/dev/null || true)
     printf '%s' "$issues" > "$state/last-issues"
+
+    if [ -n "$events" ]; then
+      echo "bcachefs events on ${host}:$events"
+      ${cfg.notify} service-failures high warning "bcachefs I/O errors on ${host}" "New bcachefs I/O errors on ${host}:$events"
+    fi
 
     if [ -n "$issues" ]; then
       echo "bcachefs issues on ${host}:$issues"

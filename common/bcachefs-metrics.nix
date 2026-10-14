@@ -11,13 +11,13 @@ let
   textfileDir = config.services.prometheus.exporters.node.textfileDirectory;
   hasBcachefs = config.boot.supportedFilesystems.bcachefs or false;
 
-  script = pkgs.writeShellScript "bcachefs-metrics" ''
+  # Prints every fact as Prometheus text on stdout. The metrics timer saves
+  # it for node_exporter; the ntfy health check (common/ntfy/bcachefs.nix)
+  # reads the same output, so alerts and dashboards cannot disagree.
+  probe = pkgs.writeShellScript "bcachefs-probe" ''
     set -u
     PATH="${lib.makeBinPath [ pkgs.coreutils pkgs.gawk pkgs.gnugrep pkgs.util-linux pkgs.jq pkgs.bcachefs-tools ]}"
-    out="${textfileDir}/bcachefs.prom"
-    tmp="$out.tmp"
-    : > "$tmp"
-    m() { printf '%s\n' "$1" >> "$tmp"; }
+    m() { printf '%s\n' "$1"; }
 
     # "23.0G" -> bytes, as bcachefs prints human sizes (binary units)
     hr2bytes() {
@@ -60,10 +60,10 @@ let
           /since filesystem creation/ { f=1; next }
           f && /read:/ { printf "bcachefs_device_io_errors_total{%s,type=\"read\"} %d\n", l, $2 }
           f && /write:/ { printf "bcachefs_device_io_errors_total{%s,type=\"write\"} %d\n", l, $2 }
-          f && /checksum:/ { sub(/checksum:/, ""); printf "bcachefs_device_io_errors_total{%s,type=\"checksum\"} %d\n", l, $1; exit }' "$d/io_errors" >> "$tmp"
+          f && /checksum:/ { sub(/checksum:/, ""); printf "bcachefs_device_io_errors_total{%s,type=\"checksum\"} %d\n", l, $1; exit }' "$d/io_errors"
         jq -r --arg l "$DL" '
           to_entries[] | .key as $dir | .value | to_entries[]
-          | "bcachefs_device_io_bytes_total{\($l),direction=\"\($dir)\",data_type=\"\(.key)\"} \(.value)"' "$d/io_done" >> "$tmp"
+          | "bcachefs_device_io_bytes_total{\($l),direction=\"\($dir)\",data_type=\"\(.key)\"} \(.value)"' "$d/io_done"
         for op in read write; do
           jq -r --arg l "$DL" --arg op "$op" '
             "bcachefs_device_io_count_total{\($l),op=\"\($op)\"} \(.count)",
@@ -71,7 +71,7 @@ let
             "bcachefs_device_io_latency_seconds{\($l),op=\"\($op)\",stat=\"max\"} \(.duration_ns.max / 1e9)",
             "bcachefs_device_io_latency_seconds{\($l),op=\"\($op)\",stat=\"stddev\"} \(.duration_ns.stddev / 1e9)",
             "bcachefs_device_io_latency_seconds{\($l),op=\"\($op)\",stat=\"ewma_mean\"} \(.duration_ewma_ns.mean / 1e9)"' \
-            "$d/io_latency_stats_''${op}_json" 2>/dev/null >> "$tmp"
+            "$d/io_latency_stats_''${op}_json" 2>/dev/null
         done
       done
 
@@ -88,20 +88,32 @@ let
             d = (hdr[i] == "undegraded") ? "0" : hdr[i]; sub(/x$/, "", d)
             printf "bcachefs_fs_data_bytes{%s,replicas=\"%s\",degraded=\"%s\"} %s\n", l, r, d, $i } }
           /\(device [0-9]+\):/ { lab=$1; printf "bcachefs_device_size_bytes{%s,label=\"%s\"} %s\nbcachefs_device_used_bytes{%s,label=\"%s\"} %s\n", l, lab, $(NF-2), l, lab, $(NF-1) }
-        ' >> "$tmp"
+        '
       fi
-      m "bcachefs_metrics_timestamp_seconds{$L} $(date +%s)"
+      m "bcachefs_metrics_timestamp_seconds{} 100 1 17 20 27 57 59 67 100 995date +%s)"
     done
-    mv "$tmp" "$out"
+  '';
+
+  writer = pkgs.writeShellScript "bcachefs-metrics" ''
+    set -u
+    out="${textfileDir}/bcachefs.prom"
+    ${probe} > "$out.tmp" && mv "$out.tmp" "$out"
   '';
 in
 {
+  options.bcachefs.probe = lib.mkOption {
+    type = lib.types.path;
+    default = probe;
+    readOnly = true;
+    description = "Script printing every bcachefs fact as Prometheus text.";
+  };
+
   config = lib.mkIf (hasBcachefs && config.services.prometheus.exporters.node.enable) {
     systemd.services.bcachefs-metrics = {
       description = "Export bcachefs metrics for node_exporter";
       serviceConfig = {
         Type = "oneshot";
-        ExecStart = script;
+        ExecStart = writer;
       };
     };
     systemd.timers.bcachefs-metrics = {
