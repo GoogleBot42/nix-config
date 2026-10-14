@@ -144,9 +144,11 @@ in
       type = lib.types.str;
       example = "grafana.example.com";
     };
+    # The same topic every host-side check publishes to: one place a human
+    # has to watch, and the ntfy account only subscribes to that one.
     ntfyTopic = lib.mkOption {
       type = lib.types.str;
-      default = "grafana";
+      default = "service-failures";
       description = "ntfy topic the provisioned alerting contact point publishes to.";
     };
     diskAlerts = {
