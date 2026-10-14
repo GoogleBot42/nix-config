@@ -319,7 +319,9 @@ stick again".
    then reboot with the owner present and the BIOS boot order set to nvme1.
 9. Verify: `findmnt`, every service healthy, Gatus green, remote unlock
    works on a second reboot, `bcachefs fs usage` shows all data on `ssd`.
-10. **Run on this for several days before Phase 3.** Record the date.
+10. Run `bcachefs scrub /` once the system is up and let it finish (minutes
+    on the NVMe tier); zero errors is part of the soak criteria.
+11. **Run on this for several days before Phase 3.** Record the date.
 
 ## Phase 2: /data to the temporary pool
 
@@ -370,7 +372,9 @@ Then:
    into /data in tmux. Verify sizes and the same spot-check set.
 2. Confirm in `bcachefs fs usage` that /data's extents are stripes on `hdd`
    and nothing from the OS subvolumes drifted there. Let reconcile finish
-   (`bcachefs reconcile wait`, mindful of #920).
+   (`bcachefs reconcile wait`, mindful of #920), then run `bcachefs scrub /`
+   over the whole filesystem (hours on the HDDs) before starting services;
+   the monthly timer (`services.bcachefs.autoScrub`) takes over from there.
 3. Start services. Fix ownership if anything shows up (ids were preserved).
 4. Degraded-boot test with the owner: power off one HDD, reboot, confirm the
    root mounts and /data reads; power it back, confirm reconcile repairs.
