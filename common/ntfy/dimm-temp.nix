@@ -5,7 +5,7 @@ let
   hasNtfy = config.thisMachine.hasRole."ntfy";
 
   checkScript = pkgs.writeShellScript "dimm-temp-check" ''
-    PATH="${lib.makeBinPath [ pkgs.lm_sensors pkgs.gawk pkgs.coreutils pkgs.curl ]}"
+    PATH="${lib.makeBinPath [ pkgs.lm_sensors pkgs.gawk pkgs.coreutils ]}"
 
     threshold=55
     hot=""
@@ -32,15 +32,7 @@ let
     if [ -n "$hot" ]; then
       message="DIMM temperature above ''${threshold}°C on ${config.networking.hostName}:$hot"
 
-      curl \
-        --fail --silent --show-error \
-        --max-time 30 --retry 3 \
-        -H "Authorization: Bearer $NTFY_TOKEN" \
-        -H "Title: High DIMM temperature on ${config.networking.hostName}" \
-        -H "Priority: high" \
-        -H "Tags: thermometer" \
-        -d "$message" \
-        "${cfg.serverUrl}/service-failures"
+      ${cfg.notify} service-failures high thermometer "High DIMM temperature on ${config.networking.hostName}" "$message"
 
       echo "$message" >&2
     fi

@@ -14,11 +14,13 @@ let
 in
 {
   imports = [
+    ./notify.nix
     ./service-failure.nix
     ./ssh-login.nix
     ./zfs.nix
     ./dimm-temp.nix
     ./edac.nix
+    ./bcachefs.nix
   ];
 
   options.ntfy-alerts = {

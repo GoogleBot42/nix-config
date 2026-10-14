@@ -6,13 +6,24 @@
 
 let
   cfg = config.services.prometheus.exporters.node;
+  textfileDir = "/var/lib/prometheus-node-exporter-textfile";
 in
 {
+  # Host-local metric writers (common/bcachefs-metrics.nix) drop .prom files
+  # here; the directory exists on every host so the collector never errors.
+  options.services.prometheus.exporters.node.textfileDirectory = lib.mkOption {
+    type = lib.types.str;
+    default = textfileDir;
+    readOnly = true;
+  };
+
   config = lib.mkIf config.services.tailscale.enable {
     services.prometheus.exporters.node = {
       enable = lib.mkDefault true;
       enabledCollectors = [ "systemd" ];
+      extraFlags = [ "--collector.textfile.directory=${textfileDir}" ];
     };
+    systemd.tmpfiles.rules = [ "d ${textfileDir} 0755 root root -" ];
 
     # node_exporter's rapl collector (on by default) reads the CPU energy
     # counters under /sys/class/powercap, but the kernel creates energy_uj

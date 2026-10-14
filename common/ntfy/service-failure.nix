@@ -45,18 +45,9 @@ in
           trap 'rm -f "$logfile"' EXIT
           ${pkgs.systemd}/bin/journalctl -u "$unit" -n 50 --no-pager -o short > "$logfile" 2>/dev/null \
             || echo "(no logs available)" > "$logfile"
-          ${lib.getExe pkgs.curl} \
-            -T "$logfile" \
-            --fail --silent --show-error \
-            --max-time 30 --retry 3 \
-            ${cfg.curlExtraArgs} \
-            -H "Authorization: Bearer $NTFY_TOKEN" \
-            -H "Title: Service failure on ${cfg.hostLabel}" \
-            -H "Priority: high" \
-            -H "Tags: rotating_light" \
-            -H "Message: Unit $unit failed at $(date +%c)" \
-            -H "Filename: $unit.log" \
-            "${cfg.serverUrl}/service-failures"
+          ${cfg.notify} service-failures high rotating_light \
+            "Service failure on ${cfg.hostLabel}" "Unit $unit failed at $(date +%c)" \
+            "$logfile" "$unit.log"
         ''} %i";
       };
     };

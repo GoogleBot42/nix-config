@@ -1,0 +1,133 @@
+{
+  "uid": "bcachefs",
+  "title": "bcachefs",
+  "description": "Per-filesystem and per-device health from the bcachefs-metrics textfile exporter (common/bcachefs-metrics.nix): members present, device state, data with fewer replicas than configured, I/O errors, latency, throughput by data type, space and the reconcile backlog.",
+  "tags": ["fleet", "storage"],
+  "editable": true,
+  "graphTooltip": 1,
+  "refresh": "1m",
+  "schemaVersion": 39,
+  "time": { "from": "now-24h", "to": "now" },
+  "timezone": "browser",
+  "templating": {
+    "list": [
+      {
+        "name": "instance", "label": "Host", "type": "query",
+        "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+        "query": "label_values(bcachefs_fs_members, instance)",
+        "definition": "label_values(bcachefs_fs_members, instance)",
+        "refresh": 1, "sort": 1, "current": { "text": "s0", "value": "s0" }
+      },
+      {
+        "name": "fs", "label": "Filesystem", "type": "query",
+        "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+        "query": "label_values(bcachefs_fs_members{instance=\"$instance\"}, fs)",
+        "definition": "label_values(bcachefs_fs_members{instance=\"$instance\"}, fs)",
+        "refresh": 1, "sort": 1, "includeAll": true, "multi": true, "current": { "text": "All", "value": "$__all" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1, "type": "stat", "title": "Members present",
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "instant": true, "legendFormat": "{{fs}}", "expr": "bcachefs_fs_members_present{instance=\"$instance\", fs=~\"$fs\"} / bcachefs_fs_members{instance=\"$instance\", fs=~\"$fs\"}" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none", "textMode": "value" },
+      "fieldConfig": { "defaults": { "unit": "percentunit", "decimals": 0, "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 1 } ] } }, "overrides": [] }
+    },
+    {
+      "id": 2, "type": "stat", "title": "Devices not read-write",
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "instant": true, "expr": "count(bcachefs_device_rw{instance=\"$instance\", fs=~\"$fs\"} == 0) or vector(0)" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none", "textMode": "value" },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0, "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] } }, "overrides": [] }
+    },
+    {
+      "id": 3, "type": "stat", "title": "Data below configured replicas",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "instant": true, "expr": "sum(bcachefs_fs_data_bytes{instance=\"$instance\", fs=~\"$fs\", degraded!=\"0\"}) or vector(0)" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none", "textMode": "value" },
+      "fieldConfig": { "defaults": { "unit": "bytes", "decimals": 1, "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] } }, "overrides": [] }
+    },
+    {
+      "id": 4, "type": "stat", "title": "I/O errors (all devices)",
+      "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "instant": true, "expr": "sum(bcachefs_device_io_errors_total{instance=\"$instance\", fs=~\"$fs\"})" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none", "textMode": "value" },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0, "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "orange", "value": 1 } ] } }, "overrides": [] }
+    },
+    {
+      "id": 5, "type": "stat", "title": "Filesystem read-write",
+      "gridPos": { "x": 16, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "instant": true, "legendFormat": "{{fs}}", "expr": "bcachefs_fs_rw{instance=\"$instance\", fs=~\"$fs\"}" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none", "textMode": "value" },
+      "fieldConfig": { "defaults": { "unit": "short", "mappings": [ { "type": "value", "options": { "0": { "text": "read-only" }, "1": { "text": "rw" } } } ], "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 1 } ] } }, "overrides": [] }
+    },
+    {
+      "id": 6, "type": "stat", "title": "Reconcile backlog",
+      "gridPos": { "x": 20, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "instant": true, "legendFormat": "{{fs}}", "expr": "bcachefs_fs_reconcile_wait_remaining_bytes{instance=\"$instance\", fs=~\"$fs\"}" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "none", "graphMode": "area", "textMode": "value", "noValue": "0" },
+      "fieldConfig": { "defaults": { "unit": "bytes", "decimals": 1 }, "overrides": [] }
+    },
+    {
+      "id": 10, "type": "timeseries", "title": "Device I/O errors",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "legendFormat": "{{label}} {{type}}", "expr": "bcachefs_device_io_errors_total{instance=\"$instance\", fs=~\"$fs\"}" }],
+      "options": { "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["lastNotNull"] }, "tooltip": { "mode": "multi" } },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0, "min": 0, "custom": { "lineWidth": 2, "fillOpacity": 0, "showPoints": "never" } }, "overrides": [] }
+    },
+    {
+      "id": 11, "type": "timeseries", "title": "Data by replica level",
+      "description": "degraded=\"0\" is data at its configured replica count; other series are data missing that many replicas.",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "legendFormat": "{{replicas}} degraded={{degraded}}", "expr": "bcachefs_fs_data_bytes{instance=\"$instance\", fs=~\"$fs\"}" }],
+      "options": { "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["lastNotNull"] }, "tooltip": { "mode": "multi" } },
+      "fieldConfig": { "defaults": { "unit": "bytes", "decimals": 1, "min": 0, "custom": { "lineWidth": 2, "fillOpacity": 10, "showPoints": "never" } }, "overrides": [] }
+    },
+    {
+      "id": 12, "type": "timeseries", "title": "Read latency (mean, EWMA, max)",
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "legendFormat": "{{label}} {{stat}}", "expr": "bcachefs_device_io_latency_seconds{instance=\"$instance\", fs=~\"$fs\", op=\"read\", stat=~\"mean|ewma_mean|max\"}" }],
+      "options": { "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["lastNotNull"] }, "tooltip": { "mode": "multi" } },
+      "fieldConfig": { "defaults": { "unit": "s", "decimals": 2, "min": 0, "custom": { "lineWidth": 2, "fillOpacity": 0, "showPoints": "never", "scaleDistribution": { "type": "log", "log": 10 } } }, "overrides": [] }
+    },
+    {
+      "id": 13, "type": "timeseries", "title": "Write latency (mean, EWMA, max)",
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "legendFormat": "{{label}} {{stat}}", "expr": "bcachefs_device_io_latency_seconds{instance=\"$instance\", fs=~\"$fs\", op=\"write\", stat=~\"mean|ewma_mean|max\"}" }],
+      "options": { "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["lastNotNull"] }, "tooltip": { "mode": "multi" } },
+      "fieldConfig": { "defaults": { "unit": "s", "decimals": 2, "min": 0, "custom": { "lineWidth": 2, "fillOpacity": 0, "showPoints": "never", "scaleDistribution": { "type": "log", "log": 10 } } }, "overrides": [] }
+    },
+    {
+      "id": 14, "type": "timeseries", "title": "Throughput by data type",
+      "gridPos": { "x": 0, "y": 20, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "legendFormat": "{{label}} {{direction}} {{data_type}}", "expr": "rate(bcachefs_device_io_bytes_total{instance=\"$instance\", fs=~\"$fs\"}[5m]) > 0" }],
+      "options": { "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["mean"] }, "tooltip": { "mode": "multi" } },
+      "fieldConfig": { "defaults": { "unit": "Bps", "decimals": 1, "min": 0, "custom": { "lineWidth": 1, "fillOpacity": 20, "showPoints": "never", "stacking": { "mode": "normal" } } }, "overrides": [] }
+    },
+    {
+      "id": 15, "type": "timeseries", "title": "Space",
+      "gridPos": { "x": 12, "y": 20, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [
+        { "refId": "A", "legendFormat": "{{fs}} used", "expr": "bcachefs_fs_used_bytes{instance=\"$instance\", fs=~\"$fs\"}" },
+        { "refId": "B", "legendFormat": "{{fs}} writable", "expr": "bcachefs_fs_writable_bytes{instance=\"$instance\", fs=~\"$fs\"}" },
+        { "refId": "C", "legendFormat": "{{label}} used", "expr": "bcachefs_device_used_bytes{instance=\"$instance\", fs=~\"$fs\"}" }
+      ],
+      "options": { "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["lastNotNull"] }, "tooltip": { "mode": "multi" } },
+      "fieldConfig": { "defaults": { "unit": "bytes", "decimals": 1, "min": 0, "custom": { "lineWidth": 2, "fillOpacity": 0, "showPoints": "never" } }, "overrides": [] }
+    }
+  ]
+}

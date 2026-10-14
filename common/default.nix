@@ -8,6 +8,7 @@
     ./auto-update.nix
     ./ntfy
     ./node-exporter.nix
+    ./bcachefs-metrics.nix
     ./shell.nix
     ./network
     ./boot

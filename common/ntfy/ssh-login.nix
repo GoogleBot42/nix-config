@@ -14,18 +14,9 @@ let
       esac
     ''}
 
-    . /run/agenix/ntfy-token
-
     # Send notification in background so login isn't delayed
-    ${lib.getExe pkgs.curl} \
-      --fail --silent --show-error \
-      --max-time 10 --retry 1 \
-      ${cfg.curlExtraArgs} \
-      -H "Authorization: Bearer $NTFY_TOKEN" \
-      -H "Title: SSH login on ${config.networking.hostName}" \
-      -H "Tags: key" \
-      -d "$PAM_USER from $PAM_RHOST at $(date +%c)" \
-      "${cfg.serverUrl}/ssh-logins" &
+    ${cfg.notify} ssh-logins default key "SSH login on ${config.networking.hostName}" \
+      "$PAM_USER from $PAM_RHOST at $(date +%c)" &
   '';
 in
 {

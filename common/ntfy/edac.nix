@@ -6,21 +6,13 @@ let
   host = config.networking.hostName;
 
   checkScript = pkgs.writeShellScript "edac-check" ''
-    PATH="${lib.makeBinPath [ pkgs.coreutils pkgs.curl ]}"
+    PATH="${lib.makeBinPath [ pkgs.coreutils ]}"
 
     state="$STATE_DIRECTORY/counts"
     edac=/sys/devices/system/edac/mc
 
     notify() { # priority tags title message
-      curl \
-        --fail --silent --show-error \
-        --max-time 30 --retry 3 \
-        -H "Authorization: Bearer $NTFY_TOKEN" \
-        -H "Title: $3" \
-        -H "Priority: $1" \
-        -H "Tags: $2" \
-        -d "$4" \
-        "${cfg.serverUrl}/service-failures"
+      ${cfg.notify} service-failures "$1" "$2" "$3" "$4"
       echo "$4" >&2
     }
 

@@ -29,9 +29,66 @@ let
     cp ${nodeExporterFullDashboard} $out/node-exporter-full.json
     cp ${./dashboards/hardware-sensors.json} $out/hardware-sensors.json
     cp ${powerDashboard} $out/power.json
+    cp ${./dashboards/bcachefs.json} $out/bcachefs.json
   '';
 
   diskCfg = grafanaCfg.diskAlerts;
+
+  # An instant query whose non-empty result fires the alert.
+  mkExprRule = { uid, title, severity, expr, summary, for ? "10m" }: {
+    inherit uid title for;
+    condition = "C";
+    data = [
+      {
+        refId = "A";
+        relativeTimeRange = { from = 300; to = 0; };
+        datasourceUid = "victoriametrics";
+        model = { refId = "A"; instant = true; inherit expr; };
+      }
+      {
+        refId = "C";
+        datasourceUid = "__expr__";
+        model = {
+          refId = "C";
+          type = "threshold";
+          expression = "A";
+          conditions = [{ evaluator = { type = "gt"; params = [ 0 ]; }; }];
+        };
+      }
+    ];
+    noDataState = "OK";
+    execErrState = "Error";
+    labels = { inherit severity; };
+    annotations = { inherit summary; };
+  };
+
+  # bcachefs (common/bcachefs-metrics.nix): fewer replicas than configured,
+  # a member missing or not read-write, or I/O errors in the last hour.
+  bcachefsRules = [
+    (mkExprRule {
+      uid = "bcachefs-degraded";
+      title = "bcachefs data below configured replicas";
+      severity = "critical";
+      expr = ''sum by(instance, fs) (bcachefs_fs_data_bytes{degraded!="0"}) > 0'';
+      summary = ''{{ .instance }} fs {{ .fs }} has {{ printf "%.0f" .A.Value }} bytes of data with fewer replicas than configured'';
+    })
+    (mkExprRule {
+      uid = "bcachefs-member";
+      title = "bcachefs member missing or not read-write";
+      severity = "critical";
+      for = "5m";
+      expr = ''(bcachefs_fs_members - bcachefs_fs_members_present > 0) or (count by(instance, fs) (bcachefs_device_rw == 0) > 0) or (1 - bcachefs_fs_rw > 0)'';
+      summary = ''{{ .instance }} fs {{ .fs }}: a member is missing, not read-write, or the filesystem went read-only'';
+    })
+    (mkExprRule {
+      uid = "bcachefs-io-errors";
+      title = "bcachefs device I/O errors";
+      severity = "warning";
+      for = "1m";
+      expr = ''sum by(instance, fs, label) (increase(bcachefs_device_io_errors_total[1h])) > 0'';
+      summary = ''{{ .instance }} device {{ .label }} logged {{ printf "%.0f" .A.Value }} bcachefs I/O errors in the last hour'';
+    })
+  ];
 
   # Filesystem usage in percent, per host and mountpoint, filtered to the
   # series above `threshold`; `hosts` (null = every host) narrows it by instance.
@@ -238,7 +295,7 @@ in
                   severity = "warning";
                   threshold = diskCfg.warning;
                   hosts = diskCfg.warningHosts;
-                });
+                }) ++ bcachefsRules;
               }];
             };
           };

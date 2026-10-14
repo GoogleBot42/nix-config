@@ -6,7 +6,7 @@ let
   hasNtfy = config.thisMachine.hasRole."ntfy";
 
   checkScript = pkgs.writeShellScript "zfs-health-check" ''
-    PATH="${lib.makeBinPath [ pkgs.zfs pkgs.coreutils pkgs.gawk pkgs.curl ]}"
+    PATH="${lib.makeBinPath [ pkgs.zfs pkgs.coreutils pkgs.gawk ]}"
 
     unhealthy=""
 
@@ -45,15 +45,7 @@ let
     if [ -n "$unhealthy" ]; then
       message="ZFS health check failed on ${config.networking.hostName}:$unhealthy"
 
-      curl \
-        --fail --silent --show-error \
-        --max-time 30 --retry 3 \
-        -H "Authorization: Bearer $NTFY_TOKEN" \
-        -H "Title: ZFS issue on ${config.networking.hostName}" \
-        -H "Priority: urgent" \
-        -H "Tags: warning" \
-        -d "$message" \
-        "${cfg.serverUrl}/service-failures"
+      ${cfg.notify} service-failures urgent warning "ZFS issue on ${config.networking.hostName}" "$message"
 
       echo "$message" >&2
     fi
