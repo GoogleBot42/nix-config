@@ -11,7 +11,23 @@ let
   bcachefsSubvolume = subdir: {
     device = "UUID=${fsUuid}";
     fsType = "bcachefs";
-    options = [ "noatime" "X-mount.subdir=${subdir}" ];
+    # degraded=yes: every block has two replicas, so one surviving member
+    # must still boot a headless machine (the default "ask" fails in the
+    # initrd). Waiting for cryptsetup.target gives a slow member its chance.
+    options = [
+      "noatime"
+      "degraded=yes"
+      "X-mount.subdir=${subdir}"
+      "x-systemd.requires=cryptsetup.target"
+      "x-systemd.after=cryptsetup.target"
+    ];
+  };
+  # A dead member must not hold the boot forever; a slow one gets this long.
+  luksMember = uuid: {
+    device = "/dev/disk/by-uuid/${uuid}";
+    keyFile = "/dev/disk/by-id/virtio-luks-key";
+    keyFileSize = 32;
+    crypttabExtraOpts = [ "nofail" "x-systemd.device-timeout=45s" ];
   };
 in
 {
@@ -44,16 +60,8 @@ in
   boot.initrd.availableKernelModules = [ "virtio_pci" "virtio_blk" ];
 
   boot.initrd.luks.devices = {
-    "enc-nvme-a" = {
-      device = "/dev/disk/by-uuid/11111111-1111-4111-8111-111111111111";
-      keyFile = "/dev/disk/by-id/virtio-luks-key";
-      keyFileSize = 32;
-    };
-    "enc-nvme-b" = {
-      device = "/dev/disk/by-uuid/22222222-2222-4222-8222-222222222222";
-      keyFile = "/dev/disk/by-id/virtio-luks-key";
-      keyFileSize = 32;
-    };
+    "enc-nvme-a" = luksMember "11111111-1111-4111-8111-111111111111";
+    "enc-nvme-b" = luksMember "22222222-2222-4222-8222-222222222222";
   };
 
   fileSystems = {
@@ -74,9 +82,8 @@ in
     wantedBy = [ "multi-user.target" ];
     after = [ "multi-user.target" ];
     path = with pkgs; [ util-linux bcachefs-tools efibootmgr systemd coreutils ];
-    serviceConfig.Type = "oneshot";
+    serviceConfig = { Type = "oneshot"; StandardOutput = "journal+console"; StandardError = "inherit"; };
     script = ''
-      exec > /dev/ttyS0 2>&1
       echo "=== REHEARSAL REPORT $(date -Is) boot=$(journalctl --list-boots --no-pager | wc -l)"
       findmnt -no TARGET,SOURCE,FSTYPE,OPTIONS -t bcachefs,vfat
       bcachefs fs usage -h / | sed -n '1,12p'

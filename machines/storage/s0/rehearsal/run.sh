@@ -15,7 +15,8 @@ OVMF=${OVMF:-$(nix build --no-link --print-out-paths nixpkgs#OVMF.fd)}
 [ -e "$DIR/hold.img" ] || truncate -s 1M "$DIR/hold.img"
 for d in nvmeA nvmeB; do [ -e "$DIR/$d.qcow2" ] || qemu-img create -q -f qcow2 "$DIR/$d.qcow2" 8G; done
 log="$DIR/$cmd-$(date +%Y%m%d-%H%M%S).log"
-common=(qemu-system-x86_64 -enable-kvm -machine q35 -cpu host -m 4096 -smp 4 -display none -monitor none
+common=(qemu-system-x86_64 -enable-kvm -machine q35 -cpu host -m 8192 -smp 4 -display none -monitor none -device virtio-rng-pci
+  -netdev user,id=n0,hostfwd=tcp:127.0.0.1:2222-:22 -device virtio-net-pci,netdev=n0
   -serial "file:$log"
   -drive if=pflash,format=raw,readonly=on,file="$OVMF/FV/OVMF_CODE.fd"
   -drive if=pflash,format=raw,file="$DIR/vars.fd"

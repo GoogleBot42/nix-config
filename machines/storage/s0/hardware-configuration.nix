@@ -33,22 +33,44 @@
   services.zfs.autoScrub.enable = true;
   services.zfs.trim.enable = true;
 
-  # luks
+  # luks. The remote-unlock module makes the initrd wait indefinitely for
+  # devices (a passphrase can take a while to arrive); a dead member must not
+  # inherit that, so each container gets its own bounded device timeout and
+  # is non-fatal. A member that merely spins up slowly is still waited for.
   remoteLuksUnlock.enable = true;
-  boot.initrd.luks.devices."enc-nvme-a".device = "/dev/disk/by-uuid/3b8e47ca-a6b9-49e0-94ea-62a9493e8d18";
-  boot.initrd.luks.devices."enc-nvme-b".device = "/dev/disk/by-uuid/f3fc4503-7035-441c-80fc-c8287b39e92f";
-  boot.initrd.luks.devices."enc-pv1".device = "/dev/disk/by-uuid/d52e99a9-8825-4d0a-afc1-8edbef7e0a86";
-  boot.initrd.luks.devices."enc-pv2".device = "/dev/disk/by-uuid/f7275585-7760-4230-97de-36704b9a2aa3";
-  boot.initrd.luks.devices."enc-pv3".device = "/dev/disk/by-uuid/5d1002b8-a0ed-4a1c-99f5-24b8816d9e38";
-  boot.initrd.luks.devices."enc-pv4".device = "/dev/disk/by-uuid/e2c7402a-e72c-4c4a-998f-82e4c10187bc";
+  boot.initrd.luks.devices =
+    let
+      member = uuid: {
+        device = "/dev/disk/by-uuid/${uuid}";
+        crypttabExtraOpts = [ "nofail" "x-systemd.device-timeout=10min" ];
+      };
+    in
+    {
+      "enc-nvme-a" = member "3b8e47ca-a6b9-49e0-94ea-62a9493e8d18";
+      "enc-nvme-b" = member "f3fc4503-7035-441c-80fc-c8287b39e92f";
+      "enc-pv1" = member "d52e99a9-8825-4d0a-afc1-8edbef7e0a86";
+      "enc-pv2" = member "f7275585-7760-4230-97de-36704b9a2aa3";
+      "enc-pv3" = member "5d1002b8-a0ed-4a1c-99f5-24b8816d9e38";
+      "enc-pv4" = member "e2c7402a-e72c-4c4a-998f-82e4c10187bc";
+    };
 
   # mounts
   fileSystems =
     let
+      # degraded=yes: every block has two replicas (and /data will have
+      # parity), so a missing member must still boot this headless machine;
+      # the default "ask" fails outright in the initrd. Waiting for
+      # cryptsetup.target first gives every member its chance to be opened.
       bcachefsSubvolume = subdir: {
         device = "UUID=3460f75d-5c8c-4511-a6dc-3a69659776f3";
         fsType = "bcachefs";
-        options = [ "noatime" "X-mount.subdir=${subdir}" ];
+        options = [
+          "noatime"
+          "degraded=yes"
+          "X-mount.subdir=${subdir}"
+          "x-systemd.requires=cryptsetup.target"
+          "x-systemd.after=cryptsetup.target"
+        ];
       };
     in
     {
