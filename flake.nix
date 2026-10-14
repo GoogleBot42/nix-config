@@ -273,6 +273,13 @@
             // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
               kexec = ephemeral.config.system.build.images.kexec;
               iso = ephemeral.config.system.build.images.iso;
+
+              # Boot-path rehearsal for the s0 storage migration (QEMU guests)
+              inherit (import ./machines/storage/s0/rehearsal {
+                inherit pkgs;
+                nixpkgs' = nixpkgsFor.${system};
+                inherit (inputs) nix-index-database;
+              }) s0-rehearsal-iso s0-rehearsal-target;
             };
         in
         nixpkgs.lib.genAttrs supportedSystems mkPackages;

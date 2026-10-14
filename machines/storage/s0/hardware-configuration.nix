@@ -1,4 +1,4 @@
-{ config, modulesPath, ... }:
+{ config, pkgs, modulesPath, ... }:
 
 {
   imports =
@@ -19,48 +19,86 @@
 
   ### disks ###
 
-  # zfs
-  networking.hostId = "5e6791f0";
-  # bcachefs is being brought up alongside zfs for the storage migration
-  # (machines/storage/s0/bcachefs-migration.md); the out-of-tree module and
-  # tools come from overlays/bcachefs-tools.nix.
+  # One bcachefs filesystem (external UUID below) holds the OS. Its members
+  # are the two Solidigm NVMe drives, each a LUKS2 container, mirrored at two
+  # replicas with every target on the "ssd" label; the HDDs join it later as
+  # the background target for /data. Subvolumes are mounted with util-linux's
+  # X-mount.subdir because bcachefs has no subvolume mount option of its own.
   boot.supportedFilesystems = [ "zfs" "bcachefs" ];
+  boot.initrd.supportedFilesystems = [ "bcachefs" ];
+
+  # zfs: rpool still carries /data until the HDDs are re-formatted
+  networking.hostId = "5e6791f0";
   boot.zfs.forceImportRoot = false;
+  services.zfs.autoScrub.enable = true;
+  services.zfs.trim.enable = true;
 
   # luks
   remoteLuksUnlock.enable = true;
+  boot.initrd.luks.devices."enc-nvme-a".device = "/dev/disk/by-uuid/3b8e47ca-a6b9-49e0-94ea-62a9493e8d18";
+  boot.initrd.luks.devices."enc-nvme-b".device = "/dev/disk/by-uuid/f3fc4503-7035-441c-80fc-c8287b39e92f";
   boot.initrd.luks.devices."enc-pv1".device = "/dev/disk/by-uuid/d52e99a9-8825-4d0a-afc1-8edbef7e0a86";
   boot.initrd.luks.devices."enc-pv2".device = "/dev/disk/by-uuid/f7275585-7760-4230-97de-36704b9a2aa3";
   boot.initrd.luks.devices."enc-pv3".device = "/dev/disk/by-uuid/5d1002b8-a0ed-4a1c-99f5-24b8816d9e38";
   boot.initrd.luks.devices."enc-pv4".device = "/dev/disk/by-uuid/e2c7402a-e72c-4c4a-998f-82e4c10187bc";
 
   # mounts
-  services.zfs.autoScrub.enable = true;
-  services.zfs.trim.enable = true;
-  fileSystems."/" =
+  fileSystems =
+    let
+      bcachefsSubvolume = subdir: {
+        device = "UUID=3460f75d-5c8c-4511-a6dc-3a69659776f3";
+        fsType = "bcachefs";
+        options = [ "noatime" "X-mount.subdir=${subdir}" ];
+      };
+    in
     {
-      device = "rpool/nixos/root";
-      fsType = "zfs";
-      options = [ "zfsutil" "X-mount.mkdir" ];
-    };
-  fileSystems."/var/lib" =
-    {
-      device = "rpool/nixos/var/lib";
-      fsType = "zfs";
-      options = [ "zfsutil" "X-mount.mkdir" ];
-    };
-  fileSystems."/var/log" =
-    {
-      device = "rpool/nixos/var/log";
-      fsType = "zfs";
-      options = [ "zfsutil" "X-mount.mkdir" ];
-    };
-  fileSystems."/boot" =
-    {
-      device = "/dev/disk/by-uuid/4FB4-738E";
-      fsType = "vfat";
+      "/" = bcachefsSubvolume "root";
+      "/nix" = bcachefsSubvolume "nix";
+      "/var" = bcachefsSubvolume "var";
+      "/var/log" = bcachefsSubvolume "log";
+      "/home" = bcachefsSubvolume "home";
+      "/data" = {
+        device = "rpool/nixos/data";
+        fsType = "zfs";
+        options = [ "zfsutil" "X-mount.mkdir" ];
+      };
+      # ESP-A on the L4S drive is the live /boot; ESP-B on the L4Z drive is a
+      # copy kept current by the loader hook below, so either NVMe boots.
+      "/boot" = {
+        device = "/dev/disk/by-uuid/0FFD-389D";
+        fsType = "vfat";
+        options = [ "umask=0077" ];
+      };
+      "/boot-mirror" = {
+        device = "/dev/disk/by-uuid/0FFD-7D0B";
+        fsType = "vfat";
+        options = [ "umask=0077" "nofail" ];
+      };
     };
   swapDevices = [ ];
+
+  # Firmware entries are named so the BIOS shows which drive it boots from.
+  # Entries are only ever added, never removed.
+  boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.systemd-boot.extraInstallCommands =
+    let
+      nvmeA = "/dev/disk/by-id/nvme-SOLIDIGM_SSDPFKKW020X7_SSC6N475610206L4S";
+      nvmeB = "/dev/disk/by-id/nvme-SOLIDIGM_SSDPFKKW020X7_SSC6N475610206L4Z";
+    in
+    ''
+      if ${pkgs.util-linux}/bin/mountpoint -q /boot-mirror; then
+        ${pkgs.rsync}/bin/rsync -a --delete /boot/ /boot-mirror/
+      fi
+      ensure_entry() {
+        ${pkgs.efibootmgr}/bin/efibootmgr | grep -qF "$1" || \
+          ${pkgs.efibootmgr}/bin/efibootmgr --quiet --create --disk "$2" --part 1 \
+            --label "$1" --loader '\EFI\systemd\systemd-bootx64.efi'
+      }
+      if [ -d /sys/firmware/efi/efivars ]; then
+        ensure_entry "NixOS A (NVMe L4S)" ${nvmeA}
+        ensure_entry "NixOS B (NVMe L4Z)" ${nvmeB}
+      fi
+    '';
 
   ### networking ###
 
