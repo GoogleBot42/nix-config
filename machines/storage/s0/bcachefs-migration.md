@@ -457,3 +457,21 @@ Then:
   and puts the newest first in BootOrder, so on s0 the order must be put
   back to the USB stick right after Step 3 and only switched to "NixOS A" at
   the Step 5 reboot. Second scrub of tmppool running.
+- 2026-10-14 02:20: **Step 3 done.** The s0 closure built from this branch
+  (`nixos-system-s0-26.11.20261010.6510408`, store hash n4djkhl2…) was
+  `nix copy`'d to s0 and `nixos-install --system … --root /mnt/target`
+  ran against the subvolume tree (root, nix, var, log, home) with ESP-A at
+  /boot and ESP-B at /boot-mirror. Result: systemd-boot installed on ESP-A,
+  eight loader entries, mirror identical; system profile at generation 474;
+  firmware entries Boot0005 "NixOS A (NVMe L4S)" and Boot0006 "NixOS B (NVMe
+  L4Z)" created, plus bootctl's own "Linux Boot Manager"/"Fallback" entries
+  for ESP-A. BootOrder restored to USB stick first (0001,0000,0002,0005,0006),
+  saved in /root/migration/bootorder-before.txt. The target tree is
+  unmounted again; /mnt/s0fs stays mounted. Step 4 (owner's LUKS passphrase
+  on both NVMe containers and the stepping stones) was done on the 13th.
+  **Remaining for Phase 1 (Step 5, owner present):** merge this branch, stop
+  the /var/lib writers, snapshot, incremental rsync with `--delete` of root,
+  var, nix, log and home from the new snapshots into the tree, re-run
+  `nixos-install --system` with the then-current closure, set BootOrder to
+  Boot0005 first (`efibootmgr -o 0005,0006,0001,0000,0002`), reboot, unlock
+  over the usual remote path, verify, then soak for days.
