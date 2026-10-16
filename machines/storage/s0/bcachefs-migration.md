@@ -1,90 +1,71 @@
 # s0: migrate from ZFS raidz1 to one bcachefs filesystem
 
-## Handoff (state as of 2026-10-15 21:40)
+## Handoff (state as of 2026-10-16 14:30)
 
 Read this first. Everything below it is the full plan, decisions and history.
 
-**Where things stand**
+**Where things stand: Phase 1 is done, s0 boots from the NVMe tier.**
 
-- s0 runs the ZFS-root system (generation 476, nixpkgs 20261011.7fd4004,
-  deployed from master 7bcd0a1) booted from the USB stick. BootOrder: stick
-  first (0001,0000,0005,0006,0007,0008,0002). Firmware entries 0005/0006 are
-  the named NVMe entries, 0003/0004/0007/0008 are bootctl/firmware extras
-  pointing at the NVMe ESPs; harmless, tidy them after cutover.
-- master is **safe to deploy to s0** again: it carries the ZFS disk stanza.
-  The bcachefs-root stanza is exactly one commit on `feat/s0-nvme-root`
-  (agent fork, rebased on master) and is applied only inside the cutover
-  procedure. Never merge it to master before s0 boots from the NVMe tier;
-  see the 2026-10-15 incident entry in the progress log for what happens
-  otherwise. The stanza also masks `zfs-mount.service` and mounts
-  `/var/lib/atticd` from rpool; both are required, see the two last
-  gotchas.
-- The cutover closure is built from that branch and already on s0; its
-  store path is in `/root/migration/cutover-closure.txt`. Rebuild and
-  re-copy if master or the branch moves before the cutover.
-- Observability from master is live on s0 and kif: `bcachefs-health-check`
-  and `bcachefs-metrics` timers, spooled ntfy, the bcachefs dashboard and
-  three Grafana rules, all alerting to ntfy topic `service-failures`.
-- NVMe filesystem (UUID 3460f75d-5c8c-4511-a6dc-3a69659776f3, LUKS
-  `enc-nvme-a`/`enc-nvme-b`, both with the owner's passphrase and the
-  throwaway key): healthy, 0 errors, 677 GB used, NOT mounted and its LUKS
-  closed. It holds the OS copy from the 11th plus ~170 files services wrote
-  into it during the broken switch on the 15th; the cutover's
-  `rsync --delete` from fresh snapshots replaces all of that. Its loader
-  (ESP-A, mirrored to ESP-B) has generation 474 from Step 3.
-- Stepping stones (`tmppool`, 16+4+4 TB over USB, LUKS with both keys):
-  imported, ONLINE, `/data` received, second scrub finished clean
-  2026-10-15 01:02. Snapshot `mig2` on both pools still holds the 1.2 TB the
-  owner trashed from Transmission's completed downloads; keep until told.
-- 32 stale partial torrents (51 GB) remain in `/var/lib/transmission/
-  .incomplete` for the owner to trash.
+- s0 runs generation 477 (nixpkgs 20261011.7fd4004) built from
+  `feat/s0-nvme-root` (2d7470a, agent fork) and booted from firmware entry
+  Boot0005 "NixOS A (NVMe L4S)". `/`, `/nix`, `/var`, `/var/log`, `/home`
+  are bcachefs subvolumes (UUID 3460f75d-5c8c-4511-a6dc-3a69659776f3, LUKS
+  `enc-nvme-a`/`enc-nvme-b`); rpool is imported for exactly `/data` and
+  `/var/lib/atticd`; `zfs-mount.service` is masked. BootOrder
+  0005,0006,0001,0000,... with the USB stick (0001) still holding the ZFS
+  generations as rollback. Entries 0003/0004/0007/0008 and the BBS entries
+  0009-000B are firmware extras; tidy later.
+- **master is NOT deployable to s0** until `feat/s0-nvme-root` is merged:
+  master still carries the ZFS-root stanza, and deploying it would activate
+  ZFS-root mount units on the bcachefs-root system. Merge order: this docs
+  branch first, then `feat/s0-nvme-root` (it sits on top of it), then
+  `deploy .#s0` from master is safe again. Until then, deploy s0 only from
+  the branch rev.
+- Soak: `bcachefs scrub /` started 2026-10-16 14:16 (log
+  `/root/migration/scrub-after-cutover.log`); `bcachefs-health-check` and
+  the Grafana rules watch the filesystem. Give it a few days before the
+  merge.
+- Snapshots: `rpool/nixos@os3` (recursive, the cutover source) and `@os1`,
+  `@os2`, `mig2` are still on rpool; `tmppool` holds `/data` at `mig3` plus
+  `mig2`. tmppool is not imported after the reboot (its LUKS members are
+  not in the config); open `enc-stone16/4a/4b` with the throwaway key and
+  `zpool import tmppool` when it is needed.
+- 32 stale partial torrents (49 GB) remain in `/var/lib/transmission/
+  .incomplete`, now on the SSD tier, for the owner to trash.
 - Hardware: `ata6` (drive 3JH0HT6G) resets its SATA link several times a
   day; SMART clean; candidate for the drive left out.
+- The temporary root key is still authorised on s0 and still needed for
+  Phases 3 and 4.
 
 **Access**
 
-- `ssh -i ~/.ssh/s0-migration -o HostKeyAlias=s0 root.koi-bebop.ts.net`
-  (or `root.168.1.2`). Bare `s0` sometimes resolves to a rejected VLAN
-  lease; see the deploy skill.
+- `ssh -i ~/.ssh/s0-migration -o HostKeyAlias=s0 root@s0.koi-bebop.ts.net`
+  (tailnet) for the booted system. **Never ssh to the LAN address
+  (192.168.1.2) while the initrd is up**: the initrd sshd's root shell is
+  the password agent, so every connection (a probe, a health check, a
+  BatchMode `true`) spawns a competing agent that consumes the pending
+  queries and makes cryptsetup re-ask. The owner then sees the prompts
+  cycle and cannot type into them. Poll the tailnet name instead; it only
+  exists once stage 2 is up.
 - Throwaway LUKS key: `secrets/s0-migration-luks-passphrase.age` (canonical),
   fry `~/.ssh/s0-migration-luks.key`, s0 `/root/s0-migration-luks.key`.
-- Rehearsal kit: `machines/storage/s0/rehearsal/` (passed all four tests).
+- Rehearsal kit: `machines/storage/s0/rehearsal/`; cutover scripts
+  `machines/storage/s0/cutover/` (copies in s0 `/root/migration/`).
+- A closure staged on s0 for a later step needs a GC root
+  (`nix-store --add-root /root/migration/<name> --realise <path>`); the
+  nightly `nix-gc` on s0 and on fry removed the first cutover closure.
 
-**Next: Step 5, the cutover, owner present, ~1 h of /var/lib downtime**
+**Next**
 
-1. Owner trashes the 32 partials (optional) and confirms restic is green.
-2. Build s0 from `feat/s0-nvme-root` (rebased on master), `nix copy` the
-   closure to s0, note the path in `/root/migration/cutover-closure.txt`.
-   Do not deploy it. (Done 2026-10-15 23:00; redo only if either moves.)
-3. `/root/migration/cutover-1-open-mount.sh`: opens the NVMe LUKS with the
-   throwaway key and mounts the whole tree at /mnt/s0fs. Idempotent. (The
-   three scripts are versioned in `machines/storage/s0/cutover/`.)
-4. `cutover-2-stop-snapshot-rsync.sh --dry-run` first (services keep
-   running, snapshot @os3dry, `rsync -n`, snapshot destroyed), read the
-   counts, then the same without the flag: stops the 24 writer units and
-   the three restic timers, snapshots `rpool/nixos@os3`, rsyncs
-   `-aHAXS --numeric-ids --delete` from the snapshots (root minus
-   nix/var/home/data/boot/tmp/mnt; root's /var minus lib/log; nix; log;
-   home; var/lib minus atticd). Logs `rsync-cutover-*.log`. Downtime
-   starts here.
-5. `cutover-3-install-bootorder.sh`: bind-mounts the tree at /mnt/target
-   with both ESPs, `nixos-install --system <closure> --no-root-passwd
-   --no-channel-copy`, checks the ESP mirror, unmounts and closes the NVMe
-   LUKS, saves the old BootOrder, sets `0005,0006,0001,0000,0002` and prints
-   the reboot command. It never reboots by itself.
-6. Reboot. Unlock over the usual remote path (six LUKS devices, one
-   passphrase). Verify mounts (`findmnt -t zfs` lists only `/data` and
-   `/var/lib/atticd`; `/`, `/nix`, `/var`, `/var/log`, `/home` are
-   bcachefs), services, Gatus, `bcachefs fs usage`, then
-   `bcachefs scrub /`. Soak for days. Then merge `feat/s0-nvme-root`.
-7. Rollback at any point before Phase 3: BIOS boot menu -> USB stick ->
-   latest ZFS generation.
-
-
-Runbook for an agent session executing the migration. It assumes no context
-from the planning session; everything it relies on is written down here.
-Update the **Progress log** at the bottom as phases complete, and keep this
-file in the repo (commit it with the config changes of each phase).
+1. Soak for a few days. Watch ntfy `service-failures`, the bcachefs
+   dashboard, `bcachefs fs usage /`, and the scrub result.
+2. Merge `docs/s0-cutover-prep`, then `feat/s0-nvme-root`. Deploy kif from
+   master as usual; s0 from master only after both are in.
+3. Then Phase 3 (below) needs the owner's written go-ahead: it destroys
+   rpool. Before its Step 1, move atticd's store off rpool (see the gotcha).
+4. Rollback of Phase 1, still available: BIOS boot menu -> USB stick ->
+   latest ZFS generation (476). The ZFS datasets are untouched; data
+   written since the cutover to the bcachefs OS subvolumes would be lost.
 
 ## Goal
 
@@ -603,3 +584,29 @@ Then:
   `/root/migration/cutover-closure.txt`. restic: all three groups green;
   s0 healthy on generation 476; NVMe LUKS closed; 49 GB of partials remain
   in Transmission's incomplete directory.
+- 2026-10-16 14:14: **Step 5 done, Phase 1 complete. s0 boots from the
+  NVMe tier.** Timeline: 13:12 the staged closure was gone (nightly nix-gc
+  on s0 and on fry; neither had a GC root), rebuilt from 2d7470a to the
+  same path and re-copied with a GC root. 13:15 script 1 (LUKS open, tree
+  mounted, fs undegraded, 677 GB). 13:16-13:27 script 2 dry run. 13:27
+  script 2 for real: 24 writer units and the restic timers stopped,
+  `rpool/nixos@os3`, six rsync jobs EXIT=0 (nix: 3,175,134 deletions of
+  garbage-collected store paths and 19.7 GB sent, 32 min; var/lib: 20,054
+  files, 3.1 GB, 197 deletions incl. the stray files from the 15th; root,
+  var, log, home small). 14:03 script 3: nixos-install onto the bind-mounted
+  tree, loader on ESP-A (it was empty again after the recovery on the
+  15th), mirror identical, BootOrder 0005,0006,0001,0000,0002. 14:04
+  reboot. **Unlock incident:** the agent's post-reboot watcher polled the
+  LAN address with ssh every 4 s; each connection spawned a
+  `systemd-tty-ask-password-agent` in the initrd that consumed the pending
+  queries, so the owner's `unlock_s0` showed the six prompts cycling and
+  took no input. Watcher killed (and, by mistake, the owner's own ssh
+  session to the initrd); the owner reset the box, unlocked normally on
+  the next boot. 14:14 stage 2 up: generation 477, BootCurrent 0005,
+  bcachefs on `/ /nix /var /var/log /home`, `findmnt -t zfs` = `/data
+  /var/lib/atticd`, all six LUKS mappings open, rpool ONLINE, every service
+  active, `bcachefs-health-check` healthy, only failed unit the known
+  `tor-unlock.service` carried over from the initrd (reset). 14:16
+  `bcachefs scrub /` started. Filesystem 545 GB used at two replicas,
+  2.8 TB free. Branch `feat/s0-nvme-root` stays unmerged until the soak
+  ends; master must not be deployed to s0 until then.
