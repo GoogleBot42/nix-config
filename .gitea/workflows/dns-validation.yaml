@@ -46,6 +46,9 @@ jobs:
           grep -F 'D("runyan.org", REG_NONE,' "$DNSCONFIG_PATH"
           grep -F 'D("neet.dev", REG_NONE,' "$DNSCONFIG_PATH"
           grep -F 'MX("@", 10, "mail.neet.dev."' "$DNSCONFIG_PATH"
+          test "$(grep -Fc 'CNAME("autoconfig", "mail.neet.dev.", TTL(300))' "$DNSCONFIG_PATH")" -eq 2
+          test "$(grep -Fc 'SRV("_imaps._tcp", 0, 1, 993, "mail.neet.dev.", TTL(300))' "$DNSCONFIG_PATH")" -eq 2
+          test "$(grep -Fc 'SRV("_submission._tcp", 0, 1, 587, "mail.neet.dev.", TTL(300))' "$DNSCONFIG_PATH")" -eq 2
           grep -F 'NAMESERVER_TTL(1800)' "$DNSCONFIG_PATH"
 
       - name: Show before/after dnscontrol diff

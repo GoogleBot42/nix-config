@@ -85,12 +85,22 @@ let
   mkAAAA = name: value: ttl: { inherit name value ttl; type = "AAAA"; };
   mkCNAME = name: target: ttl: { inherit name target ttl; type = "CNAME"; };
   mkMX = name: priority: target: ttl: { inherit name priority target ttl; type = "MX"; };
+  mkSRV = name: priority: weight: port: target: ttl: {
+    inherit name priority weight port target ttl;
+    type = "SRV";
+  };
   mkTXT = name: value: ttl: { inherit name value ttl; type = "TXT"; };
 
   commonMailRecords = mailTarget: [
     (mkMX "@" 10 mailTarget 14400)
     (mkTXT "@" txt.spf 3600)
     (mkTXT "_dmarc" txt.dmarcNone 3600)
+  ];
+
+  mailClientRecords = [
+    (mkCNAME "autoconfig" absoluteHosts.mail 300)
+    (mkSRV "_imaps._tcp" 0 1 993 absoluteHosts.mail 300)
+    (mkSRV "_submission._tcp" 0 1 587 absoluteHosts.mail 300)
   ];
 
   zone = records: {
@@ -145,7 +155,7 @@ in
     ]
   );
 
-  "neet.dev" = zone [
+  "neet.dev" = zone (mailClientRecords ++ [
     (mkA "*.fry" tailscaleIps.fry 3600)
     (mkA "*.kif" tailscaleIps.kif 300)
     (mkA "*.s0" tailscaleIps.s0 3600)
@@ -168,7 +178,7 @@ in
     (mkCNAME "status" absoluteHosts.statusKif 300)
     (mkCNAME "tmp" absoluteHosts.kif 300)
     (mkCNAME "unlock.kif" absoluteHosts.kif 300)
-  ];
+  ]);
 
   "neet.space" = zone [
     (mkA "@" tailscaleIps.kif 300)
@@ -187,6 +197,7 @@ in
       (mkA "@" tailscaleIps.kif 300)
     ]
     ++ commonMailRecords hosts.mail
+    ++ mailClientRecords
     ++ [
       (mkCNAME "collabora" hosts.collaboraKif 300)
       (mkTXT "mail._domainkey" dkim."runyan.org".mail 3600)

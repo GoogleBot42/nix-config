@@ -4,6 +4,35 @@ with builtins;
 
 let
   cfg = config.mailserver;
+  autoconfigDomains = [
+    "neet.dev"
+    "runyan.org"
+  ];
+  autoconfigXml = pkgs.writeText "mail-autoconfig.xml" ''
+    <?xml version="1.0" encoding="UTF-8"?>
+    <clientConfig version="1.1">
+      <emailProvider id="neet.dev">
+        <domain>neet.dev</domain>
+        <domain>runyan.org</domain>
+        <displayName>Neet Mail</displayName>
+        <displayShortName>Neet</displayShortName>
+        <incomingServer type="imap">
+          <hostname>mail.neet.dev</hostname>
+          <port>993</port>
+          <socketType>SSL</socketType>
+          <authentication>password-cleartext</authentication>
+          <username>%EMAILADDRESS%</username>
+        </incomingServer>
+        <outgoingServer type="smtp">
+          <hostname>mail.neet.dev</hostname>
+          <port>587</port>
+          <socketType>STARTTLS</socketType>
+          <authentication>password-cleartext</authentication>
+          <username>%EMAILADDRESS%</username>
+        </outgoingServer>
+      </emailProvider>
+    </clientConfig>
+  '';
   domains = [
     "neet.space"
     "neet.dev"
@@ -78,10 +107,21 @@ in
     # Get let's encrypt cert
     services.nginx = {
       enable = true;
-      virtualHosts."${config.mailserver.fqdn}" = {
+      virtualHosts = {
+        "${config.mailserver.fqdn}" = {
+          forceSSL = true;
+          enableACME = true;
+        };
+      } // lib.genAttrs (map (domain: "autoconfig.${domain}") autoconfigDomains) (_: {
         forceSSL = true;
         enableACME = true;
-      };
+        locations."= /mail/config-v1.1.xml" = {
+          alias = autoconfigXml;
+          extraConfig = ''
+            default_type application/xml;
+          '';
+        };
+      });
     };
 
     # sendmail to use xxx@domain instead of xxx@mail.domain
