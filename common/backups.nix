@@ -72,7 +72,7 @@ let
     }
   '';
 
-  mkBackup = group: paths: {
+  mkBackup = group: paths: excludes: {
     repository = mkRespository group;
 
     dynamicFilesFrom = "cat /run/restic-backup-${group}/paths";
@@ -107,7 +107,7 @@ let
 
     extraBackupArgs = [
       ''--exclude-if-present ".nobackup"''
-    ];
+    ] ++ map (pattern: "--exclude=${lib.escapeShellArg pattern}") excludes;
 
     # Keeps backups from up to 6 months ago
     pruneOpts = [
@@ -146,20 +146,30 @@ in
               Paths to backup
             '';
           };
+          exclude = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+            description = ''
+              restic exclude patterns. A bare name matches that path component
+              anywhere under the paths (caches, logs, media covers).
+            '';
+          };
         };
       }));
     };
   };
 
   config = lib.mkIf (cfg.group != null) {
-    assertions = lib.mapAttrsToList (group: _: {
-      assertion = config.systemd.services."restic-backups-${group}".enable;
-      message = "Expected systemd service 'restic-backups-${group}' not found. The nixpkgs restic module may have changed its naming convention.";
-    }) cfg.group;
+    assertions = lib.mapAttrsToList
+      (group: _: {
+        assertion = config.systemd.services."restic-backups-${group}".enable;
+        message = "Expected systemd service 'restic-backups-${group}' not found. The nixpkgs restic module may have changed its naming convention.";
+      })
+      cfg.group;
 
     services.restic.backups = lib.concatMapAttrs
       (group: groupCfg: {
-        ${group} = mkBackup group groupCfg.paths;
+        ${group} = mkBackup group groupCfg.paths groupCfg.exclude;
       })
       cfg.group;
 

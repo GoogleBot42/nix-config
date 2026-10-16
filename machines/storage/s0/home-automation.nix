@@ -84,6 +84,21 @@
     owner = "zigbee2mqtt";
   };
 
+  # The network keys, device database and state are a few hundred KB; the
+  # rest of the directory is logs.
+  backup.group."zigbee2mqtt" = {
+    paths = [ config.services.zigbee2mqtt.dataDir ];
+    exclude = [ "log" ];
+  };
+
+  # Config, automations, blueprints and .storage (entity registry, auth,
+  # integrations). The recorder database is history only and dwarfs the
+  # rest; caches and TTS audio are regenerated.
+  backup.group."home-assistant" = {
+    paths = [ config.services.home-assistant.configDir ];
+    exclude = [ "home-assistant_v2.db*" ".cache" "tts" "deps" "home-assistant.log*" ];
+  };
+
   services.home-assistant = {
     enable = true;
     extraComponents = [

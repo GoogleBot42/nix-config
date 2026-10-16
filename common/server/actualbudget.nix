@@ -9,8 +9,10 @@ in
       port = 25448;
     };
 
+    # DynamicUser: /var/lib/actual is a symlink, which restic stores as a
+    # symlink. Back up the target.
     backup.group."actual-budget".paths = [
-      "/var/lib/actual"
+      "/var/lib/private/actual"
     ];
   };
 }

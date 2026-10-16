@@ -176,8 +176,10 @@
       service.enableregistration = false;
     };
   };
+  # DynamicUser: /var/lib/vikunja is a symlink, which restic stores as a
+  # symlink. Back up the target.
   backup.group."vikunja".paths = [
-    "/var/lib/vikunja"
+    "/var/lib/private/vikunja"
   ];
 
   services.actual.enable = true;
@@ -190,6 +192,16 @@
     environmentFile = "/run/agenix/linkwarden-environment";
   };
   age.secrets.linkwarden-environment.file = ../../../secrets/linkwarden-environment.age;
+  backup.group."linkwarden".paths = [ "/var/lib/linkwarden" ];
+
+  # Nightly logical dumps of every database (linkwarden, outline, atticd) so
+  # restic captures a consistent copy; the live cluster directory is not
+  # safe to copy while it runs.
+  services.postgresqlBackup = {
+    enable = true;
+    backupAll = true;
+  };
+  backup.group."postgresql".paths = [ config.services.postgresqlBackup.location ];
   services.meilisearch = {
     enable = true;
     package = pkgs.meilisearch;
@@ -213,6 +225,10 @@
   };
   # ReadWritePaths doesn't work with ProtectSystem=strict on ZFS submounts (/var/lib is a separate dataset)
   systemd.services.memos.serviceConfig.ProtectSystem = lib.mkForce "full";
+  backup.group."memos" = {
+    paths = [ config.services.memos.dataDir ];
+    exclude = [ ".thumbnail_cache" ];
+  };
 
   services.outline = {
     enable = true;
