@@ -1,4 +1,4 @@
-{ config, pkgs, modulesPath, ... }:
+{ config, modulesPath, ... }:
 
 {
   imports =
@@ -19,114 +19,48 @@
 
   ### disks ###
 
-  # One bcachefs filesystem (external UUID below) holds the OS. Its members
-  # are the two Solidigm NVMe drives, each a LUKS2 container, mirrored at two
-  # replicas with every target on the "ssd" label; the HDDs join it later as
-  # the background target for /data. Subvolumes are mounted with util-linux's
-  # X-mount.subdir because bcachefs has no subvolume mount option of its own.
-  boot.supportedFilesystems = [ "zfs" "bcachefs" ];
-  boot.initrd.supportedFilesystems = [ "bcachefs" ];
-
-  # zfs: rpool still carries /data until the HDDs are re-formatted
+  # zfs
   networking.hostId = "5e6791f0";
+  # bcachefs is being brought up alongside zfs for the storage migration
+  # (machines/storage/s0/bcachefs-migration.md); the out-of-tree module and
+  # tools come from overlays/bcachefs-tools.nix.
+  boot.supportedFilesystems = [ "zfs" "bcachefs" ];
   boot.zfs.forceImportRoot = false;
-  services.zfs.autoScrub.enable = true;
-  services.zfs.trim.enable = true;
 
-  # bcachefs verifies checksums only when it reads, so a periodic scrub is
-  # what finds latent damage before the other copy is needed. Monthly like
-  # the ZFS scrub: it reads every block, which on the HDD tier is hours of
-  # spinning. Run `bcachefs scrub /` by hand after anything eventful.
-  services.bcachefs.autoScrub.enable = true;
-
-  # luks. The remote-unlock module makes the initrd wait indefinitely for
-  # devices (a passphrase can take a while to arrive); a dead member must not
-  # inherit that, so each container gets its own bounded device timeout and
-  # is non-fatal. A member that merely spins up slowly is still waited for.
+  # luks
   remoteLuksUnlock.enable = true;
-  boot.initrd.luks.devices =
-    let
-      member = uuid: {
-        device = "/dev/disk/by-uuid/${uuid}";
-        crypttabExtraOpts = [ "nofail" "x-systemd.device-timeout=10min" ];
-      };
-    in
-    {
-      "enc-nvme-a" = member "3b8e47ca-a6b9-49e0-94ea-62a9493e8d18";
-      "enc-nvme-b" = member "f3fc4503-7035-441c-80fc-c8287b39e92f";
-      "enc-pv1" = member "d52e99a9-8825-4d0a-afc1-8edbef7e0a86";
-      "enc-pv2" = member "f7275585-7760-4230-97de-36704b9a2aa3";
-      "enc-pv3" = member "5d1002b8-a0ed-4a1c-99f5-24b8816d9e38";
-      "enc-pv4" = member "e2c7402a-e72c-4c4a-998f-82e4c10187bc";
-    };
+  boot.initrd.luks.devices."enc-pv1".device = "/dev/disk/by-uuid/d52e99a9-8825-4d0a-afc1-8edbef7e0a86";
+  boot.initrd.luks.devices."enc-pv2".device = "/dev/disk/by-uuid/f7275585-7760-4230-97de-36704b9a2aa3";
+  boot.initrd.luks.devices."enc-pv3".device = "/dev/disk/by-uuid/5d1002b8-a0ed-4a1c-99f5-24b8816d9e38";
+  boot.initrd.luks.devices."enc-pv4".device = "/dev/disk/by-uuid/e2c7402a-e72c-4c4a-998f-82e4c10187bc";
 
   # mounts
-  fileSystems =
-    let
-      # degraded=yes: every block has two replicas (and /data will have
-      # parity), so a missing member must still boot this headless machine;
-      # the default "ask" fails outright in the initrd. Waiting for
-      # cryptsetup.target first gives every member its chance to be opened.
-      bcachefsSubvolume = subdir: {
-        device = "UUID=3460f75d-5c8c-4511-a6dc-3a69659776f3";
-        fsType = "bcachefs";
-        options = [
-          "noatime"
-          "degraded=yes"
-          "X-mount.subdir=${subdir}"
-          "x-systemd.requires=cryptsetup.target"
-          "x-systemd.after=cryptsetup.target"
-        ];
-      };
-    in
+  services.zfs.autoScrub.enable = true;
+  services.zfs.trim.enable = true;
+  fileSystems."/" =
     {
-      "/" = bcachefsSubvolume "root";
-      "/nix" = bcachefsSubvolume "nix";
-      "/var" = bcachefsSubvolume "var";
-      "/var/log" = bcachefsSubvolume "log";
-      "/home" = bcachefsSubvolume "home";
-      "/data" = {
-        device = "rpool/nixos/data";
-        fsType = "zfs";
-        options = [ "zfsutil" "X-mount.mkdir" ];
-      };
-      # ESP-A on the L4S drive is the live /boot; ESP-B on the L4Z drive is a
-      # copy kept current by the loader hook below, so either NVMe boots.
-      "/boot" = {
-        device = "/dev/disk/by-uuid/0FFD-389D";
-        fsType = "vfat";
-        options = [ "umask=0077" ];
-      };
-      "/boot-mirror" = {
-        device = "/dev/disk/by-uuid/0FFD-7D0B";
-        fsType = "vfat";
-        options = [ "umask=0077" "nofail" ];
-      };
+      device = "rpool/nixos/root";
+      fsType = "zfs";
+      options = [ "zfsutil" "X-mount.mkdir" ];
+    };
+  fileSystems."/var/lib" =
+    {
+      device = "rpool/nixos/var/lib";
+      fsType = "zfs";
+      options = [ "zfsutil" "X-mount.mkdir" ];
+    };
+  fileSystems."/var/log" =
+    {
+      device = "rpool/nixos/var/log";
+      fsType = "zfs";
+      options = [ "zfsutil" "X-mount.mkdir" ];
+    };
+  fileSystems."/boot" =
+    {
+      device = "/dev/disk/by-uuid/4FB4-738E";
+      fsType = "vfat";
     };
   swapDevices = [ ];
-
-  # Firmware entries are named so the BIOS shows which drive it boots from.
-  # Entries are only ever added, never removed.
-  boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.systemd-boot.extraInstallCommands =
-    let
-      nvmeA = "/dev/disk/by-id/nvme-SOLIDIGM_SSDPFKKW020X7_SSC6N475610206L4S";
-      nvmeB = "/dev/disk/by-id/nvme-SOLIDIGM_SSDPFKKW020X7_SSC6N475610206L4Z";
-    in
-    ''
-      if ${pkgs.util-linux}/bin/mountpoint -q /boot-mirror; then
-        ${pkgs.rsync}/bin/rsync -a --delete /boot/ /boot-mirror/
-      fi
-      ensure_entry() {
-        ${pkgs.efibootmgr}/bin/efibootmgr | grep -qF "$1" || \
-          ${pkgs.efibootmgr}/bin/efibootmgr --quiet --create --disk "$2" --part 1 \
-            --label "$1" --loader '\EFI\systemd\systemd-bootx64.efi'
-      }
-      if [ -d /sys/firmware/efi/efivars ]; then
-        ensure_entry "NixOS A (NVMe L4S)" ${nvmeA}
-        ensure_entry "NixOS B (NVMe L4Z)" ${nvmeB}
-      fi
-    '';
 
   ### networking ###
 
