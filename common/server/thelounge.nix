@@ -1,4 +1,4 @@
-{ lib, config, ... }:
+{ lib, config, pkgs, ... }:
 
 let
   cfg = config.services.thelounge;
@@ -24,6 +24,17 @@ in
 
   config = lib.mkIf cfg.enable {
     services.thelounge = {
+      # thelounge 4.5 bundles got 11, whose retry path throws an uncaught
+      # exception on Node >= 24.20 whenever a request fails, taking the whole
+      # process down (the GitHub changelog fetch at startup is enough). got 11
+      # is unmaintained, so run on the Node 22 LTS line, which lacks the
+      # triggering http change: https://github.com/sindresorhus/got/issues/2469
+      # The bin/ wrapper execs the npm hooks' nodejs, not the package's, so
+      # both must be overridden or the service still runs on Node 24.
+      package = pkgs.thelounge.override {
+        nodejs-slim = pkgs.nodejs-slim_22;
+        npmHooks = pkgs.npmHooks.override { nodejs = pkgs.nodejs-slim_22; };
+      };
       public = false;
       extraConfig = {
         reverseProxy = true;
@@ -50,6 +61,10 @@ in
     # The state directory holds secrets (VAPID keys, password hashes) that
     # thelounge writes with the unit's umask; keep them owner-only.
     systemd.services.thelounge.serviceConfig = {
+      # Upstream's unit never restarts: a single crash leaves IRC down until
+      # someone notices.
+      Restart = "on-failure";
+      RestartSec = "10s";
       UMask = "0077";
       StateDirectoryMode = "0750";
     };
