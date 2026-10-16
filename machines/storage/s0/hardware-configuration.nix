@@ -27,17 +27,13 @@
   boot.supportedFilesystems = [ "zfs" "bcachefs" ];
   boot.initrd.supportedFilesystems = [ "bcachefs" ];
 
-  # zfs: rpool still carries /data and atticd's store until the HDDs are
-  # re-formatted. Its old OS datasets (root, var/lib, var/log, home) keep
-  # their mountpoint properties for the USB-stick rollback generation, and
-  # ZFS mounts over non-empty directories by default, so `zfs mount -a`
-  # must never run here: it would layer the old datasets over the bcachefs
-  # mounts. Only the fstab entries below mount anything from rpool.
+  # zfs stays installed for the stepping-stone pool (tmppool) and the shelf
+  # copy of the old rpool, both imported by hand when needed. No pool is
+  # imported at boot, and `zfs mount -a` stays masked: those pools carry
+  # datasets whose mountpoint properties point into the live tree.
   networking.hostId = "5e6791f0";
   boot.zfs.forceImportRoot = false;
   systemd.services.zfs-mount.enable = false;
-  services.zfs.autoScrub.enable = true;
-  services.zfs.trim.enable = true;
 
   # bcachefs verifies checksums only when it reads, so a periodic scrub is
   # what finds latent damage before the other copy is needed. Monthly like
@@ -60,10 +56,6 @@
     {
       "enc-nvme-a" = member "3b8e47ca-a6b9-49e0-94ea-62a9493e8d18";
       "enc-nvme-b" = member "f3fc4503-7035-441c-80fc-c8287b39e92f";
-      "enc-pv1" = member "d52e99a9-8825-4d0a-afc1-8edbef7e0a86";
-      "enc-pv2" = member "f7275585-7760-4230-97de-36704b9a2aa3";
-      "enc-pv3" = member "5d1002b8-a0ed-4a1c-99f5-24b8816d9e38";
-      "enc-pv4" = member "e2c7402a-e72c-4c4a-998f-82e4c10187bc";
     };
 
   # mounts
@@ -91,20 +83,7 @@
       "/var" = bcachefsSubvolume "var";
       "/var/log" = bcachefsSubvolume "log";
       "/home" = bcachefsSubvolume "home";
-      "/data" = {
-        device = "rpool/nixos/data";
-        fsType = "zfs";
-        options = [ "zfsutil" "X-mount.mkdir" ];
-      };
-      # atticd's NAR store stays on its own HDD dataset; the OS copy left it
-      # out. Its metadata lives in PostgreSQL on the NVMe tier, so the store
-      # must be present or every cached path 404s. Moves off rpool before
-      # the pool is destroyed.
-      "/var/lib/atticd" = {
-        device = "rpool/nixos/var/lib/atticd";
-        fsType = "zfs";
-        options = [ "zfsutil" "X-mount.mkdir" ];
-      };
+      "/data" = bcachefsSubvolume "data";
       # ESP-A on the L4S drive is the live /boot; ESP-B on the L4Z drive is a
       # copy kept current by the loader hook below, so either NVMe boots.
       "/boot" = {
