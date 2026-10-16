@@ -84,19 +84,21 @@
     owner = "zigbee2mqtt";
   };
 
-  # The network keys, device database and state are a few hundred KB; the
-  # rest of the directory is logs.
+  # The network keys, device database, devices/groups and state are a few
+  # hundred KB; the rest of the directory is logs. configuration.yaml is
+  # rendered from `settings` at every start and must not be restored.
   backup.group."zigbee2mqtt" = {
     paths = [ config.services.zigbee2mqtt.dataDir ];
-    exclude = [ "log" ];
+    exclude = [ "log" "configuration.yaml" ];
   };
 
-  # Config, automations, blueprints and .storage (entity registry, auth,
-  # integrations). The recorder database is history only and dwarfs the
+  # UI-managed automations, blueprints and .storage (entity registry, auth,
+  # integrations). configuration.yaml is a symlink to the Nix-rendered file
+  # and stays out; the recorder database is history only and dwarfs the
   # rest; caches and TTS audio are regenerated.
   backup.group."home-assistant" = {
     paths = [ config.services.home-assistant.configDir ];
-    exclude = [ "home-assistant_v2.db*" ".cache" "tts" "deps" "home-assistant.log*" ];
+    exclude = [ "configuration.yaml" "home-assistant_v2.db*" ".cache" "tts" "deps" "home-assistant.log*" ];
   };
 
   services.home-assistant = {

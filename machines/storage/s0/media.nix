@@ -213,8 +213,8 @@ in
   # I could not figure out how to allow the container to access the encoder
   # The *arr apps keep their state on the host and are bind-mounted into the
   # servarr container; prowlarr runs with DynamicUser, so its real directory
-  # is under private/. Media covers, logs and the recyclarr git clones are
-  # reproducible and left out.
+  # is under private/. Their config.xml and databases are app-managed, not
+  # rendered from Nix. Media covers, logs and caches are reproducible.
   backup.group."servarr" = {
     paths = [
       "/var/lib/sonarr"
@@ -222,10 +222,8 @@ in
       "/var/lib/lidarr"
       "/var/lib/bazarr"
       "/var/lib/private/prowlarr"
-      "/var/lib/jackett"
-      "/var/lib/recyclarr"
     ];
-    exclude = [ "MediaCover" "logs" "log" "Sentry" "asp" "repositories" "cache" ".cache" ];
+    exclude = [ "MediaCover" "logs" "log" "Sentry" "asp" "cache" ".cache" ];
   };
 
   services.jellyfin.enable = true;
