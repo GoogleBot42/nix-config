@@ -1,5 +1,71 @@
 # s0: migrate from ZFS raidz1 to one bcachefs filesystem
 
+## Handoff (state as of 2026-10-15 21:40)
+
+Read this first. Everything below it is the full plan, decisions and history.
+
+**Where things stand**
+
+- s0 runs the ZFS-root system (generation 476, nixpkgs 20261011.7fd4004,
+  deployed from master 7bcd0a1) booted from the USB stick. BootOrder: stick
+  first (0001,0000,0005,0006,0007,0008,0002). Firmware entries 0005/0006 are
+  the named NVMe entries, 0003/0004/0007/0008 are bootctl/firmware extras
+  pointing at the NVMe ESPs; harmless, tidy them after cutover.
+- master is **safe to deploy to s0** again: it carries the ZFS disk stanza.
+  The bcachefs-root stanza is exactly one commit on `feat/s0-nvme-root`
+  (agent fork) and is applied only inside the cutover procedure. Never
+  merge it to master before s0 boots from the NVMe tier; see the incident
+  entry at the bottom of the progress log for what happens otherwise.
+- Observability from master is live on s0 and kif: `bcachefs-health-check`
+  and `bcachefs-metrics` timers, spooled ntfy, the bcachefs dashboard and
+  three Grafana rules, all alerting to ntfy topic `service-failures`.
+- NVMe filesystem (UUID 3460f75d-5c8c-4511-a6dc-3a69659776f3, LUKS
+  `enc-nvme-a`/`enc-nvme-b`, both with the owner's passphrase and the
+  throwaway key): healthy, 0 errors, 677 GB used, NOT mounted and its LUKS
+  closed. It holds the OS copy from the 11th plus ~170 files services wrote
+  into it during the broken switch on the 15th; the cutover's
+  `rsync --delete` from fresh snapshots replaces all of that. Its loader
+  (ESP-A, mirrored to ESP-B) has generation 474 from Step 3.
+- Stepping stones (`tmppool`, 16+4+4 TB over USB, LUKS with both keys):
+  imported, ONLINE, `/data` received, second scrub finished clean
+  2026-10-15 01:02. Snapshot `mig2` on both pools still holds the 1.2 TB the
+  owner trashed from Transmission's completed downloads; keep until told.
+- 32 stale partial torrents (51 GB) remain in `/var/lib/transmission/
+  .incomplete` for the owner to trash.
+- Hardware: `ata6` (drive 3JH0HT6G) resets its SATA link several times a
+  day; SMART clean; candidate for the drive left out.
+
+**Access**
+
+- `ssh -i ~/.ssh/s0-migration -o HostKeyAlias=s0 root.koi-bebop.ts.net`
+  (or `root.168.1.2`). Bare `s0` sometimes resolves to a rejected VLAN
+  lease; see the deploy skill.
+- Throwaway LUKS key: `secrets/s0-migration-luks-passphrase.age` (canonical),
+  fry `~/.ssh/s0-migration-luks.key`, s0 `/root/s0-migration-luks.key`.
+- Rehearsal kit: `machines/storage/s0/rehearsal/` (passed all four tests).
+
+**Next: Step 5, the cutover, owner present, ~1 h of /var/lib downtime**
+
+1. Owner trashes the 32 partials (optional) and confirms restic is green.
+2. Build s0 from `feat/s0-nvme-root` (rebased on master), `nix copy` the
+   closure to s0. Do not deploy it.
+3. Open the NVMe LUKS, mount the subvolume tree under /mnt/target (root,
+   nix, var, log, home) plus ESP-A at /mnt/target/boot and ESP-B at
+   /mnt/target/boot-mirror (commands in Step 3 of the progress log).
+4. Stop every /var/lib writer (containers, podman, hass, unifi, frigate,
+   jellyfin, nextcloud-class, transmission); `zfs snapshot -r rpool/nixos@os3`;
+   rsync `-aHAXS --numeric-ids --delete` from the @os3 snapshots into the
+   tree (root minus nix/var/home/data/boot/tmp/mnt; root's /var dirs; nix;
+   var/log; home; var/lib minus atticd). Verify with a dry run.
+5. `nixos-install --system <closure> --root /mnt/target --no-root-passwd
+   --no-channel-copy`, unmount the tree, `efibootmgr -o 0005,0006,0001,0000,0002`.
+6. Reboot. Unlock over the usual remote path (six LUKS devices, one
+   passphrase). Verify mounts, services, Gatus, `bcachefs fs usage`, then
+   `bcachefs scrub /`. Soak for days. Then merge `feat/s0-nvme-root`.
+7. Rollback at any point before Phase 3: BIOS boot menu -> USB stick ->
+   latest ZFS generation.
+
+
 Runbook for an agent session executing the migration. It assumes no context
 from the planning session; everything it relies on is written down here.
 Update the **Progress log** at the bottom as phases complete, and keep this
