@@ -13,9 +13,15 @@ Read this first. Everything below it is the full plan, decisions and history.
   pointing at the NVMe ESPs; harmless, tidy them after cutover.
 - master is **safe to deploy to s0** again: it carries the ZFS disk stanza.
   The bcachefs-root stanza is exactly one commit on `feat/s0-nvme-root`
-  (agent fork) and is applied only inside the cutover procedure. Never
-  merge it to master before s0 boots from the NVMe tier; see the incident
-  entry at the bottom of the progress log for what happens otherwise.
+  (agent fork, rebased on master) and is applied only inside the cutover
+  procedure. Never merge it to master before s0 boots from the NVMe tier;
+  see the 2026-10-15 incident entry in the progress log for what happens
+  otherwise. The stanza also masks `zfs-mount.service` and mounts
+  `/var/lib/atticd` from rpool; both are required, see the two last
+  gotchas.
+- The cutover closure is built from that branch and already on s0; its
+  store path is in `/root/migration/cutover-closure.txt`. Rebuild and
+  re-copy if master or the branch moves before the cutover.
 - Observability from master is live on s0 and kif: `bcachefs-health-check`
   and `bcachefs-metrics` timers, spooled ntfy, the bcachefs dashboard and
   three Grafana rules, all alerting to ntfy topic `service-failures`.
@@ -48,19 +54,28 @@ Read this first. Everything below it is the full plan, decisions and history.
 
 1. Owner trashes the 32 partials (optional) and confirms restic is green.
 2. Build s0 from `feat/s0-nvme-root` (rebased on master), `nix copy` the
-   closure to s0. Do not deploy it.
-3. Open the NVMe LUKS, mount the subvolume tree under /mnt/target (root,
-   nix, var, log, home) plus ESP-A at /mnt/target/boot and ESP-B at
-   /mnt/target/boot-mirror (commands in Step 3 of the progress log).
-4. Stop every /var/lib writer (containers, podman, hass, unifi, frigate,
-   jellyfin, nextcloud-class, transmission); `zfs snapshot -r rpool/nixos@os3`;
-   rsync `-aHAXS --numeric-ids --delete` from the @os3 snapshots into the
-   tree (root minus nix/var/home/data/boot/tmp/mnt; root's /var dirs; nix;
-   var/log; home; var/lib minus atticd). Verify with a dry run.
-5. `nixos-install --system <closure> --root /mnt/target --no-root-passwd
-   --no-channel-copy`, unmount the tree, `efibootmgr -o 0005,0006,0001,0000,0002`.
+   closure to s0, note the path in `/root/migration/cutover-closure.txt`.
+   Do not deploy it. (Done 2026-10-15 23:00; redo only if either moves.)
+3. `/root/migration/cutover-1-open-mount.sh`: opens the NVMe LUKS with the
+   throwaway key and mounts the whole tree at /mnt/s0fs. Idempotent. (The
+   three scripts are versioned in `machines/storage/s0/cutover/`.)
+4. `cutover-2-stop-snapshot-rsync.sh --dry-run` first (services keep
+   running, snapshot @os3dry, `rsync -n`, snapshot destroyed), read the
+   counts, then the same without the flag: stops the 24 writer units and
+   the three restic timers, snapshots `rpool/nixos@os3`, rsyncs
+   `-aHAXS --numeric-ids --delete` from the snapshots (root minus
+   nix/var/home/data/boot/tmp/mnt; root's /var minus lib/log; nix; log;
+   home; var/lib minus atticd). Logs `rsync-cutover-*.log`. Downtime
+   starts here.
+5. `cutover-3-install-bootorder.sh`: bind-mounts the tree at /mnt/target
+   with both ESPs, `nixos-install --system <closure> --no-root-passwd
+   --no-channel-copy`, checks the ESP mirror, unmounts and closes the NVMe
+   LUKS, saves the old BootOrder, sets `0005,0006,0001,0000,0002` and prints
+   the reboot command. It never reboots by itself.
 6. Reboot. Unlock over the usual remote path (six LUKS devices, one
-   passphrase). Verify mounts, services, Gatus, `bcachefs fs usage`, then
+   passphrase). Verify mounts (`findmnt -t zfs` lists only `/data` and
+   `/var/lib/atticd`; `/`, `/nix`, `/var`, `/var/log`, `/home` are
+   bcachefs), services, Gatus, `bcachefs fs usage`, then
    `bcachefs scrub /`. Soak for days. Then merge `feat/s0-nvme-root`.
 7. Rollback at any point before Phase 3: BIOS boot menu -> USB stick ->
    latest ZFS generation.
@@ -288,6 +303,27 @@ root is bcachefs; the LUKS and network parts stay.
   and `networking.hostId` so the temporary pool and the shelf copy remain
   importable. `services.zfs.autoScrub` and `services.zfs.trim` can go once
   rpool is destroyed.
+- **ZFS auto-mount over bcachefs.** The old OS datasets (`rpool/nixos/root`,
+  `var/lib`, `var/log`, `home`, `var/lib/atticd`) keep `canmount=on` and
+  their `mountpoint` properties so the USB-stick rollback generation still
+  boots, and ZFS on Linux mounts over non-empty directories by default
+  (`overlay=on`). NixOS's `zfs-mount.service` runs `zfs mount -a` before
+  `local-fs.target`, which on the NVMe-root system would layer every old
+  dataset over its bcachefs counterpart, root included. The branch masks
+  that unit (`systemd.services.zfs-mount.enable = false`) and mounts the
+  two datasets the new system still needs, `/data` and `/var/lib/atticd`,
+  through `fileSystems` only. Never "fix" this by changing the dataset
+  properties instead: that silently breaks the rollback path, whose `/home`
+  and `/var/lib/atticd` are mounted by `zfs mount -a` alone. After the
+  first NVMe boot, `findmnt -t zfs` must list exactly `/data` and
+  `/var/lib/atticd`.
+- **atticd's store is still on rpool.** The OS copy excluded
+  `/var/lib/atticd` (343 GB of NARs, reproducible) and the branch mounts the
+  ZFS dataset there instead. atticd's metadata is in PostgreSQL on the NVMe
+  tier, so an empty store would make every cached path fail, not just miss.
+  Phase 3 destroys rpool: before its Step 1, either copy the dataset to a
+  directory on the bcachefs tree (fits: ~1 TB free at two replicas) or
+  drop the cache and reset the PostgreSQL database with it.
 
 ## Phase 0: preparation and rehearsal
 
@@ -545,3 +581,25 @@ Then:
   `nixos-install --system` with the then-current closure, set BootOrder to
   Boot0005 first (`efibootmgr -o 0005,0006,0001,0000,0002`), reboot, unlock
   over the usual remote path, verify, then soak for days.
+- 2026-10-15 (day): **incident, bcachefs stanza deployed to the running s0.**
+  With the stanza on master, deploying master mounted the NVMe copies of
+  /nix and /var over the live ZFS ones mid-switch and rebooted s0 into an
+  initrd that mounts the NVMe root. s0 is back on the USB stick and the
+  ZFS root; master carries the ZFS disk stanza again (7bcd0a1, generation
+  476) and the bcachefs stanza lives only on `feat/s0-nvme-root`. Lesson, now in
+  the handoff: a root-filesystem change is applied by `nixos-install` into the new tree
+  during the cutover, never by `nixos-rebuild switch` on the running box.
+- 2026-10-15 23:00: **Step 5 prep done, cutover not started.** Branch
+  rebased on master. Reviewing the new system's unit set found two gaps
+  (both now gotchas): `zfs-mount.service` would have run `zfs mount -a` at
+  the first NVMe boot and layered the old root/var-lib/log/home datasets
+  over the bcachefs mounts (they keep `canmount=on` for the rollback
+  generation, and `overlay=on` is the ZFS default), and atticd's 343 GB
+  store dataset was neither copied nor mounted. The branch masks
+  `zfs-mount.service` and mounts `rpool/nixos/var/lib/atticd` via
+  `fileSystems`. Verified in the built closure: `zfs-mount.service ->
+  /dev/null`, fstab has `/data` and `/var/lib/atticd`, `zfs-import-rpool`
+  is ordered before both mount units. Closure copied to s0, path in
+  `/root/migration/cutover-closure.txt`. restic: all three groups green;
+  s0 healthy on generation 476; NVMe LUKS closed; 49 GB of partials remain
+  in Transmission's incomplete directory.
