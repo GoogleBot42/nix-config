@@ -1,10 +1,32 @@
 # s0: migrate from ZFS raidz1 to one bcachefs filesystem
 
-## Handoff (state as of 2026-10-16 14:30)
+## Handoff (state as of 2026-10-16 18:45)
 
 Read this first. Everything below it is the full plan, decisions and history.
 
-**Where things stand: Phase 1 is done, s0 boots from the NVMe tier.**
+**Where things stand: Phase 3 step 1 done; rpool exported, HDD link test running, format next.**
+
+- 2026-10-16 evening: the owner gave written go-ahead for Phase 3 and for
+  formatting with the throwaway key while away. State: generation 478
+  (branch `phase3/s0-drop-rpool`, 8fec859) boots with only the two NVMe
+  LUKS devices; rpool is exported and its four members untouched;
+  3JH0HT6G is physically unplugged (port ata6 empty); 2BJJ97DN, 2BJ9K30N
+  and 2PGSVB9T stay on ata3/4/5 under a read-load test, `journalctl -k`
+  must show no `hard resetting link` for a few hours before
+  `phase3-3-format-add-hdds.sh` runs. tmppool is imported with `/data`
+  mounted read-only AT `/data` (Samba and Jellyfin serve from it;
+  Transmission and servarr stay down) and `tmppool/os/*` at
+  `/mnt/tmpos/*`. tmppool holds everything, verified: `data`,
+  `os/{root,home,var,var/lib,var/log}`. atticd runs from the SSD copy
+  (its fstab mount unit is runtime-masked; the config on
+  `phase3/s0-drop-rpool` drops it).
+- After the format the three new LUKS containers carry only the throwaway
+  key: the owner must `cryptsetup luksAddKey` their passphrase on each
+  before the next reboot, and the initrd config needs their UUIDs
+  (`/root/migration/hdd-luks-uuids.txt`). Until both are done, do not
+  reboot: the data tier would be missing at boot.
+
+**Phase 1 recap (done 2026-10-16 14:14).**
 
 - s0 runs generation 477 (nixpkgs 20261011.7fd4004) built from
   `feat/s0-nvme-root` (2d7470a, agent fork) and booted from firmware entry
@@ -610,3 +632,29 @@ Then:
   `bcachefs scrub /` started. Filesystem 545 GB used at two replicas,
   2.8 TB free. Branch `feat/s0-nvme-root` stays unmerged until the soak
   ends; master must not be deployed to s0 until then.
+- 2026-10-16 18:02: **Phase 3 step 1 done.** Pre-flight: restic green;
+  tmppool scrub clean; the OS datasets sent to `tmppool/os/*@os3` (home,
+  var, var/lib, var/log, root; atticd left out as ephemeral) and every one
+  verified by guid, full listing and random byte compare; the owner
+  inspected the copies (all mounted read-only under `/mnt/tmpos` and
+  `/mnt/tmpdata`). atticd's store copied to the bcachefs var subvolume
+  (376.9 GB, 23,471 files, identical) and the service switched to it;
+  the fstab mount unit had to be runtime-masked because starting atticd
+  re-triggers it. Final send `@mig4` with the /data writers stopped, guids
+  equal, nothing unsent. rpool exported. Generation 478 (closure from
+  `phase3/s0-drop-rpool` 8fec859) installed with `switch-to-configuration
+  boot`, ESP mirror identical. Lesson: `nixos-rebuild`'s `boot` action is
+  the right way to stage a disk-stanza change on the running box.
+- 2026-10-16 18:22: **rebooted without rpool.** Two LUKS prompts, both
+  ESPs fine, `/data` is the empty bcachefs subvolume, containers
+  transmission/servarr fail on their empty bind mounts (expected, they stay
+  down). The owner pulled a drive to free the suspect link: the first
+  attempt removed 2PGSVB9T from ata5, because the ASUS silkscreen order
+  (SATA6G_n) does not follow the kernel's ataN order; **identify drives by
+  the serial on the sticker, never by connector label**. Second attempt
+  removed 3JH0HT6G; ata6 is empty. Read load (`dd iflag=direct`, ~217 MB/s
+  per drive) on the remaining three with a kernel-log watch; decision at
+  ~21:30: no resets means the three are the hdd tier and the format runs
+  with the throwaway key (owner's written go-ahead, owner away).
+  tmppool re-imported, `tmppool/data` mounted read-only at `/data` so
+  Samba and Jellyfin serve again.
