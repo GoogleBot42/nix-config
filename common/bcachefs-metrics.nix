@@ -90,7 +90,7 @@ let
           /\(device [0-9]+\):/ { lab=$1; printf "bcachefs_device_size_bytes{%s,label=\"%s\"} %s\nbcachefs_device_used_bytes{%s,label=\"%s\"} %s\n", l, lab, $(NF-2), l, lab, $(NF-1) }
         '
       fi
-      m "bcachefs_metrics_timestamp_seconds{} 100 1 17 20 27 57 59 67 100 995date +%s)"
+      m "bcachefs_metrics_timestamp_seconds{} $(date +%s)"
     done
   '';
 
