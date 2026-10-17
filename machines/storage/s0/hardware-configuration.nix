@@ -22,9 +22,10 @@
   # One bcachefs filesystem (external UUID below) holds everything. Its
   # members are the two Solidigm NVMe drives (label ssd, every filesystem
   # default target, so the OS never leaves flash) and three WD HDDs (label
-  # hdd), each a LUKS2 container. The data subvolume carries per-directory
-  # options background_target=hdd and erasure_code, set with
-  # `bcachefs set-file-option`, so /data lands on the HDDs as 2+1 stripes. Subvolumes are mounted with util-linux's
+  # hdd), each a LUKS2 container. Per-directory options set with
+  # `bcachefs set-file-option` (background_target=hdd, erasure_code) move
+  # the data subvolume and the atticd NAR store (/var/lib/atticd) to the
+  # HDDs as 2+1 stripes; everything else inherits the ssd defaults. Subvolumes are mounted with util-linux's
   # X-mount.subdir because bcachefs has no subvolume mount option of its own.
   boot.supportedFilesystems = [ "zfs" "bcachefs" ];
   boot.initrd.supportedFilesystems = [ "bcachefs" ];
