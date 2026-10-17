@@ -1,9 +1,9 @@
 { config, lib, pkgs, ... }:
 
 # bcachefs health: a member missing or not read-write, the filesystem not
-# read-write, entries in its error list, new device I/O errors, or data left
-# with fewer replicas than configured. The facts come from the same probe
-# that feeds the metrics (common/bcachefs-metrics.nix), so an alert here
+# read-write, actionable entries in its error list, new device I/O errors, or
+# data left with fewer replicas than configured. The facts come from the same
+# probe that feeds the metrics (common/bcachefs-metrics.nix), so an alert here
 # always matches what the dashboard shows. Alerts once per distinct problem
 # set and once more on recovery; the sender spools if the network is down.
 
@@ -51,9 +51,15 @@ let
         add "filesystem $short is not read-write"; urgent=1
       fi
 
-      errs=$(fact "^bcachefs_fs_errors[{]$F[}]")
-      if [ "''${errs:-0}" -gt 0 ]; then
-        add "filesystem $short lists $errs error(s): $(head -n 5 "/sys/fs/bcachefs/$uuid/errors" | tr '\n' ';')"; urgent=1
+      errors_file="/sys/fs/bcachefs/$uuid/errors"
+      known=$(grep "^extent_io_opts_not_set " "$errors_file" 2>/dev/null || true)
+      if [ -n "$known" ]; then
+        echo "filesystem $short: known auto-repaired reconcile metadata inconsistencies: $known"
+      fi
+      errs=$(grep -v "^extent_io_opts_not_set " "$errors_file" 2>/dev/null | grep -c . || true)
+      if [ "$errs" -gt 0 ]; then
+        details=$(grep -v "^extent_io_opts_not_set " "$errors_file" | head -n 5 | tr '\n' ';')
+        add "filesystem $short lists $errs error(s): $details"; urgent=1
       fi
 
       deg=$(awk -v f="$F" '$0 ~ "^bcachefs_fs_data_bytes[{]"f"," && $0 !~ /degraded="0"/ { s += $NF } END { printf "%d\n", s }' <<< "$facts")
