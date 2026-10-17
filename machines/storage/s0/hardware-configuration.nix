@@ -19,10 +19,12 @@
 
   ### disks ###
 
-  # One bcachefs filesystem (external UUID below) holds the OS. Its members
-  # are the two Solidigm NVMe drives, each a LUKS2 container, mirrored at two
-  # replicas with every target on the "ssd" label; the HDDs join it later as
-  # the background target for /data. Subvolumes are mounted with util-linux's
+  # One bcachefs filesystem (external UUID below) holds everything. Its
+  # members are the two Solidigm NVMe drives (label ssd, every filesystem
+  # default target, so the OS never leaves flash) and three WD HDDs (label
+  # hdd), each a LUKS2 container. The data subvolume carries per-directory
+  # options background_target=hdd and erasure_code, set with
+  # `bcachefs set-file-option`, so /data lands on the HDDs as 2+1 stripes. Subvolumes are mounted with util-linux's
   # X-mount.subdir because bcachefs has no subvolume mount option of its own.
   boot.supportedFilesystems = [ "zfs" "bcachefs" ];
   boot.initrd.supportedFilesystems = [ "bcachefs" ];
@@ -56,6 +58,12 @@
     {
       "enc-nvme-a" = member "3b8e47ca-a6b9-49e0-94ea-62a9493e8d18";
       "enc-nvme-b" = member "f3fc4503-7035-441c-80fc-c8287b39e92f";
+      # The hdd tier: whole-disk LUKS2 on WD160EDGZ 2BJJ97DN, 2PGSVB9T and
+      # 2BJ9K30N (ata3/4/5). 3JH0HT6G stays out as the spare and port ata6
+      # stays empty: its link reset several times a day.
+      "enc-hdd1" = member "eb98a01b-6652-4d54-9756-4057a154fa7d";
+      "enc-hdd2" = member "97a052b8-d943-4f5a-80ea-676645f8e8c3";
+      "enc-hdd3" = member "df4e42cd-b226-4460-b3f3-ac02bf3392ba";
     };
 
   # mounts
