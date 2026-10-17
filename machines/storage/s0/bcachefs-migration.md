@@ -1,10 +1,31 @@
 # s0: migrate from ZFS raidz1 to one bcachefs filesystem
 
-## Handoff (state as of 2026-10-16 18:45)
+## Handoff (state as of 2026-10-16 21:30)
 
 Read this first. Everything below it is the full plan, decisions and history.
 
-**Where things stand: Phase 3 step 1 done; rpool exported, HDD link test running, format next.**
+**Where things stand: Phase 3 done, rpool is gone, Phase 4 copy-back running.**
+
+- 2026-10-16 21:18: the three HDDs 2BJJ97DN, 2PGSVB9T, 2BJ9K30N are
+  whole-disk LUKS2 (`enc-hdd1..3`, UUIDs in `/root/migration/
+  hdd-luks-uuids.txt`) with ONLY the throwaway key, members `hdd.hdd1..3`
+  of the bcachefs filesystem (43.5 T), and the data subvolume carries
+  `background_target=hdd erasure_code=1`. The copy-back `rsync` from the
+  read-only tmppool mount at `/data` into the data subvolume at
+  `/mnt/newdata` started 21:19 (~370 MB/s, log `rsync-copyback.log`,
+  result `copyback.status`); `phase4-2-flip.sh` swaps `/data` over when it
+  reports EXIT=0, then `bcachefs scrub /`.
+- **Before any reboot the owner must add their passphrase to the three
+  new containers** (`cryptsetup luksAddKey --key-file
+  /root/s0-migration-luks.key /dev/disk/by-id/ata-WDC_WD160EDGZ-11B2DA0_<serial>`)
+  and the generation with the five-device initrd (branch
+  `phase3/s0-drop-rpool`, installed with `switch-to-configuration boot`)
+  must be the default. A reboot without the HDD keys mounts the filesystem
+  degraded with the data tier missing; recovery is `luksOpen` by hand and
+  `bcachefs device online`.
+- 3JH0HT6G is unplugged (spare); port ata6 is empty. Its old rpool member
+  is useless alone. The cable test (3JH0HT6G on a known-good cable) is
+  still open if the owner wants to know whether the drive itself is bad.
 
 - 2026-10-16 evening: the owner gave written go-ahead for Phase 3 and for
   formatting with the throwaway key while away. State: generation 478
@@ -658,3 +679,16 @@ Then:
   with the throwaway key (owner's written go-ahead, owner away).
   tmppool re-imported, `tmppool/data` mounted read-only at `/data` so
   Samba and Jellyfin serve again.
+- 2026-10-16 21:18: **Phase 3 done, point of no return passed.** Link
+  test: 3 h of full read load on ata3/4/5 (~645 MB/s combined, 5 TB+ read),
+  zero SATA events, CRC counters unchanged; the suspect link was 3JH0HT6G
+  on ata6, now unplugged. `phase3-3-format-add-hdds.sh`: wipefs, whole-disk
+  `luksFormat --type luks2` with the throwaway key (sgdisk is not on s0,
+  so no partition table), `enc-hdd1` eb98a01b…, `enc-hdd2` 97a052b8…,
+  `enc-hdd3` df4e42cd…, rotational=1 confirmed on the dm devices,
+  `bcachefs device add --label hdd.hddN / /dev/mapper/enc-hddN`, fs 43.5 T
+  with five rw members, `bcachefs set-file-option --background_target=hdd
+  --erasure_code=1` on the data subvolume (mounted at /mnt/newdata),
+  verified through the `bcachefs_effective.*` xattrs. 21:19 copy-back
+  started. Initrd config with the three UUIDs committed on
+  `phase3/s0-drop-rpool` and installed as the next boot generation.
