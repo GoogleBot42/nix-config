@@ -87,7 +87,9 @@ let
           acct && /^[0-9]+x:/ { r=$1; sub(/:/, "", r); for (i = 2; i <= NF; i++) {
             d = (hdr[i] == "undegraded") ? "0" : hdr[i]; sub(/x$/, "", d)
             printf "bcachefs_fs_data_bytes{%s,replicas=\"%s\",degraded=\"%s\"} %s\n", l, r, d, $i } }
-          /\(device [0-9]+\):/ { lab=$1; printf "bcachefs_device_size_bytes{%s,label=\"%s\"} %s\nbcachefs_device_used_bytes{%s,label=\"%s\"} %s\n", l, lab, $(NF-2), l, lab, $(NF-1) }
+          # columns: label "(device" "N):" dm state size used pct [extra]; the
+          # trailing column appears only on some devices, so count from the left
+          /\(device [0-9]+\):/ { lab=$1; printf "bcachefs_device_size_bytes{%s,label=\"%s\"} %s\nbcachefs_device_used_bytes{%s,label=\"%s\"} %s\n", l, lab, $6, l, lab, $7 }
         '
       fi
       m "bcachefs_metrics_timestamp_seconds{} $(date +%s)"
