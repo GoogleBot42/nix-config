@@ -84,7 +84,9 @@ let
           /^Free:/ { printf "bcachefs_fs_free_bytes{%s} %s\nbcachefs_fs_writable_bytes{%s} %s\n", l, $2, l, $3 }
           /^[[:space:]]+undegraded/ { acct=1; for (i = 1; i <= NF; i++) hdr[i+1] = $i; next }
           acct && /^Device label/ { acct=0 }
-          acct && /^[0-9]+x:/ { r=$1; sub(/:/, "", r); for (i = 2; i <= NF; i++) {
+          # rows are "2x:" in the Replicated table and "2+1:" in the
+          # Erasure coded one; both tables share the degraded column header
+          acct && /^[0-9]+(x|\+[0-9]+):/ { r=$1; sub(/:/, "", r); for (i = 2; i <= NF; i++) {
             d = (hdr[i] == "undegraded") ? "0" : hdr[i]; sub(/x$/, "", d)
             printf "bcachefs_fs_data_bytes{%s,replicas=\"%s\",degraded=\"%s\"} %s\n", l, r, d, $i } }
           # columns: label "(device" "N):" dm state size used pct [extra]; the
