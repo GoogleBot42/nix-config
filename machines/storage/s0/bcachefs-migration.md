@@ -1,10 +1,37 @@
 # s0: migrate from ZFS raidz1 to one bcachefs filesystem
 
-## Handoff (state as of 2026-10-16 21:30)
+## Handoff (state as of 2026-10-18 11:05)
 
 Read this first. Everything below it is the full plan, decisions and history.
 
-**Where things stand: Phase 3 done, rpool is gone, Phase 4 copy-back running.**
+**Where things stand: Phase 4 steps 1-3 done. s0 runs entirely on the bcachefs filesystem; scrub running.**
+
+- 2026-10-18 11:00: /data is the bcachefs data subvolume (copy-back of
+  19.4 TB, 1,000,497 files, verified identical to the tmppool copy by
+  full listing and random byte compare); every service runs, including
+  Transmission and servarr. `bcachefs scrub /` over all five members
+  started 11:01 (`/root/migration/scrub-full.{log,status}`); reconcile
+  is draining ~3 TB of striping and migration backlog, which keeps the
+  SSD pair near full until it finishes. Running generation 480 (Phase 3
+  branch plus master PRs 250/251 cherry-picked, local deploy branch).
+- Per-directory overrides (background_target=hdd, erasure_code=1): the
+  data subvolume, /var/lib/atticd, /var/lib/transmission/{Downloads,
+  .incomplete}, /var/lib/frigate/{recordings,exports},
+  /home/googlebot/{probably_delete,liza}. See the set-file-option gotcha.
+- Still owner-only before any reboot: `cryptsetup luksAddKey` of the
+  owner passphrase on the three HDD containers (serials 2BJJ97DN,
+  2PGSVB9T, 2BJ9K30N; the throwaway key is in `/root/s0-migration-luks.key`).
+- tmppool is still imported (`tmppool/data` at `/mnt/tmpdata`,
+  read-only) and holds the verified copies of /data and the old OS; keep
+  it until the scrub is clean and the owner says so, then export and
+  shelve the three stones for at least three months.
+- Remaining Phase 4 items: scrub result; degraded-boot test with the
+  owner; HDD spin-down (`hd-idle` or `hdparm -S`) and measurement;
+  repo cleanup (temporary root key, zfs remnants, backups module bcachefs
+  snapshots, CLAUDE.md notes); merge order docs -> stanza -> phase3 ->
+  restic, then master is deployable to s0 again.
+
+**Phase 3 recap.**
 
 - 2026-10-16 21:18: the three HDDs 2BJJ97DN, 2PGSVB9T, 2BJ9K30N are
   whole-disk LUKS2 (`enc-hdd1..3`, UUIDs in `/root/migration/
@@ -327,6 +354,21 @@ root is bcachefs; the LUKS and network parts stay.
   and `networking.hostId` so the temporary pool and the shelf copy remain
   importable. `services.zfs.autoScrub` and `services.zfs.trim` can go once
   rpool is destroyed.
+- **`bcachefs set-file-option` replaces a directory's option set.** Setting
+  one option on a directory that already carries others drops the others
+  (seen 2026-10-16: `--foreground_target=hdd` alone on the data subvolume
+  silently removed `background_target` and `erasure_code`, and 200 GB were
+  written as plain replicas before it was noticed). Always pass every
+  option in one call and read back `getfattr -d -m - <dir> | grep
+  bcachefs_effective` afterwards. Existing children inherit the new set
+  and reconcile re-applies it in the background.
+- **Bulk loads and the SSD tier.** With the filesystem defaults every write
+  lands on the SSD pair first; a multi-TB copy fills them within hours
+  because reconcile moves data to the HDDs slower than it arrives. For a
+  bulk load set `foreground_target=hdd` on the target directory for the
+  duration (together with its other options) and remove it afterwards.
+  Expect the copy to be bound by HDD write bandwidth shared with
+  reconcile: every byte is written once as replicas and again as stripes.
 - **ZFS auto-mount over bcachefs.** The old OS datasets (`rpool/nixos/root`,
   `var/lib`, `var/log`, `home`, `var/lib/atticd`) keep `canmount=on` and
   their `mountpoint` properties so the USB-stick rollback generation still
@@ -692,3 +734,21 @@ Then:
   verified through the `bcachefs_effective.*` xattrs. 21:19 copy-back
   started. Initrd config with the three UUIDs committed on
   `phase3/s0-drop-rpool` and installed as the next boot generation.
+- 2026-10-18 11:00: **Phase 4 steps 1-3 done.** Copy-back finished 10:52
+  (EXIT=0, 1,000,497 files, 19.39 TB, 37.5 h; the pace fell from
+  ~370 MB/s to 60-160 MB/s once reconcile competed for the HDDs; the
+  owner declined pausing reconcile). Verified: listing of every path,
+  type and file size identical between the tmppool copy and the data
+  subvolume (directory sizes differ by design: ZFS counts entries,
+  bcachefs bytes), 30 random files byte-identical. `phase4-2-flip.sh`:
+  Samba/Jellyfin stopped, tmppool/data moved back to /mnt/tmpdata, the
+  temporary foreground_target override removed from the data subvolume,
+  fstab /data mounted, the transmission and servarr containers unmasked
+  and started with the rest. Full scrub started 11:01. Filesystem 28 TB
+  used, HDDs at 8.2 TB each, SSDs at 1.72 TB pending migration.
+  Earlier the same day: PRs 250 (metrics timestamp) and 251 (ignore
+  extent_io_opts_not_set) cherry-picked and switched in as generation 480
+  with the two /data containers masked; owner merged both to master.
+  Overrides added on request: atticd store, Transmission Downloads and
+  .incomplete, Frigate recordings and exports, and two cold /home
+  directories.
