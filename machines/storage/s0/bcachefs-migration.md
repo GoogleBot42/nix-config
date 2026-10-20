@@ -392,6 +392,27 @@ root is bcachefs; the LUKS and network parts stay.
   duration (together with its other options) and remove it afterwards.
   Expect the copy to be bound by HDD write bandwidth shared with
   reconcile: every byte is written once as replicas and again as stripes.
+- **Replay after an unclean shutdown takes minutes, and the initrd mount
+  job has a limit.** After a hard reset the root mount replays the journal
+  (2026-10-19: 50 M journal keys, about two minutes on this filesystem,
+  longer with more pending reconcile work). systemd's default start-job
+  limit killed the mount, every dependent unit failed, and the initrd
+  dropped into its emergency shell, which the owner keeps locked on
+  purpose. The bcachefs mounts carry `x-systemd.mount-timeout=infinity`
+  since 82c7cb5. Without a shell the only way out is luck (the replay
+  finished in the background, so "Press Enter" retried into a clean
+  mount) or editing the kernel command line in the systemd-boot menu
+  (`systemd.default_timeout_start_sec=infinity`). s0 has a history of
+  hard resets, so this will recur.
+- **Never build or switch from the main checkout, never chain a deploy
+  with `;`.** 2026-10-19: a deploy chain with a `;` after an early `git
+  fetch` typo continued in the main checkout, which sat at master (the
+  ZFS-root stanza), built s0 from it and switched the running box to it.
+  The switch unmounted /nix, /var and /home from under the live system;
+  s0 answered ping and nothing else until the owner hard-reset it. Build
+  inside the worktree with `git rev-parse HEAD` checked against the
+  pushed commit, join every step with `&&`, and keep the main checkout out
+  of every deploy command.
 - **ZFS auto-mount over bcachefs.** The old OS datasets (`rpool/nixos/root`,
   `var/lib`, `var/log`, `home`, `var/lib/atticd`) keep `canmount=on` and
   their `mountpoint` properties so the USB-stick rollback generation still
@@ -787,3 +808,18 @@ Then:
   see degraded stripes. Per-directory hdd overrides added on request:
   atticd store, Transmission Downloads/.incomplete, Frigate
   recordings/exports, /home/googlebot/{probably_delete,liza}.
+- 2026-10-19 19:50-20:10: **incident, master switched onto the running
+  box (agent error).** A deploy chain for hd-idle failed at its first
+  command (a mistyped `git fetch`), but a `;` later in the chain let the
+  build-and-switch half run from the main checkout at master. The switch
+  tore the live system apart (no bcachefs mounts in master; /boot on the
+  USB stick, which got master's loader entries). Owner hard-reset; the
+  NVMe ESP still defaulted to generation 482; the initrd mount job timed
+  out during the two-minute journal replay and dropped to the locked
+  emergency shell; "Press Enter" retried the boot and the replay had
+  finished meanwhile, so the mount succeeded. Afterwards: generation 483
+  (master) removed from the profile, loader rewritten from the running
+  closure (484), `x-systemd.mount-timeout=infinity` on the bcachefs mounts
+  and the hd-idle service committed as 82c7cb5 on `phase3/s0-drop-rpool`.
+  The filesystem recovered cleanly (journal replay only, no fsck passes,
+  error list unchanged).
