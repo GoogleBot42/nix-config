@@ -1,6 +1,6 @@
 # s0: migrate from ZFS raidz1 to one bcachefs filesystem
 
-## Handoff (state as of 2026-10-19 19:40)
+## Handoff (state as of 2026-10-20 04:00)
 
 Read this first. Everything below it is the full plan, decisions and history.
 
@@ -20,9 +20,19 @@ Read this first. Everything below it is the full plan, decisions and history.
 - The SSD members look lopsided (nvmea ~280 G, nvmeb ~1.5 T): the
   difference is read cache (promote_target=ssd, single evictable copies),
   not replication; `/sys/fs/bcachefs/<uuid>/dev-N/alloc_debug` shows it.
+- 2026-10-20 03:47: **HDD spin-down works.** hd-idle (Phase 3 branch,
+  full by-id paths, 30 min) logged a spindown for all three WD drives and
+  `smartctl -n standby` confirms. Two things had to go first: the metrics
+  probe's `bcachefs show-super` call, which read every member's
+  superblock from the raw device every 30 s (now counted from sysfs,
+  branch `fix/bcachefs-metrics-no-superblock-reads`), and hd-idle's
+  `-a` argument, which must be the full `/dev/disk/by-id/...` path. Running
+  generation 487 = Phase 3 branch + the five metrics/health-check fix
+  branches. Transmission seeding and Jellyfin reads wake the drives
+  legitimately. There is no wall-power meter; standby state is the
+  evidence.
 - Remaining: reboot test (five prompts, owner present); degraded-boot test
-  (owner pulls one HDD); spin-down (`hd-idle`, on the Phase 3 branch) and
-  its measurement; cleanup (temporary root key, throwaway LUKS key on the
+  (owner pulls one HDD); cleanup (temporary root key, throwaway LUKS key on the
   five containers and three stones, zfs remnants, bcachefs snapshots in
   the backup module, CLAUDE.md); merge order docs -> stanza -> phase3 ->
   restic -> ec-accounting; export and shelve tmppool after the owner says so.
@@ -413,6 +423,15 @@ root is bcachefs; the LUKS and network parts stay.
   inside the worktree with `git rev-parse HEAD` checked against the
   pushed commit, join every step with `&&`, and keep the main checkout out
   of every deploy command.
+- **Anything that reads member superblocks wakes the HDDs.** `bcachefs
+  show-super` opens every member of a mounted filesystem, 52 KB per drive
+  per call, whatever device it is pointed at; `bcachefs fs usage` and
+  everything under `/sys/fs/bcachefs/<uuid>/` cost no disk IO. A 30-second
+  probe calling show-super keeps the hdd tier awake forever. Member
+  count comes from the device indices in `internal/replicas`.
+- **hd-idle takes full by-id paths.** `-a ata-WDC_...` matches nothing and
+  leaves every drive at idle 0 (never); `-a /dev/disk/by-id/ata-WDC_...`
+  resolves to the kernel name. `hd-idle -d` shows which happened.
 - **ZFS auto-mount over bcachefs.** The old OS datasets (`rpool/nixos/root`,
   `var/lib`, `var/log`, `home`, `var/lib/atticd`) keep `canmount=on` and
   their `mountpoint` properties so the USB-stick rollback generation still
@@ -823,3 +842,12 @@ Then:
   and the hd-idle service committed as 82c7cb5 on `phase3/s0-drop-rpool`.
   The filesystem recovered cleanly (journal replay only, no fsck passes,
   error list unchanged).
+- 2026-10-20 03:47: **Phase 4 step 5 done: the hdd tier spins down.**
+  Overnight measurement after the metrics probe stopped reading
+  superblocks: 73 minutes with 0 to 16 sectors of IO per drive, yet no
+  standby, because hd-idle had been given bare by-id names and treated
+  every drive as idle-never. With full paths (generation 487) all three
+  drives spun down after 30 minutes and SMART reports standby. Also on
+  generation 487: the probe fixes for the device table, the erasure-coded
+  accounting and the superblock reads, and the no-page rule for
+  extent_io_opts_not_set.
