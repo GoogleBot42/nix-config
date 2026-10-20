@@ -1,4 +1,4 @@
-{ config, pkgs, modulesPath, ... }:
+{ config, lib, pkgs, modulesPath, ... }:
 
 {
   imports =
@@ -70,16 +70,21 @@
   # mounts
   fileSystems =
     let
-      # degraded=yes: every block has two replicas (and /data will have
-      # parity), so a missing member must still boot this headless machine;
-      # the default "ask" fails outright in the initrd. Waiting for
+      # degraded=yes: every block has two replicas (and /data has parity),
+      # so a missing member must still boot this headless machine; the
+      # default "ask" fails outright in the initrd. Waiting for
       # cryptsetup.target first gives every member its chance to be opened.
+      # No mount timeout: after an unclean shutdown the journal replay over
+      # 28 TB takes minutes, longer than systemd's default job limit, and a
+      # timed-out root mount drops the initrd into its locked emergency
+      # shell with no way forward.
       bcachefsSubvolume = subdir: {
         device = "UUID=3460f75d-5c8c-4511-a6dc-3a69659776f3";
         fsType = "bcachefs";
         options = [
           "noatime"
           "degraded=yes"
+          "x-systemd.mount-timeout=infinity"
           "X-mount.subdir=${subdir}"
           "x-systemd.requires=cryptsetup.target"
           "x-systemd.after=cryptsetup.target"
@@ -130,6 +135,21 @@
         ensure_entry "NixOS B (NVMe L4Z)" ${nvmeB}
       fi
     '';
+
+  # The hdd tier holds only cold data, so the three WD drives spin down after
+  # 30 idle minutes. The leading "-i 0" leaves every disk not named alone:
+  # the NVMe pair and whatever hangs off USB. Drives are named by id because
+  # the sdX letters move between boots.
+  systemd.services.hd-idle = {
+    description = "spin down the idle hdd-tier drives";
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.hd-idle}/bin/hd-idle -i 0 -c ata"
+        + lib.concatMapStrings (serial: " -a ata-WDC_WD160EDGZ-11B2DA0_${serial} -i 1800")
+        [ "2BJJ97DN" "2PGSVB9T" "2BJ9K30N" ];
+      Restart = "on-failure";
+    };
+  };
 
   ### networking ###
 
