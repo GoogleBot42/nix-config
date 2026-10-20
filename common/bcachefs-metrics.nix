@@ -38,9 +38,13 @@ let
         [ -d "$d" ] || continue
         b=$(basename "$(readlink "$d/block")"); [ -n "$b" ] && { blk=$b; break; }
       done
+      # Expected members = every device index the replicas table references;
+      # a missing member keeps its entries. `bcachefs show-super` would give
+      # the count too, but it reads the superblock of every member from the
+      # raw device, which keeps spun-down HDDs awake at this probe's cadence.
       present=$(ls -d "$fs"dev-*/ 2>/dev/null | wc -l)
-      members=$present
-      [ -n "$blk" ] && members=$(bcachefs show-super "/dev/$blk" 2>/dev/null | awk '/^Devices:/{print $2}')
+      members=$(grep -o '\[[0-9 ]*\]' "$fs/internal/replicas" 2>/dev/null | tr -d '[]' | tr ' ' '\n' | grep . | sort -u | wc -l)
+      [ "''${members:-0}" -ge "$present" ] || members=$present
       m "bcachefs_fs_members{$L} ''${members:-$present}"
       m "bcachefs_fs_members_present{$L} $present"
       m "bcachefs_fs_rw{$L} $(grep -qw rw "$fs/internal/flags" && echo 1 || echo 0)"
