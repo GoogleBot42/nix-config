@@ -1,10 +1,33 @@
 # s0: migrate from ZFS raidz1 to one bcachefs filesystem
 
-## Handoff (state as of 2026-10-18 11:05)
+## Handoff (state as of 2026-10-19 19:40)
 
 Read this first. Everything below it is the full plan, decisions and history.
 
-**Where things stand: Phase 4 steps 1-3 done. s0 runs entirely on the bcachefs filesystem; scrub running.**
+**Where things stand: Phase 4 steps 1-3 done and the full scrub is clean; s0 runs entirely on bcachefs.**
+
+- 2026-10-19 19:31: `bcachefs scrub /` finished after 32.5 h with 0 corrected
+  and 0 uncorrectable blocks on all five members (the HDD rows read "66%
+  complete": this tools version scrubs data blocks, not parity blocks).
+  Reconcile backlog drained. The owner added their passphrase to the three
+  HDD containers on the 18th (2 key slots each), so a reboot is safe; the
+  throwaway key stays in all containers until the reboot test has passed.
+- Running generation 482: the Phase 3 branch plus master fixes (PRs 250,
+  251, the device-column fix) and the erasure-coding accounting fix
+  (`fix/bcachefs-metrics-ec-accounting`, PR pending). Grafana has the
+  bcachefs series since 2026-10-18 15:51; "Data by replica level" shows raw
+  bytes per scheme (2x and 2+1), and the degraded alert covers stripes.
+- The SSD members look lopsided (nvmea ~280 G, nvmeb ~1.5 T): the
+  difference is read cache (promote_target=ssd, single evictable copies),
+  not replication; `/sys/fs/bcachefs/<uuid>/dev-N/alloc_debug` shows it.
+- Remaining: reboot test (five prompts, owner present); degraded-boot test
+  (owner pulls one HDD); spin-down (`hd-idle`, on the Phase 3 branch) and
+  its measurement; cleanup (temporary root key, throwaway LUKS key on the
+  five containers and three stones, zfs remnants, bcachefs snapshots in
+  the backup module, CLAUDE.md); merge order docs -> stanza -> phase3 ->
+  restic -> ec-accounting; export and shelve tmppool after the owner says so.
+
+**Earlier state.**
 
 - 2026-10-18 11:00: /data is the bcachefs data subvolume (copy-back of
   19.4 TB, 1,000,497 files, verified identical to the tmppool copy by
@@ -752,3 +775,15 @@ Then:
   Overrides added on request: atticd store, Transmission Downloads and
   .incomplete, Frigate recordings and exports, and two cold /home
   directories.
+- 2026-10-19 19:31: **full scrub clean.** 32.5 h, 0 corrected, 0
+  uncorrectable; data blocks only (parity not scrubbed). The day before:
+  reconcile had been off for ~23 h because an interrupted command of mine
+  had already written `reconcile_enabled=0` (re-enabled 2026-10-18 15:20;
+  lesson: verify state after any interrupted remote command); node_exporter
+  had rejected the metrics textfile twice (mangled timestamp, then a "%"
+  where the SSD rows of the device table carry a trailing column; both
+  fixed on master); the probe now also exports the erasure-coded accounting
+  rows (`replicas="2+1"`), without which the degraded-data alert could not
+  see degraded stripes. Per-directory hdd overrides added on request:
+  atticd store, Transmission Downloads/.incomplete, Frigate
+  recordings/exports, /home/googlebot/{probably_delete,liza}.
