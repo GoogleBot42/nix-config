@@ -138,14 +138,15 @@
 
   # The hdd tier holds only cold data, so the three WD drives spin down after
   # 30 idle minutes. The leading "-i 0" leaves every disk not named alone:
-  # the NVMe pair and whatever hangs off USB. Drives are named by id because
-  # the sdX letters move between boots.
+  # the NVMe pair and whatever hangs off USB. Drives are given as full
+  # by-id paths: hd-idle resolves those to the kernel name, while a bare
+  # by-id name matches nothing and silently disables the drive.
   systemd.services.hd-idle = {
     description = "spin down the idle hdd-tier drives";
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       ExecStart = "${pkgs.hd-idle}/bin/hd-idle -i 0 -c ata"
-        + lib.concatMapStrings (serial: " -a ata-WDC_WD160EDGZ-11B2DA0_${serial} -i 1800")
+        + lib.concatMapStrings (serial: " -a /dev/disk/by-id/ata-WDC_WD160EDGZ-11B2DA0_${serial} -i 1800")
         [ "2BJJ97DN" "2PGSVB9T" "2BJ9K30N" ];
       Restart = "on-failure";
     };
