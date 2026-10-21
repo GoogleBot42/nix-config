@@ -93,7 +93,7 @@ in
           {
             name = "Roundcube";
             group = "kif";
-            url = "https://mail.neet.dev";
+            url = "https://webmail.neet.dev";
             interval = "5m";
             conditions = [
               "[STATUS] == 200"

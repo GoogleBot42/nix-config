@@ -4,6 +4,7 @@ with builtins;
 
 let
   cfg = config.mailserver;
+  webmailHostname = "webmail.neet.dev";
   autoconfigDomains = [
     "neet.dev"
     "runyan.org"
@@ -111,6 +112,11 @@ in
         "${config.mailserver.fqdn}" = {
           forceSSL = true;
           enableACME = true;
+          locations."/".return = "301 https://${webmailHostname}$request_uri";
+        };
+        ${webmailHostname} = {
+          tailscaleOnly = true;
+          useACMEHost = "neet.dev";
         };
       } // lib.genAttrs (map (domain: "autoconfig.${domain}") autoconfigDomains) (_: {
         forceSSL = true;
@@ -159,10 +165,10 @@ in
       agent@neet.dev internal_only
     '';
 
-    # webmail
+    # webmail is tailnet-only; the mail fqdn stays public for SMTP/IMAP and its cert
     services.roundcube = {
       enable = true;
-      hostName = config.mailserver.fqdn;
+      hostName = webmailHostname;
       extraConfig = ''
         # dovecot only exposes imaps (no plaintext 143 listener)
         $config['imap_host'] = "ssl://${config.mailserver.fqdn}:993";

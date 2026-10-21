@@ -34,6 +34,7 @@ let
     gitKif = "git.kif.neet.dev.";
     ircKif = "irc.kif.neet.dev.";
     statusKif = "status.kif.neet.dev.";
+    webmailKif = "webmail.kif.neet.dev.";
   };
 
   txt = {
@@ -178,6 +179,7 @@ in
     (mkCNAME "status" absoluteHosts.statusKif 300)
     (mkCNAME "tmp" absoluteHosts.kif 300)
     (mkCNAME "unlock.kif" absoluteHosts.kif 300)
+    (mkCNAME "webmail" absoluteHosts.webmailKif 300)
   ]);
 
   "neet.space" = zone [

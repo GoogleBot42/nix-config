@@ -261,9 +261,9 @@
           };
           roundcube = {
             title = "Roundcube";
-            description = "mail.neet.dev";
+            description = "webmail.neet.dev";
             icon = "hl-roundcube";
-            url = "https://mail.neet.dev";
+            url = "https://webmail.neet.dev";
             target = "sametab";
             statusCheck = false;
             id = "13_836_roundcube";
