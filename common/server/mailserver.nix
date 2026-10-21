@@ -4,7 +4,7 @@ with builtins;
 
 let
   cfg = config.mailserver;
-  webmailHostname = "webmail.neet.dev";
+  webmailHostname = "webmail.kif.neet.dev";
   autoconfigDomains = [
     "neet.dev"
     "runyan.org"
@@ -116,7 +116,7 @@ in
         };
         ${webmailHostname} = {
           tailscaleOnly = true;
-          useACMEHost = "neet.dev";
+          useACMEHost = "kif.neet.dev";
         };
       } // lib.genAttrs (map (domain: "autoconfig.${domain}") autoconfigDomains) (_: {
         forceSSL = true;

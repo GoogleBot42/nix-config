@@ -37,6 +37,15 @@ in
         config = lib.mkMerge [
           (lib.mkIf config.tailscaleOnly {
             listenAddresses = [ cfg.tailscaleListenAddress ];
+            # The kernel accepts packets for the tailnet address on any
+            # interface, so also require a tailnet (or local) peer address.
+            extraConfig = ''
+              allow 100.64.0.0/10;
+              allow fd7a:115c:a1e0::/48;
+              allow 127.0.0.0/8;
+              allow ::1;
+              deny all;
+            '';
           })
           (lib.mkIf (config.useACMEHost != null) {
             enableACME = false;
