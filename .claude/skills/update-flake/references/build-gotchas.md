@@ -93,7 +93,9 @@ while unpacking inputs, and the builds below take hours.
   ceph, which pins `python312`; hydra does not fully cache that interpreter's
   package set, so the whole `openai -> sqlframe -> narwhals -> ...` chain
   builds here and any upstream test flake in it fails the s0 build.
-- **zoidberg needs `--extra-platforms i686-linux`** (see above) for Steam.
+- **fry, howl and zoidberg need `--extra-platforms i686-linux`** (see above):
+  Steam's FHS env pulls in i686 `openresolv`, which our overlay patches, so
+  it is never in the upstream cache.
 
 ## Scoping Python test-skip overrides
 

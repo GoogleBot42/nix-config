@@ -80,6 +80,8 @@ in
     home-manager.users.googlebot.programs.firefox = {
       enable = true;
       package = firefox;
+      # Profiles live at the legacy path; switching needs a manual profile move.
+      configPath = ".mozilla/firefox";
     };
   };
 }

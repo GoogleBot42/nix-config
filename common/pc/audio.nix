@@ -5,9 +5,6 @@ let
 in
 {
   config = lib.mkIf cfg.enable {
-    # enable pulseaudio support for packages
-    nixpkgs.config.pulseaudio = true;
-
     # realtime audio
     security.rtkit.enable = true;
 

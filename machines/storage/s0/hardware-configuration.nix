@@ -1,4 +1,4 @@
-{ config, modulesPath, ... }:
+{ config, pkgs, modulesPath, ... }:
 
 {
   imports =
@@ -26,6 +26,18 @@
   # tools come from overlays/bcachefs-tools.nix.
   boot.supportedFilesystems = [ "zfs" "bcachefs" ];
   boot.zfs.forceImportRoot = false;
+  # The bcachefs module's Rust code uses the kernel crate's `warn_on!`, which
+  # include!()s generated files from the build tree that nixpkgs' kernel `dev`
+  # output does not keep.
+  boot.kernelPackages = pkgs.linuxPackagesFor (pkgs.linuxPackages.kernel.overrideAttrs (old: {
+    postInstall = ''
+      rustGenerated=$(mktemp -d)
+      cp -- "$buildRoot"/rust/kernel/generated_arch_*_asm.rs "$rustGenerated/"
+    '' + old.postInstall + ''
+      mkdir -p "$dev/lib/modules/${old.passthru.modDirVersion}/build/rust/kernel"
+      cp -- "$rustGenerated"/* "$dev/lib/modules/${old.passthru.modDirVersion}/build/rust/kernel/"
+    '';
+  }));
 
   # luks
   remoteLuksUnlock.enable = true;
