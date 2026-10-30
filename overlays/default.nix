@@ -122,6 +122,19 @@ final: prev:
     };
   });
 
+  # TEMPORARY: build open-webui against mcp 1. Its 0.12.x backend imports
+  # mcp.client.streamable_http.streamablehttp_client, which mcp 2 removed, and
+  # its posthog dependency is marked broken whenever mcp is 2.x, so nixpkgs'
+  # open-webui neither evaluates nor runs against the default mcp.
+  # Revert once nixpkgs' open-webui evaluates and starts with the default mcp
+  # (posthog unbroken: https://github.com/NixOS/nixpkgs/pull/578265, plus
+  # open-webui moved to mcp 2 or pinned to mcp_1 upstream).
+  open-webui = prev.open-webui.override {
+    python3Packages = prev.python3Packages.overrideScope (pyfinal: pyprev: {
+      mcp = pyfinal.mcp_1;
+    });
+  };
+
   pgs = prev.callPackage ../pkgs/pgs { };
 
   # Hindsight agent-memory server and web control plane, source-built by hindsight-nix.

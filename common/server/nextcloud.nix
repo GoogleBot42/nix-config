@@ -28,8 +28,6 @@ in
       package = pkgs.nextcloud34;
       hostName = nextcloudHostname;
       config.dbtype = "sqlite";
-      config.adminuser = "jeremy";
-      config.adminpassFile = "/run/agenix/nextcloud-pw";
 
       # Apps
       extraAppsEnable = true;
