@@ -25,7 +25,7 @@ in
 
     services.nextcloud = {
       https = true;
-      package = pkgs.nextcloud34;
+      package = pkgs.nextcloud35;
       hostName = nextcloudHostname;
       config.dbtype = "sqlite";
 
