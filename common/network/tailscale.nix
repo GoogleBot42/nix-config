@@ -16,6 +16,14 @@ in
 
   config.services.tailscale.enable = mkDefault (!config.boot.isContainer);
 
+  # nginx-auth admits every tag that tailscale/acl.hujson lets reach servers
+  # over HTTPS, except narrowly scoped tags such as tag:claude, which a
+  # virtual host must opt into.
+  config.services.nginx.tailscaleAuth = {
+    expectedTailnet = mkDefault cfg.tailnetDomain;
+    defaultAllowedTags = mkDefault [ "workstation" "server" "external" ];
+  };
+
   # Trust Tailscale interface - access control is handled by Tailscale ACLs.
   # Required because nftables (used by Incus) breaks Tailscale's automatic iptables rules.
   config.networking.firewall.trustedInterfaces = mkIf cfg.enable [ "tailscale0" ];

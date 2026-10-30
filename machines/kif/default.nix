@@ -32,6 +32,8 @@
   services.gitea = {
     enable = true;
     hostname = "git.neet.dev";
+    # Cloud Claude agents join the tailnet as tag:claude and act as this user.
+    tailscaleTagUsers.claude = "agent";
     settings = {
       "repository.upload".FILE_MAX_SIZE = 1024;
       attachment.MAX_SIZE = 1024;
@@ -62,6 +64,9 @@
 
   # Tailscale-only nginx virtual hosts bind to kif's stable tailnet address.
   services.nginx.tailscaleListenAddress = "100.89.83.99";
+  # Put every tailnet-only vhost behind nginx-auth so narrowly scoped tags
+  # (tag:claude) reach only the vhosts that admit them.
+  services.nginx.tailscaleAuth.enable = true;
 
   # IRC
   services.thelounge = {

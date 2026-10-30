@@ -85,6 +85,15 @@ final: prev:
     ];
   });
 
+  # Let nginx-auth admit tagged nodes by an allowlist sent in the
+  # Allowed-Tailscale-Tags header (every node in this tailnet is tagged), and
+  # strip the FQDN trailing dot so the Expected-Tailnet check can match.
+  tailscale-nginx-auth = prev.tailscale-nginx-auth.overrideAttrs (old: {
+    patches = (old.patches or [ ]) ++ [
+      ../patches/tailscale-nginx-auth-tags.patch
+    ];
+  });
+
   inherit (import ./bcachefs-tools.nix final prev) bcachefs-tools;
 
   # Plasma Bigscreen: TV-optimized KDE shell (not yet packaged in nixpkgs)

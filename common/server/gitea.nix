@@ -2,12 +2,26 @@
 
 let
   cfg = config.services.gitea;
+  vhostTailscaleAuth = config.services.nginx.virtualHosts.${cfg.hostname}.tailscaleAuth;
+  normalizeTag = tag: if lib.hasPrefix "tag:" tag then tag else "tag:${tag}";
 in
 {
   options.services.gitea = {
     hostname = lib.mkOption {
       type = lib.types.str;
       example = "example.com";
+    };
+
+    tailscaleTagUsers = lib.mkOption {
+      type = lib.types.attrsOf lib.types.str;
+      default = { };
+      example = { claude = "agent"; };
+      description = ''
+        Tailscale ACL tags mapped to the Gitea user that nodes carrying the
+        tag are signed in as, with no password or token. nginx-auth reports
+        the caller's tags and nginx passes the matching user to Gitea in the
+        reverse-proxy auth header. The users must already exist.
+      '';
     };
   };
   config = lib.mkIf cfg.enable {
@@ -18,6 +32,9 @@ in
       settings = {
         server = {
           ROOT_URL = "https://${cfg.hostname}/";
+          # Reverse-proxy auth trusts the user header from any client that can
+          # connect, so only nginx on this host may reach Gitea.
+          HTTP_ADDR = "127.0.0.1";
         };
         other = {
           SHOW_FOOTER_VERSION = false;
@@ -28,7 +45,11 @@ in
         service = {
           DISABLE_REGISTRATION = true;
           ENABLE_NOTIFY_MAIL = true;
+          ENABLE_REVERSE_PROXY_AUTHENTICATION = cfg.tailscaleTagUsers != { };
+          ENABLE_REVERSE_PROXY_AUTHENTICATION_API = cfg.tailscaleTagUsers != { };
+          ENABLE_REVERSE_PROXY_AUTO_REGISTRATION = false;
         };
+        security.REVERSE_PROXY_AUTHENTICATION_USER = "X-WEBAUTH-USER";
         session = {
           COOKIE_SECURE = true;
           PROVIDER = "db";
@@ -75,8 +96,30 @@ in
       enableACME = lib.mkDefault true;
       forceSSL = true;
       locations."/" = {
-        proxyPass = "http://localhost:${toString cfg.settings.server.HTTP_PORT}";
+        proxyPass = "http://127.0.0.1:${toString cfg.settings.server.HTTP_PORT}";
+        # Always set, so a client-supplied header never reaches Gitea; an
+        # empty value drops the header.
+        extraConfig = lib.mkIf (cfg.tailscaleTagUsers != { }) ''
+          proxy_set_header X-WEBAUTH-USER $gitea_tailscale_user;
+        '';
+      };
+      tailscaleAuth = lib.mkIf (cfg.tailscaleTagUsers != { }) {
+        enable = true;
+        allowedTags = lib.mkDefault (config.services.nginx.tailscaleAuth.defaultAllowedTags ++ lib.attrNames cfg.tailscaleTagUsers);
       };
     };
+    services.nginx.appendHttpConfig = lib.mkIf (cfg.tailscaleTagUsers != { }) ''
+      map $tailscale_auth_tags $gitea_tailscale_user {
+        default "";
+        ${lib.concatStrings (lib.mapAttrsToList (tag: user: ''
+          "~(^|,)${normalizeTag tag}(,|$)" "${user}";
+        '') cfg.tailscaleTagUsers)}
+      }
+    '';
+
+    assertions = [{
+      assertion = cfg.tailscaleTagUsers == { } || lib.all (tag: lib.elem (normalizeTag tag) (map normalizeTag vhostTailscaleAuth.allowedTags)) (lib.attrNames cfg.tailscaleTagUsers);
+      message = "services.gitea.tailscaleTagUsers tags must be in the ${cfg.hostname} vhost's tailscaleAuth.allowedTags.";
+    }];
   };
 }

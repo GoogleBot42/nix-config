@@ -1,0 +1,132 @@
+diff -ruN a/cmd/nginx-auth/nginx-auth.go b/cmd/nginx-auth/nginx-auth.go
+--- a/cmd/nginx-auth/nginx-auth.go	2026-10-29 21:33:39.978878190 -0600
++++ b/cmd/nginx-auth/nginx-auth.go	2026-10-29 21:36:51.381353407 -0600
+@@ -18,16 +18,47 @@
+ 	"net/netip"
+ 	"net/url"
+ 	"os"
++	"slices"
+ 	"strings"
+ 
+ 	"github.com/coreos/go-systemd/activation"
+ 	"tailscale.com/client/tailscale"
++	"tailscale.com/tailcfg"
+ )
+ 
+ var (
+ 	sockPath = flag.String("sockpath", "", "the filesystem path for the unix socket this service exposes")
+ )
+ 
++// parseTags splits a comma-separated tag list, dropping empty entries.
++func parseTags(raw string) []string {
++	var tags []string
++	for tag := range strings.SplitSeq(raw, ",") {
++		if tag = strings.TrimSpace(tag); tag != "" {
++			tags = append(tags, tag)
++		}
++	}
++	return tags
++}
++
++// authorizeNode reports why node may not connect, or "" if it may. With no
++// allowed tags only untagged nodes are accepted; otherwise the node must
++// carry at least one of allowedTags.
++func authorizeNode(node *tailcfg.Node, allowedTags []string) string {
++	if len(allowedTags) == 0 {
++		if node.IsTagged() {
++			return "node " + node.Hostinfo.Hostname() + " is tagged"
++		}
++		return ""
++	}
++	for _, tag := range node.Tags {
++		if slices.Contains(allowedTags, tag) {
++			return ""
++		}
++	}
++	return "node " + node.Hostinfo.Hostname() + " has tags [" + strings.Join(node.Tags, ",") + "], wanted one of [" + strings.Join(allowedTags, ",") + "]"
++}
++
+ func main() {
+ 	flag.Parse()
+ 
+@@ -56,9 +87,9 @@
+ 			return
+ 		}
+ 
+-		if info.Node.IsTagged() {
++		if reason := authorizeNode(info.Node, parseTags(r.Header.Get("Allowed-Tailscale-Tags"))); reason != "" {
+ 			w.WriteHeader(http.StatusForbidden)
+-			log.Printf("node %s is tagged", info.Node.Hostinfo.Hostname())
++			log.Print(reason)
+ 			return
+ 		}
+ 
+@@ -74,6 +105,7 @@
+ 				log.Printf("can't extract tailnet name from hostname %q", info.Node.Name)
+ 				return
+ 			}
++			tailnet = strings.TrimSuffix(tailnet, ".")
+ 			tailnet = strings.TrimSuffix(tailnet, ".beta.tailscale.net")
+ 		}
+ 
+@@ -89,6 +121,7 @@
+ 		h.Set("Tailscale-Name", info.UserProfile.DisplayName)
+ 		h.Set("Tailscale-Profile-Picture", info.UserProfile.ProfilePicURL)
+ 		h.Set("Tailscale-Tailnet", tailnet)
++		h.Set("Tailscale-Tags", strings.Join(info.Node.Tags, ","))
+ 		w.WriteHeader(http.StatusNoContent)
+ 	})
+ 
+diff -ruN a/cmd/nginx-auth/nginx-auth_test.go b/cmd/nginx-auth/nginx-auth_test.go
+--- a/cmd/nginx-auth/nginx-auth_test.go	1969-12-31 17:00:00.000000000 -0700
++++ b/cmd/nginx-auth/nginx-auth_test.go	2026-10-29 21:33:56.314021778 -0600
+@@ -0,0 +1,49 @@
++// Copyright (c) Tailscale Inc & contributors
++// SPDX-License-Identifier: BSD-3-Clause
++
++//go:build linux
++
++package main
++
++import (
++	"slices"
++	"testing"
++
++	"tailscale.com/tailcfg"
++)
++
++func TestParseTags(t *testing.T) {
++	got := parseTags(" tag:a, ,tag:b,")
++	if want := []string{"tag:a", "tag:b"}; !slices.Equal(got, want) {
++		t.Fatalf("parseTags = %v, want %v", got, want)
++	}
++	if got := parseTags(""); got != nil {
++		t.Fatalf("parseTags(\"\") = %v, want nil", got)
++	}
++}
++
++func TestAuthorizeNode(t *testing.T) {
++	tests := []struct {
++		name    string
++		tags    []string
++		allowed []string
++		ok      bool
++	}{
++		{"untagged, no allowlist", nil, nil, true},
++		{"tagged, no allowlist", []string{"tag:server"}, nil, false},
++		{"tag in allowlist", []string{"tag:server", "tag:workstation"}, []string{"tag:workstation"}, true},
++		{"tag not in allowlist", []string{"tag:claude"}, []string{"tag:server", "tag:workstation"}, false},
++		{"untagged, allowlist", nil, []string{"tag:server"}, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			node := &tailcfg.Node{
++				Hostinfo: (&tailcfg.Hostinfo{Hostname: "device"}).View(),
++				Tags:     tt.tags,
++			}
++			if reason := authorizeNode(node, tt.allowed); (reason == "") != tt.ok {
++				t.Fatalf("authorizeNode = %q, want ok=%v", reason, tt.ok)
++			}
++		})
++	}
++}

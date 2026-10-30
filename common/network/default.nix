@@ -6,10 +6,13 @@ let
   cfg = config.networking;
 in
 {
+  disabledModules = [ "services/web-servers/nginx/tailscale-auth.nix" ];
+
   imports = [
     ./pia-vpn
     ./tailscale.nix
     ./sandbox.nix
+    ./nginx-tailscale-auth.nix
   ];
 
   options.networking.ip_forward = mkEnableOption "Enable ip forwarding";

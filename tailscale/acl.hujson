@@ -26,12 +26,22 @@
 	// ├────────────────────┼─────────────┼──────────┼────────┼─────┤
 	// │ node_exporter      │ ✗           │ ✗        │ ✓      │ ✗   │
 	// └────────────────────┴─────────────┴──────────┴────────┴─────┘
+	//
+	// tag:claude (cloud Claude agents) reaches only HTTPS on kif, where
+	// nginx-auth admits it to git.neet.dev alone.
 
 	"tagOwners": {
 		"tag:workstation": ["mrunyan7@gmail.com"],
 		"tag:server":      ["mrunyan7@gmail.com"],
 		"tag:external":    ["mrunyan7@gmail.com"],
 		"tag:iot":         ["mrunyan7@gmail.com"],
+		"tag:claude":      ["mrunyan7@gmail.com"],
+	},
+
+	"hosts": {
+		"kif": "100.89.83.99",
+		"s0":  "100.112.73.53",
+		"fry": "100.117.73.96",
 	},
 
 	"grants": [
@@ -129,6 +139,14 @@
 			"src": ["tag:server"],
 			"dst": ["tag:server", "tag:workstation"],
 			"ip":  ["9100"],
+		},
+		// ===========================================
+		// CLAUDE (443 on kif only)
+		// ===========================================
+		{
+			"src": ["tag:claude"],
+			"dst": ["kif"],
+			"ip":  ["tcp:443"],
 		},
 		// ===========================================
 		// EXIT NODE
@@ -383,6 +401,17 @@
 		{
 			"src":  "tag:iot",
 			"deny": ["tag:server:9100", "tag:workstation:9100"],
+		},
+		// ===========================================
+		// CLAUDE TESTS
+		// ===========================================
+		{
+			"src":    "tag:claude",
+			"accept": ["kif:443"],
+		},
+		{
+			"src":  "tag:claude",
+			"deny": ["kif:22", "kif:80", "kif:2222", "kif:3000", "kif:28338", "s0:443", "fry:22", "fry:443"],
 		},
 		// ===========================================
 		// DATABASE TESTS (always denied)
