@@ -90,12 +90,26 @@ let
     })
   ];
 
+
+  # Pooled filesystems (bcachefs): one series per filesystem, keyed by the
+  # device set, on free bytes rather than a percentage.
+  mkPooledRule = { uid, severity, freeBytes }: mkExprRule {
+    inherit uid severity;
+    title = "bcachefs filesystem below ${toString (freeBytes / 1024 / 1024 / 1024)} GiB free";
+    for = "30m";
+    expr = ''min by(instance, device) (node_filesystem_avail_bytes{fstype="bcachefs"}) < ${toString freeBytes}'';
+    summary = ''{{ .instance }} bcachefs pool has {{ printf "%.0f" (.A.Value) }} bytes free'';
+  };
+
   # Filesystem usage in percent, per host and mountpoint, filtered to the
   # series above `threshold`; `hosts` (null = every host) narrows it by instance.
   mkDiskRule = { uid, severity, threshold, hosts }:
     let
       # /nix/store is a bind mount of / on every host, so it would alert twice.
-      usage = ''100 * (1 - node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|ramfs", mountpoint!="/nix/store"} / node_filesystem_size_bytes)'';
+      # bcachefs is left out: every subvolume mount reports the whole pool, and
+      # a percentage of a pool that is mostly parity-protected bulk storage says
+      # little; mkPooledRule below alerts on free bytes per filesystem instead.
+      usage = ''100 * (1 - node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs|ramfs|bcachefs", mountpoint!="/nix/store"} / node_filesystem_size_bytes)'';
       hostFilter = lib.optionalString (hosts != null)
         " and on(instance) up{job=\"node\", instance=~\"${lib.concatStringsSep "|" hosts}\"}";
     in
@@ -167,6 +181,16 @@ in
         default = [ ];
         example = [ "kif" "s0" ];
         description = "Hosts (instance labels) that also get the early-warning alert.";
+      };
+      pooledWarningFreeBytes = lib.mkOption {
+        type = lib.types.ints.positive;
+        default = 2 * 1024 * 1024 * 1024 * 1024;
+        description = "Free bytes below which a pooled filesystem (bcachefs) raises a warning; one series per filesystem, not per mountpoint.";
+      };
+      pooledCriticalFreeBytes = lib.mkOption {
+        type = lib.types.ints.positive;
+        default = 512 * 1024 * 1024 * 1024;
+        description = "Free bytes below which a pooled filesystem (bcachefs) raises a critical alert.";
       };
     };
   };
@@ -297,7 +321,10 @@ in
                   severity = "warning";
                   threshold = diskCfg.warning;
                   hosts = diskCfg.warningHosts;
-                }) ++ bcachefsRules;
+                }) ++ [
+                  (mkPooledRule { uid = "pooled-disk-warning"; severity = "warning"; freeBytes = diskCfg.pooledWarningFreeBytes; })
+                  (mkPooledRule { uid = "pooled-disk-critical"; severity = "critical"; freeBytes = diskCfg.pooledCriticalFreeBytes; })
+                ] ++ bcachefsRules;
               }];
             };
           };
