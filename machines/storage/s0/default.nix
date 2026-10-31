@@ -178,9 +178,10 @@
   };
   # DynamicUser: /var/lib/vikunja is a symlink, which restic stores as a
   # symlink. Back up the target.
-  backup.group."vikunja".paths = [
-    "/var/lib/private/vikunja"
-  ];
+  backup.group."vikunja" = {
+    paths = [ "/var/lib/private/vikunja" ];
+    sqlite = [ "/var/lib/private/vikunja/vikunja.db" ];
+  };
 
   services.actual.enable = true;
 
@@ -228,6 +229,7 @@
   backup.group."memos" = {
     paths = [ config.services.memos.dataDir ];
     exclude = [ ".thumbnail_cache" ];
+    sqlite = [ "${config.services.memos.dataDir}/memos_prod.db" ];
   };
 
   services.outline = {

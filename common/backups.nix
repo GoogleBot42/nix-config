@@ -72,7 +72,7 @@ let
     }
   '';
 
-  mkBackup = group: paths: excludes: {
+  mkBackup = group: paths: excludes: sqliteDbs: {
     repository = mkRespository group;
 
     dynamicFilesFrom = "cat /run/restic-backup-${group}/paths";
@@ -86,6 +86,17 @@ let
       for path in ${lib.escapeShellArgs paths}; do
         snapshot_for_path ${lib.escapeShellArg group} "$path" create >> /run/restic-backup-${group}/paths
       done
+
+      # Consistent copies of the SQLite databases named for this group: the
+      # live file can be mid-write when restic reads it, and bcachefs
+      # snapshots are deliberately not used here (see the s0 runbook).
+      ${lib.optionalString (sqliteDbs != [ ]) ''
+        mkdir -p /run/restic-backup-${group}/sqlite
+        for db in ${lib.escapeShellArgs sqliteDbs}; do
+          ${pkgs.sqlite}/bin/sqlite3 "$db" ".backup '/run/restic-backup-${group}/sqlite/$(basename "$db")'"
+        done
+        echo /run/restic-backup-${group}/sqlite >> /run/restic-backup-${group}/paths
+      ''}
     '';
 
     backupCleanupCommand = ''
@@ -154,6 +165,15 @@ in
               anywhere under the paths (caches, logs, media covers).
             '';
           };
+          sqlite = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+            description = ''
+              SQLite database files under the paths. A consistent copy of each
+              is made with sqlite3 .backup right before the run and backed up
+              under sqlite/ next to the live tree.
+            '';
+          };
         };
       }));
     };
@@ -169,7 +189,7 @@ in
 
     services.restic.backups = lib.concatMapAttrs
       (group: groupCfg: {
-        ${group} = mkBackup group groupCfg.paths groupCfg.exclude;
+        ${group} = mkBackup group groupCfg.paths groupCfg.exclude groupCfg.sqlite;
       })
       cfg.group;
 

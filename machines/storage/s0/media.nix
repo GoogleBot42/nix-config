@@ -224,6 +224,13 @@ in
       "/var/lib/private/prowlarr"
     ];
     exclude = [ "MediaCover" "logs" "log" "Sentry" "asp" "cache" ".cache" ];
+    sqlite = [
+      "/var/lib/sonarr/.config/NzbDrone/sonarr.db"
+      "/var/lib/radarr/.config/Radarr/radarr.db"
+      "/var/lib/lidarr/.config/Lidarr/lidarr.db"
+      "/var/lib/bazarr/db/bazarr.db"
+      "/var/lib/private/prowlarr/prowlarr.db"
+    ];
   };
 
   services.jellyfin.enable = true;
