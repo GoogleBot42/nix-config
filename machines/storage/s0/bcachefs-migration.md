@@ -4,7 +4,36 @@
 
 Read this first. Everything below it is the full plan, decisions and history.
 
-**Where things stand: Phase 4 steps 1-3 done and the full scrub is clean; s0 runs entirely on bcachefs.**
+**Where things stand: migration complete except cleanup; degraded-boot test passed; reconcile pacing understood.**
+
+- 2026-10-31: degraded-boot test done. Pulling one NVMe AND one HDD at once
+  made the filesystem refuse to start (`insufficient devices online (0)
+  for replicas entry user: 1/2 [1 3]`): data moving between tiers is
+  replicated across tiers while it moves, so the tiers are not independent
+  failure domains. **Pull one drive at a time.** With one HDD out: boot
+  (10-min device wait), /data readable, services up, health check paged
+  "11G with fewer replicas"; with all five back: clean rejoin, nothing
+  degraded. The "member missing" alert had not fired because a missing
+  member keeps its sysfs entry (fixed: count `dev-*/block`).
+- The 16 GB that sat "pending" for ten days was static Movies data from
+  the copy-back option gap; reconcile had it queued but was paced out on
+  its IO clock (`reconcile_status`: "io wait remaining"), which an idle
+  server never advances. Writing the sysfs triggers cleared it in four
+  minutes; `common/bcachefs-reconcile-kick.nix` now writes them at boot
+  and hourly, and Grafana alerts when pending work does not drain for
+  six hours or the SSD tier passes 90%.
+- Running generation 489 = this combined branch minus the last three
+  commits (SQLite backup copies, the two alerts, this handoff). Branch
+  `s0/bcachefs-migration` is the single PR to merge; after it master
+  equals what s0 runs. master itself currently fails to build s0 on fry
+  (ceph from the latest input bump), unrelated to this work.
+- Remaining: final cleanup generation (throwaway LUKS key off the five
+  containers and three stones, temporary root key off s0 and fry,
+  CLAUDE.md notes), then export and shelve tmppool on the owner's word.
+  The stones are not attached at the moment; verify their two key slots
+  with `cryptsetup luksDump` when they are.
+
+**Earlier state.**
 
 - 2026-10-19 19:31: `bcachefs scrub /` finished after 32.5 h with 0 corrected
   and 0 uncorrectable blocks on all five members (the HDD rows read "66%
@@ -432,6 +461,28 @@ root is bcachefs; the LUKS and network parts stay.
 - **hd-idle takes full by-id paths.** `-a ata-WDC_...` matches nothing and
   leaves every drive at idle 0 (never); `-a /dev/disk/by-id/ata-WDC_...`
   resolves to the kernel name. `hd-idle -d` shows which happened.
+- **The tiers are one pool for redundancy.** Replicas only promise two
+  copies on two different devices; targets say where copies should go.
+  An extent moving from the SSD tier to the HDD tier has one copy on each
+  while it moves, and when the foreground target is full the allocator
+  spills to any device with space rather than fail the write. So losing
+  one NVMe and one HDD at the same time can lose data even though either
+  alone is fine. Degraded tests: one drive at a time.
+- **Reconcile paces itself on foreground IO.** Between batches it waits
+  for a set amount of foreground IO (`reconcile_status`: "io wait
+  remaining", in bytes), not for time. On an idle server that wait lasts
+  days and queued work sits there across reboots. The sysfs triggers
+  `internal/trigger_reconcile_pending_wakeup` and
+  `internal/trigger_reconcile_wakeup` bypass the wait; the reconcile-kick
+  unit writes them at boot and hourly. `bcachefs reconcile status` shows
+  the queue; the debugfs btrees `reconcile_pending/keys` and
+  `reconcile_work/keys` hold it (btrees are directories: `<name>/keys`).
+- **Finding misplaced extents.** `btrees/extents/keys` in debugfs lists
+  every extent as a key line followed by one `ptr: dm-X devidx:bucket:off`
+  line per copy (dm-X changes per boot, devidx is stable) and
+  `stripe_ptr:` for erasure-coded copies; `machines/storage/s0/cutover/
+  mixed-scan.awk` reports the non-striped extents with copies on both
+  tiers. Seven minutes for 28 TB, metadata reads only.
 - **ZFS auto-mount over bcachefs.** The old OS datasets (`rpool/nixos/root`,
   `var/lib`, `var/log`, `home`, `var/lib/atticd`) keep `canmount=on` and
   their `mountpoint` properties so the USB-stick rollback generation still
@@ -851,3 +902,15 @@ Then:
   generation 487: the probe fixes for the device table, the erasure-coded
   accounting and the superblock reads, and the no-page rule for
   extent_io_opts_not_set.
+- 2026-10-31: **degraded-boot test and the reconcile stall.** Two drives
+  from different tiers pulled together: filesystem refused to start
+  (user data replicated across tiers while in transit); one HDD alone:
+  pass; all back: clean rejoin. The ten-day "pending 16 GB" was the
+  copy-back option-gap data, queued for striping but paced out on
+  reconcile's IO clock; the sysfs wakeup triggers cleared it in four
+  minutes and a post-wakeup scan found 17 in-flight extents, 0 GiB.
+  Added: member-presence fix for the probe, reconcile-kick unit (boot +
+  hourly), Grafana rules for stuck reconcile work and a full SSD tier,
+  SQLite `.backup` copies in the backup module for memos, vikunja and the
+  servarr databases (instead of bcachefs snapshots, by decision), and
+  this runbook. All branches combined into `s0/bcachefs-migration`.
