@@ -63,7 +63,8 @@ let
   };
 
   # bcachefs (common/bcachefs-metrics.nix): fewer replicas than configured,
-  # a member missing or not read-write, or I/O errors in the last hour.
+  # a member missing or not read-write, I/O errors in the last hour,
+  # reconcile work that does not drain, or an SSD tier about to spill.
   bcachefsRules = [
     (mkExprRule {
       uid = "bcachefs-degraded";
@@ -87,6 +88,22 @@ let
       for = "1m";
       expr = ''sum by(instance, fs, label) (increase(bcachefs_device_io_errors_total[1h])) > 0'';
       summary = ''{{ .instance }} device {{ .label }} logged {{ printf "%.0f" .A.Value }} bcachefs I/O errors in the last hour'';
+    })
+    (mkExprRule {
+      uid = "bcachefs-reconcile-stuck";
+      title = "bcachefs reconcile work pending for hours";
+      severity = "warning";
+      for = "6h";
+      expr = ''max by(instance, fs) (bcachefs_reconcile_pending_bytes{kind="pending"}) > 0'';
+      summary = ''{{ .instance }} fs {{ .fs }} has had {{ printf "%.0f" .A.Value }} bytes of reconcile work pending for six hours: the mover is paced out or asleep, and the hourly reconcile kick did not clear it'';
+    })
+    (mkExprRule {
+      uid = "bcachefs-ssd-tier-full";
+      title = "bcachefs SSD tier above 90% used";
+      severity = "warning";
+      for = "30m";
+      expr = ''max by(instance, fs, label) (bcachefs_device_used_bytes{label=~"ssd.*"} / bcachefs_device_size_bytes) > 0.9'';
+      summary = ''{{ .instance }} {{ .label }} is above 90% used: foreground writes for the SSD tier will spill onto other members'';
     })
   ];
 

@@ -100,6 +100,17 @@ let
           /\(device [0-9]+\):/ { lab=$1; printf "bcachefs_device_size_bytes{%s,label=\"%s\"} %s\nbcachefs_device_used_bytes{%s,label=\"%s\"} %s\n", l, lab, $6, l, lab, $7 }
         '
       fi
+      # Reconcile's queued work by kind. "pending" that never shrinks means
+      # the mover is paced out on its IO clock or asleep (s0, 2026-10-31:
+      # 16 GB sat for ten days); the reconcile-kick timer is the remedy and
+      # the alert on this series is the check that it worked.
+      if [ -n "$mp" ]; then
+        bcachefs reconcile status "$mp" 2>/dev/null \
+          | awk '/^  (erasure_code|target|pending|replicas):/ { sub(/:/, "", $1); print $1, $2 }' \
+          | while read -r kind amount; do
+              m "bcachefs_reconcile_pending_bytes{$L,kind=\"$kind\"} $(hr2bytes "$amount")"
+            done
+      fi
       m "bcachefs_metrics_timestamp_seconds{} $(date +%s)"
     done
   '';
