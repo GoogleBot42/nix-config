@@ -42,7 +42,9 @@ let
       # a missing member keeps its entries. `bcachefs show-super` would give
       # the count too, but it reads the superblock of every member from the
       # raw device, which keeps spun-down HDDs awake at this probe's cadence.
-      present=$(ls -d "$fs"dev-*/ 2>/dev/null | wc -l)
+      # A missing member keeps its dev-N directory; only a present one has the
+      # block symlink.
+      present=$(ls -d "$fs"dev-*/block 2>/dev/null | wc -l)
       members=$(grep -o '\[[0-9 ]*\]' "$fs/internal/replicas" 2>/dev/null | tr -d '[]' | tr ' ' '\n' | grep . | sort -u | wc -l)
       [ "''${members:-0}" -ge "$present" ] || members=$present
       m "bcachefs_fs_members{$L} ''${members:-$present}"
