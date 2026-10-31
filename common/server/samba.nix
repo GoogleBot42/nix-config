@@ -4,7 +4,13 @@
   config = lib.mkIf config.services.samba.enable {
     services.samba = {
       openFirewall = true;
-      package = pkgs.sambaFull; # printer sharing
+      # sambaFull for printer sharing, without the CephFS and GlusterFS VFS
+      # modules: nothing here uses them, and ceph (pulled in by the default)
+      # does not build on the deploy host.
+      package = pkgs.sambaFull.override {
+        enableCephFS = false;
+        enableGlusterFS = false;
+      };
 
       # should this be on?
       nsswins = true;
