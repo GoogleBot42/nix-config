@@ -9,6 +9,7 @@
     ./ntfy
     ./node-exporter.nix
     ./bcachefs-metrics.nix
+    ./bcachefs-reconcile-kick.nix
     ./shell.nix
     ./network
     ./boot
