@@ -89,10 +89,9 @@ while unpacking inputs, and the builds below take hours.
   this workspace. fry, howl and zoidberg all share the one derivation, so
   whichever is built first absorbs the cost and the rest finish in minutes;
   a later machine sitting on the first one's lock is not a hang.
-- **s0 compiles Ceph and its Python 3.12 closure.** `sambaFull` pulls in
-  ceph, which pins `python312`; hydra does not fully cache that interpreter's
-  package set, so the whole `openai -> sqlframe -> narwhals -> ...` chain
-  builds here and any upstream test flake in it fails the s0 build.
+- **s0's Samba is built without CephFS** (`common/server/samba.nix`). The
+  default `sambaFull` pulls in ceph, which builds from source here along with
+  its uncached `python312` closure and fails often; keep `enableCephFS = false`.
 - **fry, howl and zoidberg need `--extra-platforms i686-linux`** (see above):
   Steam's FHS env pulls in i686 `openresolv`, which our overlay patches, so
   it is never in the upstream cache.
