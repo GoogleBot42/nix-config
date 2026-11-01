@@ -18,6 +18,13 @@ in
   };
 
   config = lib.mkIf config.services.tailscale.enable {
+    # The module's ProtectHome=yes replaces /home with systemd's inaccessible
+    # tmpfs inside the exporter's mount namespace, so every host's /home
+    # filesystem series carried that tmpfs's 32 GB instead of the real numbers
+    # (and on s0 the bcachefs pool alerts saw a 31 GiB "pool"). Read-only keeps
+    # the sandbox and shows the real filesystem.
+    systemd.services.prometheus-node-exporter.serviceConfig.ProtectHome = lib.mkForce "read-only";
+
     services.prometheus.exporters.node = {
       enable = lib.mkDefault true;
       enabledCollectors = [ "systemd" ];
