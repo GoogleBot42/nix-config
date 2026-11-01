@@ -84,6 +84,16 @@ final: prev:
     doInstallCheck = false;
   });
 
+  # 32-bit bpftool is built without large-file support, so its stat() fails
+  # with EOVERFLOW on filesystems with 64-bit inode numbers (bcachefs on the
+  # CI builder). The i686 NetworkManager in Steam's closure runs it at build
+  # time to generate its CLAT BPF skeleton.
+  bpftools = prev.bpftools.overrideAttrs (old: prev.lib.optionalAttrs prev.stdenv.hostPlatform.is32bit {
+    env = (old.env or { }) // {
+      NIX_CFLAGS_COMPILE = toString [ (old.env.NIX_CFLAGS_COMPILE or "") "-D_FILE_OFFSET_BITS=64" ];
+    };
+  });
+
   # Ignore stale Avahi pidfiles when resolvconf refreshes static DNS at boot.
   openresolv = prev.openresolv.overrideAttrs (old: {
     patches = (old.patches or [ ]) ++ [
