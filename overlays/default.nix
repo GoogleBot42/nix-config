@@ -28,14 +28,15 @@ final: prev:
     doCheck = false;
   };
 
-  # Vikunja's frontend suite imports the full app in a beforeEach hook. On
-  # loaded builders that can exceed Vitest's 10-second default even though the
-  # tests themselves pass, so retain the suite with a less brittle hook limit.
+  # Vikunja's frontend suite imports the full app, in beforeEach hooks and in
+  # some tests themselves. On loaded builders that can exceed Vitest's hook and
+  # 5-second per-test defaults even though the tests pass, so retain the suite
+  # with less brittle limits.
   vikunja = prev.vikunja.overrideAttrs (old: {
     frontend = old.frontend.overrideAttrs {
       checkPhase = ''
         runHook preCheck
-        pnpm run test:unit --run --hookTimeout=60000
+        pnpm run test:unit --run --hookTimeout=60000 --testTimeout=60000
         runHook postCheck
       '';
     };
