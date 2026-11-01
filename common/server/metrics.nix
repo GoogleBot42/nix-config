@@ -109,12 +109,13 @@ let
 
 
   # Pooled filesystems (bcachefs): one series per filesystem, keyed by the
-  # device set, on free bytes rather than a percentage.
+  # device set. Use the mount view with the most available bytes so a quota-
+  # limited subvolume does not make the whole pool appear full.
   mkPooledRule = { uid, severity, freeBytes }: mkExprRule {
     inherit uid severity;
     title = "bcachefs filesystem below ${toString (freeBytes / 1024 / 1024 / 1024)} GiB free";
     for = "30m";
-    expr = ''min by(instance, device) (node_filesystem_avail_bytes{fstype="bcachefs"}) < ${toString freeBytes}'';
+    expr = ''max by(instance, device) (node_filesystem_avail_bytes{fstype="bcachefs"}) < ${toString freeBytes}'';
     summary = ''{{ .instance }} bcachefs pool has {{ printf "%.0f" (.A.Value) }} bytes free'';
   };
 
