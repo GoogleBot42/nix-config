@@ -48,6 +48,28 @@ that looks environmental rather than a real breakage (aarch64 machines,
 i686 leaf derivations), see [references/build-gotchas.md](references/build-gotchas.md)
 before assuming the update itself is at fault.
 
-### 4. Summary
+### 4. Run CI's Checks on the CI Builder
+
+Local builds are not enough: CI (`.gitea/scripts/build-and-cache.sh`) also
+runs `nix flake check --all-systems` and builds the `workspace-guests` check,
+and it builds through s0's nix-daemon, whose bcachefs build directory and
+load expose failures fry never sees (32-bit EOVERFLOW on 64-bit inodes,
+timing-sensitive test suites). Before reporting done, copy the flake to s0
+and run the script's check and build steps there, detached so an SSH drop
+cannot kill them:
+
+```bash
+nix flake archive --to ssh-ng://s0 .
+src=$(nix flake metadata --json . | nix run nixpkgs#jq -- -r .path)
+# on s0 (login shell is fish; write the script locally and scp it):
+#   nix flake check --all-systems --print-build-logs "path:$src"
+#   nix build --no-link "path:$src#checks.x86_64-linux.workspace-guests" \
+#     "path:$src#nixosConfigurations.<each host>.config.system.build.toplevel"
+```
+
+`nix build --store ssh-ng://s0` is not a substitute: its connection drops
+during long evaluations with `failed to start SSH connection`.
+
+### 5. Summary
 
 Report: inputs updated, fixes applied, nextcloud changes, and anything needing user attention.
