@@ -1,12 +1,16 @@
 # Build settings for the directly flashable Mono Gateway image.
 #
 # This uses NixOS's generic SD/eMMC image builder rather than the Raspberry Pi
-# aarch64 image module so we do not accidentally ship Pi firmware. The Mono
-# Gateway DK is expected to boot via its board firmware/U-Boot in NOR and load
-# the extlinux stanza from the root filesystem. If field testing shows that the
-# board instead requires an eMMC-resident vendor U-Boot image, add that package
-# here and write it from sdImage.postBuildCommands at the vendor-documented
-# offset.
+# aarch64 image module so we do not accidentally ship Pi firmware. The board's
+# NOR U-Boot boots the extlinux stanza from the root filesystem; nothing in
+# this image is firmware.
+#
+# eMMC layout the board firmware expects: bytes 0-4 KiB hold the partition
+# table, 4 KiB-32 MiB hold the eMMC copy of the firmware (PBL, FIP, U-Boot
+# env, FMan microcode, recovery kernel), so no partition may start below
+# 32 MiB and the image must never be written over that region. The 32 MiB
+# gap below keeps the image's own bytes out of it; README.md has the dd
+# invocation that skips it.
 { config, ... }:
 
 {
@@ -15,12 +19,13 @@
   sdImage = {
     rootVolumeLabel = "NIXOS_ROOT";
     expandOnBoot = true;
+    # Raw image: it is written with dd straight from the recovery shell.
+    compressImage = false;
 
-    # Keep enough room before the first partition for board firmware/U-Boot
-    # layouts that reserve raw sectors. The current image relies on the Mono
-    # Gateway DK's existing NOR U-Boot to load /boot/extlinux from the rootfs;
-    # no Raspberry Pi firmware files belong on this board.
-    firmwarePartitionOffset = 16;
+    # The builder always makes partition 1 a FAT "firmware" partition. It is
+    # unused on this board (U-Boot is told to read partition 2, the root
+    # filesystem, see README.md) and kept minimal.
+    firmwarePartitionOffset = 32;
     firmwareSize = 16;
     populateFirmwareCommands = "";
 

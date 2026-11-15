@@ -8,13 +8,14 @@ cross-checked against the OpenWrt APU2 backup from 2026-07-21.
 
 | Role | Interface | Network | Address on router | DHCP pool | Notes |
 | --- | --- | --- | --- | --- | --- |
-| WAN | `eth0` | ISP/uplink | DHCP/RA from provider | n/a | One SFP+ port. Interface names must be confirmed on the serial console before cutover. |
-| Main LAN | `br-main` | `192.168.1.1/21` | `192.168.1.1` | `192.168.1.100`-`192.168.1.249` | Native/untagged on the three RJ-45 access ports and VLAN 5 on the SFP+ trunk. IPv6 via delegated prefix + SLAAC. |
+| WAN | `wan` | ISP/uplink | DHCP/RA from provider | n/a | One SFP+ port. Interface names must be confirmed on the serial console before cutover. |
+| Main LAN | `br-main` | `192.168.1.1/21` | `192.168.1.1` | `192.168.0.100`-`192.168.0.249` | Native/untagged on the three RJ-45 access ports and VLAN 5 on the SFP+ trunk. IPv4-only until `mainLanIpv6` is switched on. |
 | IoT | `vlan-iot` | `192.168.8.1/22` | `192.168.8.1` | `192.168.8.100`-`192.168.8.249` | VLAN 2 on the SFP+ trunk. IPv4-only. |
 | Management | `vlan-management` | `192.168.13.1/24` | `192.168.13.1` | `192.168.13.100`-`192.168.13.249` | VLAN 4 on the SFP+ trunk. IPv4-only. |
 
-`eth1` is the tagged LAN trunk. `eth2`, `eth3`, and `eth4` are provisional
-untagged main-LAN access ports.
+`trunk` is the tagged LAN trunk; `lan1`, `lan2` and `lan3` are the untagged
+main-LAN access ports. Each name is pinned to a physical port by MAC in
+`networking.nix`; the kernel `eth*` names are only a bench-time fallback.
 
 ## Router-local access
 
@@ -26,6 +27,10 @@ Allowed to the router:
 - `tailscale0` — backup admin path; access control is handled by Tailscale ACLs.
   (The stock NixOS firewall and its `trustedInterfaces` handling are disabled
   on this machine, so this is granted explicitly.)
+- On the bench only (`bench = true` in `networking.nix`): SSH from the live
+  LAN `192.168.0.0/21` arriving on WAN, because that is the only path to the
+  router while it sits behind the old gateway. An assertion keeps this rule
+  out of the live build.
 - Traffic arriving from the local LAN interfaces (`br-main`, `vlan-iot`, and
   `vlan-management`) after the explicit DNS rejects below. This permits DHCP,
   SSH/admin access, and local diagnostics from those networks.
@@ -77,14 +82,14 @@ needed.
 ## IPv6
 
 The WAN interface runs a DHCPv6 client (solicited even without RA M/O flags,
-like OpenWrt's `wan6`) and requests a delegated prefix. `br-main` takes a
-subnet from the delegation and announces it via router advertisements; main-LAN
-clients autoconfigure with SLAAC and are pointed at the router's link-local
-address (dnsmasq) for DNS. There is no IPv6 NAT — the delegated prefix is
-routed, and the default-deny forward chain provides the same exposure policy
-as IPv4. IoT and management have IPv6 disabled entirely (no link-local, no
-RA): they have no WAN egress, so global addresses would only widen their local
-attack surface.
+like OpenWrt's `wan6`) and requests a delegated prefix, so the router itself
+has global IPv6 connectivity. Announcing the delegated prefix on `br-main`
+(SLAAC, dnsmasq as RDNSS, routed rather than NATed, same default-deny forward
+policy) is implemented behind `mainLanIpv6` in `networking.nix` and kept off
+for the gateway swap; the OpenWrt router never announced a prefix either. IoT
+and management have IPv6 disabled entirely (no link-local, no RA): they have
+no WAN egress, so global addresses would only widen their local attack
+surface.
 
 ## NAT
 
