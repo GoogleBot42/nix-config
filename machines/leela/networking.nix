@@ -26,16 +26,17 @@ let
     lan3 = { mac = "e8:f6:d7:00:11:18"; fallback = "eth4"; }; # RJ-45 #3 (ethernet0): untagged main LAN
   };
 
-  # Bench cabling: the live LAN reaches leela through a switch port that
-  # carries the main LAN as VLAN 5 tagged, plugged into one of the RJ-45
-  # sockets. On the bench that socket takes the WAN role, with DHCP on its
-  # VLAN sub-interface, and the SFP+ cage that is WAN when live takes the
-  # socket's LAN role so no MAC is claimed twice. null = cabled as live
-  # (untagged WAN on SFP+ 1).
-  benchWan = { port = "lan2"; vlan = 5; };
+  # Bench cabling: which socket carries the live LAN into leela (by live
+  # role; "wan" is SFP+ 1 itself, "lan2" the right-hand RJ-45) and whether
+  # that switch port delivers the main LAN tagged (VLAN id) or untagged
+  # (null). On the bench that socket takes the WAN role and the cage that is
+  # WAN when live takes its LAN role, so no MAC is claimed twice. Only one
+  # cable may ever run between leela and the live LAN, and only into the
+  # bench WAN socket: every other port is a LAN port with a DHCP server.
+  benchWan = { port = "wan"; vlan = null; };
 
   ports =
-    if bench && benchWan != null then
+    if bench && benchWan.port != "wan" then
       livePorts // {
         wan = livePorts.${benchWan.port};
         ${benchWan.port} = livePorts.wan;
@@ -46,7 +47,7 @@ let
   # Physical WAN port, and the interface that carries the WAN address (a VLAN
   # sub-interface on the bench, the port itself when live).
   wanPort = portName "wan";
-  wanVlanId = if bench && benchWan != null then benchWan.vlan else null;
+  wanVlanId = if bench then benchWan.vlan else null;
   wan = if wanVlanId != null then "${wanPort}.${toString wanVlanId}" else wanPort;
   lanTrunk = portName "trunk";
   mainAccessIfs = map portName [ "lan1" "lan2" "lan3" ];
@@ -55,6 +56,9 @@ let
   # ISP's DHCP lease and public IP (the cable modem binds to the CPE MAC, so a
   # new MAC would need a modem reboot and would change the address); the LAN
   # MAC keeps every client's ARP entry for 192.168.1.1 valid across the swap.
+  # The LAN MAC is only taken by the live build: on the bench a LAN port that
+  # touches the live LAN by mistake would otherwise capture every client's
+  # traffic for the real gateway.
   wanMac = "00:0d:b9:5e:94:ec";
   lanMac = "00:0d:b9:5e:94:ed";
 
@@ -175,8 +179,7 @@ in
       "10-${mainIf}".netdevConfig = {
         Kind = "bridge";
         Name = mainIf;
-        MACAddress = lanMac;
-      };
+      } // lib.optionalAttrs (!bench) { MACAddress = lanMac; };
 
       "20-vlan-main-trunk" = {
         netdevConfig = {
