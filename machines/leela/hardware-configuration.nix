@@ -58,6 +58,14 @@ in
     "usb_storage"
   ];
 
+  # The three 1G ports sit behind MaxLinear GPY115 PHYs on SGMII. The PHY is
+  # attached when networkd brings the port up, and whichever PHY driver is
+  # loaded at that moment wins: with only the generic driver the PHY reports
+  # link but never passes a frame upstream. udev does not autoload mxl-gpy
+  # for these devices, so load it before networkd runs.
+  boot.initrd.kernelModules = [ "mxl_gpy" ];
+  boot.kernelModules = [ "mxl_gpy" ];
+
   boot.kernelParams = [
     "console=ttyS0,115200n8"
     "earlycon=uart8250,mmio,0x21c0500"
