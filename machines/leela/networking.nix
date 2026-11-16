@@ -13,16 +13,17 @@ let
   #
   # Mainline dpaa names the ports eth0..eth4 in probe order; nothing guarantees
   # which physical port gets which name. Each role is therefore pinned to the
-  # port's permanent MAC (U-Boot: printenv ethaddr eth1addr eth2addr eth3addr
-  # eth4addr; or `ip link` on the first boot) with a .link rename, so a probe
-  # reorder can never swap WAN and LAN. A null MAC leaves the kernel name in
-  # place, which is only acceptable on the bench, never for the live gateway.
+  # port's permanent MAC with a .link rename, so a probe reorder can never
+  # swap WAN and LAN. The MACs are the board's EEPROM set as U-Boot presents
+  # them (ethaddr, eth1addr..eth4addr = device-tree aliases ethernet0..4) and
+  # the alias-to-socket mapping is Mono's documented one. A null MAC leaves
+  # the kernel name in place, which is only acceptable on the bench.
   ports = {
-    wan = { mac = null; fallback = "eth0"; }; # SFP+ 1: WAN DHCP
-    trunk = { mac = null; fallback = "eth1"; }; # SFP+ 2: tagged VLAN trunk
-    lan1 = { mac = null; fallback = "eth2"; }; # RJ-45: untagged main LAN
-    lan2 = { mac = null; fallback = "eth3"; }; # RJ-45: untagged main LAN
-    lan3 = { mac = null; fallback = "eth4"; }; # RJ-45: untagged main LAN
+    wan = { mac = "e8:f6:d7:00:11:1b"; fallback = "eth0"; }; # SFP+ 1 (ethernet3): WAN DHCP
+    trunk = { mac = "e8:f6:d7:00:11:1c"; fallback = "eth1"; }; # SFP+ 2 (ethernet4): tagged VLAN trunk
+    lan1 = { mac = "e8:f6:d7:00:11:19"; fallback = "eth2"; }; # RJ-45 #1 (ethernet1): untagged main LAN
+    lan2 = { mac = "e8:f6:d7:00:11:1a"; fallback = "eth3"; }; # RJ-45 #2 (ethernet2): untagged main LAN
+    lan3 = { mac = "e8:f6:d7:00:11:18"; fallback = "eth4"; }; # RJ-45 #3 (ethernet0): untagged main LAN
   };
   portName = role: if ports.${role}.mac != null then role else ports.${role}.fallback;
 
