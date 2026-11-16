@@ -18,16 +18,36 @@ let
   # them (ethaddr, eth1addr..eth4addr = device-tree aliases ethernet0..4) and
   # the alias-to-socket mapping is Mono's documented one. A null MAC leaves
   # the kernel name in place, which is only acceptable on the bench.
-  ports = {
+  livePorts = {
     wan = { mac = "e8:f6:d7:00:11:1b"; fallback = "eth0"; }; # SFP+ 1 (ethernet3): WAN DHCP
     trunk = { mac = "e8:f6:d7:00:11:1c"; fallback = "eth1"; }; # SFP+ 2 (ethernet4): tagged VLAN trunk
     lan1 = { mac = "e8:f6:d7:00:11:19"; fallback = "eth2"; }; # RJ-45 #1 (ethernet1): untagged main LAN
     lan2 = { mac = "e8:f6:d7:00:11:1a"; fallback = "eth3"; }; # RJ-45 #2 (ethernet2): untagged main LAN
     lan3 = { mac = "e8:f6:d7:00:11:18"; fallback = "eth4"; }; # RJ-45 #3 (ethernet0): untagged main LAN
   };
+
+  # Bench cabling: the live LAN reaches leela through a switch port that
+  # carries the main LAN as VLAN 5 tagged, plugged into one of the RJ-45
+  # sockets. On the bench that socket takes the WAN role, with DHCP on its
+  # VLAN sub-interface, and the SFP+ cage that is WAN when live takes the
+  # socket's LAN role so no MAC is claimed twice. null = cabled as live
+  # (untagged WAN on SFP+ 1).
+  benchWan = { port = "lan2"; vlan = 5; };
+
+  ports =
+    if bench && benchWan != null then
+      livePorts // {
+        wan = livePorts.${benchWan.port};
+        ${benchWan.port} = livePorts.wan;
+      }
+    else livePorts;
   portName = role: if ports.${role}.mac != null then role else ports.${role}.fallback;
 
-  wan = portName "wan";
+  # Physical WAN port, and the interface that carries the WAN address (a VLAN
+  # sub-interface on the bench, the port itself when live).
+  wanPort = portName "wan";
+  wanVlanId = if bench && benchWan != null then benchWan.vlan else null;
+  wan = if wanVlanId != null then "${wanPort}.${toString wanVlanId}" else wanPort;
   lanTrunk = portName "trunk";
   mainAccessIfs = map portName [ "lan1" "lan2" "lan3" ];
 
@@ -94,6 +114,29 @@ let
   mkDhcpStaticLease = { macs, hostname ? null, addresses }:
     lib.concatStringsSep "," (macs ++ lib.optional (hostname != null) hostname ++ addresses);
 
+  # DHCP/RA settings for whichever interface carries the WAN address.
+  wanAddressing = {
+    networkConfig = {
+      DHCP = "yes";
+      IPv6AcceptRA = true;
+    };
+    # Same client identity the APU2's udhcpc presented (MAC-based client
+    # id, broadcast flag, no hostname) so the ISP sees the same client.
+    # On the bench the hostname is sent so leela.lan resolves on the live
+    # LAN without having to hunt for its address.
+    dhcpV4Config = {
+      ClientIdentifier = "mac";
+      RequestBroadcast = true;
+      SendHostname = bench;
+      UseDNS = true;
+      UseDomains = true;
+    };
+    # Solicit DHCPv6 (with prefix delegation) even if the ISP's router
+    # advertisement does not set the M/O flags, matching OpenWrt's
+    # unconditional wan6 dhcpv6 client.
+    dhcpV6Config.WithoutRA = "solicit";
+  };
+
   nftSet = values: "{ ${lib.concatStringsSep ", " values} }";
   nftStringSet = values: "{ ${lib.concatMapStringsSep ", " (value: ''"${value}"'') values} }";
 in
@@ -158,32 +201,31 @@ in
         };
         vlanConfig.Id = 4;
       };
+
+      "11-wan-vlan" = lib.mkIf (wanVlanId != null) {
+        netdevConfig = {
+          Kind = "vlan";
+          Name = wan;
+        };
+        vlanConfig.Id = wanVlanId;
+      };
     };
 
     networks = {
       "10-wan" = {
+        matchConfig.Name = wanPort;
+        networkConfig =
+          if wanVlanId != null then {
+            VLAN = [ wan ];
+            LinkLocalAddressing = "no";
+          } else wanAddressing.networkConfig;
+        linkConfig.RequiredForOnline = if wanVlanId != null then "no" else "routable";
+      } // lib.optionalAttrs (wanVlanId == null) (removeAttrs wanAddressing [ "networkConfig" ]);
+
+      "11-wan-vlan" = lib.mkIf (wanVlanId != null) ({
         matchConfig.Name = wan;
-        networkConfig = {
-          DHCP = "yes";
-          IPv6AcceptRA = true;
-        };
-        # Same client identity the APU2's udhcpc presented (MAC-based client
-        # id, broadcast flag, no hostname) so the ISP sees the same client.
-        # On the bench the hostname is sent so leela.lan resolves on the live
-        # LAN without having to hunt for its address.
-        dhcpV4Config = {
-          ClientIdentifier = "mac";
-          RequestBroadcast = true;
-          SendHostname = bench;
-          UseDNS = true;
-          UseDomains = true;
-        };
-        # Solicit DHCPv6 (with prefix delegation) even if the ISP's router
-        # advertisement does not set the M/O flags, matching OpenWrt's
-        # unconditional wan6 dhcpv6 client.
-        dhcpV6Config.WithoutRA = "solicit";
         linkConfig.RequiredForOnline = "routable";
-      };
+      } // wanAddressing);
 
       # Bridge/trunk member ports must not gate systemd-networkd-wait-online:
       # an unplugged RJ-45 port would otherwise delay boot until the wait-online
