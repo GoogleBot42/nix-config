@@ -60,16 +60,24 @@ with `bench = true`.
    If `scriptaddr` is missing from `printenv`, `setenv scriptaddr 0x80000000`
    first (Mono's and Armbian's environments both use that).
 
+7. Power off and **remove the stick and the hub before the next boot**. The
+   stick carries the same filesystem label and UUID as the eMMC (the image
+   builder fixes both), so with it inserted `/dev/disk/by-label/NIXOS_ROOT`
+   can resolve to the stick and the system silently runs from it. A hard
+   power-off at this point is safe: the eMMC is not mounted.
+
 Expected: extlinux menu, kernel 6.12 boots, NixOS login on the console. Log
-in as `googlebot` (the usual password) and run `doas ip -br link`.
+in as `googlebot` (the usual password) and run `ip -br link`.
 
 ## 2. First bench boot: find the ports (owner at console, then agent)
 
 The kernel names are probe order, so first learn which physical port is which:
 
-1. `doas ip -br link` must list five ports. If it lists none, the in-tree
-   DPAA driver did not probe the DTS: stop, `dmesg | grep -i -E 'fman|dpaa|fsl'`,
-   and report; the APU2 stays in place.
+1. `ip -br link` must list five DPAA ports (verified 2026-11-15: the in-tree
+   driver probes all five; systemd names the unpinned ones `end<alias>`, so
+   `end0`, `end5`, `end6`, `end7` plus the kernel name of whichever port a
+   `.link` matched). If it lists none, `dmesg | grep -i -E "fman|dpaa|fsl"` and
+   report; the APU2 stays in place.
 2. Plug a cable from the live LAN into RJ-45 #3 and read which `eth*` shows
    `UP` with carrier (`doas ip -br link` again, or `ip monitor link`). Repeat
    for the other two RJ-45 ports, then with an SFP+ module in each cage.

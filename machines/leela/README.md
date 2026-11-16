@@ -47,9 +47,8 @@ DTS variant, which is written against the in-tree `fsl-ls1046a.dtsi` /
 DTS carries what a router needs on the in-tree driver (`sfp = <&sfp_xfi0/1>`
 phandles so phylink drives the SFP+ cages, `ethernet*` aliases so U-Boot can
 fix up MAC addresses, `managed = "in-band-status"` on the 10G MACs), but
-nobody has published a report of this board running on the in-tree driver.
-Until the bench boot in CUTOVER.md shows all five ports with link, treat it
-as unverified. Expect CPU-bound routing (roughly 2-8 Gbps, not 10G line
+the first bench boot (2026-11-15) confirmed the in-tree driver probes all
+five ports with the EEPROM MACs U-Boot injects. Expect CPU-bound routing (roughly 2-8 Gbps, not 10G line
 rate), still far beyond the APU2. If the ports do not probe, the fallback is
 Mono's NXP SDK kernel from their NixOS tree; that is a separate project, not
 a cutover-night fix.
