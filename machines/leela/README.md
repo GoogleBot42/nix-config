@@ -71,13 +71,24 @@ FMan microcode is the first thing to check.
 
 ## Port mapping
 
-Physical roles:
+Physical roles (verified by carrier on the bench, 2026-11-15; left to right
+as you face the sockets):
 
-- SFP+ port 1: WAN DHCP (`wan`).
-- SFP+ port 2: tagged VLAN trunk (`trunk`).
-- All 3 RJ-45 ports: untagged/native main LAN (`lan1`..`lan3`).
+| Socket | MAC | Role |
+| --- | --- | --- |
+| RJ-45 left | `e8:f6:d7:00:11:18` | `lan1`, untagged main LAN |
+| RJ-45 middle | `e8:f6:d7:00:11:19` | `trunk`, tagged VLANs 2/4/5 to the switch |
+| RJ-45 right | `e8:f6:d7:00:11:1a` | `wan`, DHCP from the modem |
+| SFP+ left | `e8:f6:d7:00:11:1b` | `lan2`, spare |
+| SFP+ right | `e8:f6:d7:00:11:1c` | `lan3`, spare |
 
-Mono's docs give this Linux naming for *their* kernels (which carry a patch
+The SFP+ cages are parked: an OEM SFP-10G-T module (multi-rate per its
+seller) is detected but exposes no PHY over I2C, and its host side never
+comes up on the in-tree driver, so neither Linux nor the switch sees a link.
+Revisit with a module whose PHY the kernel can drive (RollBall or C45
+over I2C) or once the `sfp` quirk table covers this one.
+
+For reference, Mono's docs give this Linux naming for *their* kernels (which carry a patch
 that names ports after the `ethernet*` aliases):
 
 | Physical port (left to right) | Mono kernel name | DTS alias / MAC |

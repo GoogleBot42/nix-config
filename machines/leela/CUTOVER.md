@@ -127,7 +127,9 @@ Mono's docs) and the agent pins the ports before the first SSH session.
      mmc.
    - Fan and sensors: `sensors` shows the TMP431/EMC2305; the fan is not pinned
      at full speed.
-5. Flip `bench = false` in `networking.nix`, build, and stage it without
+5. Flip `bench = false` in `networking.nix`, remove the bench root key from
+   `default.nix` (and `~/.ssh/leela-bench` plus its `~/.ssh/config` stanza on
+   fry), build, and stage it without
    activating: `deploy --remote-build --debug-logs --skip-checks --boot .#leela`.
    Confirm `/boot/extlinux/extlinux.conf` on leela defaults to the new
    generation (`grep -A3 '^LABEL' /boot/extlinux/extlinux.conf | head`; the
@@ -143,8 +145,8 @@ Mono's docs) and the agent pins the ports before the first SSH session.
 2. Unplug the APU2's WAN and LAN cables first (both routers now carry the same
    MACs; they must never share a segment), then power the APU2 off. Leave it
    on the shelf, cabled-up-ready, for the rollback.
-3. Cable leela: modem → SFP+ #1 (1000BASE-T module), switch uplink → SFP+ #2
-   (trunk, tagged VLANs 2/4/5), anything untagged → RJ-45 ports.
+3. Cable leela: modem → right RJ-45 (`wan`), switch uplink → middle RJ-45
+   (`trunk`, tagged VLANs 2/4/5), anything untagged → left RJ-45 (`lan1`).
 4. Power on leela. Boot takes under a minute; it comes up in the live config
    because that is the staged boot default.
 
