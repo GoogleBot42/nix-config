@@ -58,13 +58,16 @@ in
     "usb_storage"
   ];
 
-  # The three 1G ports sit behind MaxLinear GPY115 PHYs on SGMII. The PHY is
-  # attached when networkd brings the port up, and whichever PHY driver is
-  # loaded at that moment wins: with only the generic driver the PHY reports
-  # link but never passes a frame upstream. udev does not autoload mxl-gpy
-  # for these devices, so load it before networkd runs.
+  # udev does not autoload drivers for this board's device-tree devices, so
+  # the ones that matter are loaded explicitly.
+  #
+  # mxl_gpy: the three 1G ports sit behind MaxLinear GPY115 PHYs on SGMII.
+  # The PHY is attached when networkd brings the port up, and whichever PHY
+  # driver is loaded at that moment wins: with only the generic driver the
+  # PHY reports link but never passes a frame upstream.
+  # emc2305: the chassis fan controller (fan.nix drives it).
   boot.initrd.kernelModules = [ "mxl_gpy" ];
-  boot.kernelModules = [ "mxl_gpy" ];
+  boot.kernelModules = [ "mxl_gpy" "emc2305" ];
 
   boot.kernelParams = [
     "console=ttyS0,115200n8"

@@ -4,6 +4,7 @@
   imports = [
     ./hardware-configuration.nix
     ./networking.nix
+    ./fan.nix
   ];
 
   services.openssh.openFirewall = false;
