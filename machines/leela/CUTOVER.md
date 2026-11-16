@@ -82,10 +82,11 @@ The kernel names are probe order, so first learn which physical port is which:
    `UP` with carrier (`doas ip -br link` again, or `ip monitor link`). Repeat
    for the other two RJ-45 ports, then with an SFP+ module in each cage.
    Write down: physical port, kernel name, MAC (`ip -br link` prints it).
-3. Move the live-LAN cable to whichever port is currently `eth0` (the bench
-   WAN fallback). leela gets a 192.168.0.x lease from the APU2 and registers
-   as `leela.lan`. From fry: `ssh googlebot@leela.lan` (accept the temporary
-   host key; it is replaced in step 3) and hand the port table to the agent.
+3. Bench cabling as of 2026-11-15: the live LAN comes in on the right-hand
+   RJ-45 socket (MAC ...:1a) from a switch port that carries the main LAN
+   **tagged** (VLAN 5), so `benchWan` in `networking.nix` makes that socket
+   the WAN role with DHCP on `wan.5`. leela gets a 192.168.0.x lease from the
+   APU2 and registers as `leela.lan`; it is also on the tailnet as `leela`.
 
 If no port is `eth0`, or you want to skip the cable dance: give the agent the
 MAC table from U-Boot instead (`printenv ethaddr eth1addr eth2addr eth3addr eth4addr`,
@@ -94,10 +95,11 @@ Mono's docs) and the agent pins the ports before the first SSH session.
 
 ## 3. Bench verification (agent, over SSH)
 
-1. Fill `ports.*.mac` in `networking.nix`, keep `bench = true`, build, and
-   deploy: `deploy --remote-build --debug-logs --skip-checks --auto-rollback=false --hostname leela.lan .#leela`.
-   Recable WAN to SFP+ #1 afterwards (the live-LAN cable now needs the
-   SFP+ 1000BASE-T module); SSH comes back on the new lease.
+1. Ports are pinned by MAC (done). To exercise the real WAN path before the
+   swap, set `benchWan = null`, put the 1000BASE-T module in SFP+ #1 and feed
+   it from an **untagged** main-LAN switch port, then `deploy --boot` and
+   reboot; SSH comes back on the new lease. Confirm which cage is which by
+   carrier (`networkctl status wan trunk`) with a module in each.
 2. Adopt leela's freshly generated host key: agent reads
    `/etc/ssh/ssh_host_ed25519_key.pub`, puts it in `properties.nix` `hostKey`,
    runs `make rekey-secret attic-netrc.age`, commits, and includes it in the
