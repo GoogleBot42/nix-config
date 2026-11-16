@@ -220,17 +220,16 @@ writes either.
 
 ## SSH host key
 
-`hostKey` in `properties.nix` is the OpenWrt router's Dropbear Ed25519 key,
-and `secrets/attic-netrc.age` is encrypted to it. The flashed image contains
-**no** host key; NixOS generates a fresh one on first boot, which matches
-neither. `cutover/carry-host-key.sh <leela address>` pulls the Dropbear key
-from the router, converts it, verifies it against `properties.nix`, installs
-it on leela and restarts sshd. This keeps every machine's known_hosts entries
-for `leela`, `openwrt.lan` and `192.168.1.1` valid.
-
-The alternative is a fresh key: read `/etc/ssh/ssh_host_ed25519_key.pub` on
-leela, put it in `properties.nix` `hostKey`, re-encrypt with
-`make rekey-secret attic-netrc.age`, and redeploy.
+`hostKey` in `properties.nix` is what every machine pins in its known_hosts
+for `leela`, `openwrt.lan` and `192.168.1.1`, and what `secrets/attic-netrc.age`
+is encrypted to. The flashed image contains **no** host key; NixOS generates
+one on first boot. Default path: read `/etc/ssh/ssh_host_ed25519_key.pub` on
+leela, put it in `properties.nix` `hostKey`, run
+`make rekey-secret attic-netrc.age`, and deploy. Alternative, if the OpenWrt
+key should live on: `cutover/carry-host-key.sh <leela address>` pulls the
+Dropbear key from the router, converts it, verifies it against
+`properties.nix` (which currently still holds that key) and installs it on
+leela.
 
 Until one of these is done, agenix cannot decrypt `attic-netrc` on leela (the
 nix daemon then lacks credentials for the private binary cache; builds still

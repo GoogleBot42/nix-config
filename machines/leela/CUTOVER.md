@@ -90,10 +90,14 @@ Mono's docs) and the agent pins the ports before the first SSH session.
    deploy: `deploy --remote-build --debug-logs --skip-checks --auto-rollback=false --hostname leela.lan .#leela`.
    Recable WAN to SFP+ #1 afterwards (the live-LAN cable now needs the
    SFP+ 1000BASE-T module); SSH comes back on the new lease.
-2. Owner runs `machines/leela/cutover/carry-host-key.sh leela.lan` (needs
-   root on both routers). After it, `ssh -o StrictHostKeyChecking=yes root@leela.lan`
-   must not complain once `leela.lan` is in known_hosts with the carried key;
-   `ssh-keyscan leela.lan` must print the key from `properties.nix`.
+2. Adopt leela's freshly generated host key: agent reads
+   `/etc/ssh/ssh_host_ed25519_key.pub`, puts it in `properties.nix` `hostKey`,
+   runs `make rekey-secret attic-netrc.age`, commits, and includes it in the
+   next deploy. Every machine's known_hosts then carries the new key for
+   `leela`, `openwrt.lan` and `192.168.1.1`; on fry, drop the old
+   `192.168.1.1` line from `~/.ssh/known_hosts` once. (Alternative: the
+   owner runs `cutover/carry-host-key.sh leela.lan` to keep the OpenWrt key;
+   then nothing needs rekeying.)
 3. `tailscale up` on leela; the owner authorises the printed URL. `deploy .#leela`
    now resolves via MagicDNS and kif starts scraping node-exporter.
 4. Checks, all must pass before going further:
