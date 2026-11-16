@@ -18,16 +18,19 @@ let
   # them (ethaddr, eth1addr..eth4addr = device-tree aliases ethernet0..4) and
   # the alias-to-socket mapping is Mono's documented one. A null MAC leaves
   # the kernel name in place, which is only acceptable on the bench.
+  # The SFP+ cages are spare LAN ports for now: the SFP-10G-T module never
+  # brings its link up on the in-tree driver (no PHY access, host side stays
+  # down), so WAN and trunk live on RJ-45 sockets.
   livePorts = {
-    wan = { mac = "e8:f6:d7:00:11:1b"; fallback = "eth0"; }; # SFP+ 1 (ethernet3): WAN DHCP
-    trunk = { mac = "e8:f6:d7:00:11:1c"; fallback = "eth1"; }; # SFP+ 2 (ethernet4): tagged VLAN trunk
-    lan1 = { mac = "e8:f6:d7:00:11:19"; fallback = "eth2"; }; # RJ-45 #1 (ethernet1): untagged main LAN
-    lan2 = { mac = "e8:f6:d7:00:11:1a"; fallback = "eth3"; }; # RJ-45 #2 (ethernet2): untagged main LAN
-    lan3 = { mac = "e8:f6:d7:00:11:18"; fallback = "eth4"; }; # RJ-45 #3 (ethernet0): untagged main LAN
+    wan = { mac = "e8:f6:d7:00:11:1a"; fallback = "eth0"; }; # RJ-45 right (ethernet2): WAN DHCP
+    trunk = { mac = "e8:f6:d7:00:11:19"; fallback = "eth1"; }; # RJ-45 (ethernet1): tagged VLAN trunk
+    lan1 = { mac = "e8:f6:d7:00:11:18"; fallback = "eth2"; }; # RJ-45 (ethernet0): untagged main LAN
+    lan2 = { mac = "e8:f6:d7:00:11:1b"; fallback = "eth3"; }; # SFP+ left (ethernet3): untagged main LAN
+    lan3 = { mac = "e8:f6:d7:00:11:1c"; fallback = "eth4"; }; # SFP+ right (ethernet4): untagged main LAN
   };
 
   # Bench cabling: which socket carries the live LAN into leela (by live
-  # role; "wan" is SFP+ 1 itself, "lan2" the right-hand RJ-45) and whether
+  # role; "wan" is the right-hand RJ-45 itself) and whether
   # that switch port delivers the main LAN tagged (VLAN id) or untagged
   # (null). On the bench that socket takes the WAN role and the cage that is
   # WAN when live takes its LAN role, so no MAC is claimed twice. Only one
@@ -147,9 +150,9 @@ in
 {
   # This machine replaces the OpenWrt APU2 gateway. The network policy is
   # intentionally unchanged; only the hardware shape and port roles move:
-  #   SFP+ 1 (wan): WAN DHCP
-  #   SFP+ 2 (trunk): tagged VLAN trunk for main/iot/management
-  #   RJ-45 ports (lan1..lan3): untagged/native main LAN
+  #   RJ-45 right (wan): WAN DHCP
+  #   RJ-45 (trunk): tagged VLAN trunk for main/iot/management
+  #   remaining RJ-45 and both SFP+ cages (lan1..lan3): untagged/native main LAN
 
   networking = {
     useDHCP = false;
