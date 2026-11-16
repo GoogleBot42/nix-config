@@ -162,6 +162,8 @@ so usually instantly).
 ## After
 
 - Merge PR 47 and deploy from master (`deploy .#leela`).
-- Retire the Dashy "openwrt" tile; add a leela tile if wanted.
+- Retire the Dashy "openwrt" tile; point a tile at Grafana's "DHCP leases"
+  dashboard, which replaces LuCI's lease view (kif needs the redeploy that
+  adds the dnsmasq scrape job and the dashboard).
 - Consider `mainLanIpv6 = true` as its own change.
 - Record the final port/MAC table in `networking.nix` (it is config, not notes).
