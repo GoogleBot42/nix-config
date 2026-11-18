@@ -17,5 +17,6 @@
     ./gatus.nix
     ./pgs.nix
     ./metrics.nix
+    ./service-inventory.nix
   ];
 }

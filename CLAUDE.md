@@ -85,6 +85,8 @@ When adding or removing a web-facing service, update both:
 - **Gatus** (`common/server/gatus.nix`) — add/remove the endpoint monitor
 - **Dashy** — add/remove the service entry from the dashboard config
 
+The service inventory at `https://inventory.kif.neet.dev` (tailnet-only) needs no manual update: `inventory/` generates it from every machine's evaluated config, `dns/zones.nix` and `tailscale/acl.hujson`. Preview locally with `nix build .#service-inventory` and open `result/index.html`; `inventory.json` next to it is the same data for tooling.
+
 ### Key Conventions
 
 - Uses `doas` instead of `sudo` everywhere

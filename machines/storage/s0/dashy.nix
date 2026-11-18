@@ -313,6 +313,15 @@
             statusCheck = false;
             id = "18_836_metrics";
           };
+          inventory = {
+            title = "Service inventory";
+            description = "inventory.kif.neet.dev";
+            icon = "fas fa-sitemap";
+            url = "https://inventory.kif.neet.dev";
+            target = "sametab";
+            statusCheck = false;
+            id = "19_836_inventory";
+          };
         };
         servicesList = [
           servicesItems.ntfy
@@ -327,6 +336,7 @@
           servicesItems.status
           servicesItems.grafana
           servicesItems.metrics
+          servicesItems.inventory
         ];
       in
       {

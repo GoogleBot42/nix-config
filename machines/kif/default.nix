@@ -135,6 +135,13 @@
   services.grafana.hostname = "grafana.kif.neet.dev";
   services.grafana.diskAlerts.warningHosts = [ "kif" "s0" ];
 
+  # fleet service inventory, generated from this flake
+  services.service-inventory = {
+    enable = true;
+    hostname = "inventory.kif.neet.dev";
+    useACMEHost = "kif.neet.dev";
+  };
+
   # Keep public web listeners open overall, but pin selected vhosts to the
   # tailnet address.
   services.nginx.virtualHosts."runyan.org" = {

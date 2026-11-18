@@ -272,6 +272,18 @@
             in
             {
               dnscontrolConfig = import ./dns/render.nix { inherit pkgs; };
+
+              # Fleet service inventory site (also served from kif):
+              #   nix build .#service-inventory && xdg-open result/index.html
+              service-inventory = import ./inventory {
+                inherit pkgs;
+                lib = nixpkgs.lib;
+                nixosConfigurations = self.nixosConfigurations;
+                zones = import ./dns/zones.nix;
+                aclFile = ./tailscale/acl.hujson;
+                revision = self.rev or self.dirtyRev or "unknown";
+                nixpkgsRevision = nixpkgs.rev or "unknown";
+              };
             }
             // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
               kexec = ephemeral.config.system.build.images.kexec;

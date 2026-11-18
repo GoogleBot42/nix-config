@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Service Inventory</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --panel: #ffffff;
+    --text: #1b1f24;
+    --muted: #5c6670;
+    --line: #dde2e8;
+    --accent: #2457c5;
+    --internet: #c62828;
+    --internet-bg: #fdecea;
+    --lan: #b26a00;
+    --lan-bg: #fff4e0;
+    --tailnet: #1b7f3b;
+    --tailnet-bg: #e6f5ea;
+    --trusted: #2f6f8f;
+    --trusted-bg: #e4f1f7;
+    --custom: #5c6670;
+    --custom-bg: #eceff2;
+    --warn: #b26a00;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1216;
+      --panel: #171b21;
+      --text: #e6e9ee;
+      --muted: #98a2ad;
+      --line: #2a313a;
+      --accent: #7aa2ff;
+      --internet: #ff7b72;
+      --internet-bg: #3a1d1d;
+      --lan: #f0b35b;
+      --lan-bg: #3a2d14;
+      --tailnet: #6fd38f;
+      --tailnet-bg: #15301f;
+      --trusted: #7cc4e8;
+      --trusted-bg: #142a36;
+      --custom: #98a2ad;
+      --custom-bg: #262c34;
+      --warn: #f0b35b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  header {
+    position: sticky; top: 0; z-index: 5;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    padding: 10px 16px;
+    display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center;
+  }
+  header h1 { font-size: 16px; margin: 0; }
+  header .meta { color: var(--muted); font-size: 12px; }
+  header input[type=search] {
+    flex: 1 1 220px; min-width: 160px;
+    padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--bg); color: var(--text); font-size: 14px;
+  }
+  header label { color: var(--muted); font-size: 13px; display: inline-flex; gap: 4px; align-items: center; }
+  nav { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; }
+  nav a { color: var(--accent); text-decoration: none; }
+  main { padding: 16px; max-width: 1500px; margin: 0 auto; }
+  section { margin-bottom: 28px; }
+  h2 { font-size: 15px; margin: 0 0 8px; }
+  h2 small { color: var(--muted); font-weight: normal; margin-left: 6px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  .card h3 { margin: 0 0 4px; font-size: 15px; }
+  .card dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 2px 10px; font-size: 13px; }
+  .card dt { color: var(--muted); }
+  .card dd { margin: 0; overflow-wrap: anywhere; }
+  .tablewrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; white-space: nowrap; position: sticky; top: 0; background: var(--panel); }
+  tr:last-child td { border-bottom: none; }
+  tr[hidden] { display: none; }
+  code, .mono { font-family: var(--mono); font-size: 12px; }
+  .badge {
+    display: inline-block; padding: 1px 7px; border-radius: 999px;
+    font-size: 11px; font-weight: 600; white-space: nowrap; margin: 1px 2px 1px 0;
+  }
+  .b-internet { color: var(--internet); background: var(--internet-bg); }
+  .b-lan { color: var(--lan); background: var(--lan-bg); }
+  .b-tailnet { color: var(--tailnet); background: var(--tailnet-bg); }
+  .b-trusted { color: var(--trusted); background: var(--trusted-bg); }
+  .b-custom, .b-other { color: var(--custom); background: var(--custom-bg); }
+  .b-public { color: var(--internet); background: var(--internet-bg); }
+  .warn { color: var(--warn); }
+  .muted { color: var(--muted); }
+  .small { font-size: 12px; }
+  .nowrap { white-space: nowrap; }
+  details summary { cursor: pointer; color: var(--accent); font-size: 13px; margin: 4px 0; }
+  footer { color: var(--muted); font-size: 12px; padding: 16px; text-align: center; }
+  @media (max-width: 600px) {
+    header { padding: 8px 12px; }
+    main { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Service Inventory</h1>
+  <span class="meta" id="meta"></span>
+  <input type="search" id="q" placeholder="Filter: domain, port, machine, upstream…" autocomplete="off">
+  <label><input type="checkbox" id="only-internet"> Internet-reachable only</label>
+  <nav>
+    <a href="#machines">Machines</a>
+    <a href="#web">Web endpoints</a>
+    <a href="#ports">Ports</a>
+    <a href="#services">Services</a>
+    <a href="#containers">Containers</a>
+    <a href="#dns">DNS</a>
+    <a href="#acl">Tailscale ACL</a>
+    <a href="inventory.json">JSON</a>
+  </nav>
+</header>
+<main>
+  <section id="machines"><h2>Machines</h2><div class="cards" id="machine-cards"></div></section>
+  <section id="web">
+    <h2>Web endpoints <small id="web-count"></small></h2>
+    <p class="small muted">
+      <span class="badge b-internet">internet</span> listener on every address and ports 80/443 open on a host with a public IP ·
+      <span class="badge b-lan">lan</span> same, on a host without a public IP ·
+      <span class="badge b-tailnet">tailnet</span> bound only to the Tailscale address ·
+      <span class="badge b-trusted">trusted</span> listener on every address but 80/443 closed, so reachable only via trusted interfaces (the tailnet) ·
+      <span class="badge b-custom">custom</span> bound to specific addresses.
+      "DNS" shows what the public zones resolve the name to; a vhost on a public host is reachable by Host header even when DNS points elsewhere.
+    </p>
+    <div class="tablewrap"><table id="web-table">
+      <thead><tr>
+        <th>Domain</th><th>Machine</th><th>Exposure</th><th>DNS</th><th>TLS</th><th>HTTP/2</th><th>Auth</th><th>Upstream</th><th>Monitored</th>
+      </tr></thead><tbody></tbody>
+    </table></div>
+  </section>
+  <section id="ports">
+    <h2>Firewall &amp; ports</h2>
+    <div class="tablewrap"><table id="ports-table">
+      <thead><tr><th>Machine</th><th>Scope</th><th>TCP</th><th>UDP</th><th>Notes</th></tr></thead><tbody></tbody>
+    </table></div>
+  </section>
+  <section id="services">
+    <h2>Enabled services <small>with a declared port where one is discoverable</small></h2>
+    <div class="tablewrap"><table id="services-table">
+      <thead><tr><th>Machine</th><th>Service</th><th>Port / address</th><th>Fronted by</th></tr></thead><tbody></tbody>
+    </table></div>
+  </section>
+  <section id="containers">
+    <h2>Containers, VPN containers &amp; workspaces</h2>
+    <div class="tablewrap"><table id="containers-table">
+      <thead><tr><th>Machine</th><th>Name</th><th>Kind</th><th>Address</th><th>Ports / notes</th></tr></thead><tbody></tbody>
+    </table></div>
+  </section>
+  <section id="dns">
+    <h2>DNS <small>managed zones (TXT omitted)</small></h2>
+    <div class="tablewrap"><table id="dns-table">
+      <thead><tr><th>Zone</th><th>Name</th><th>Type</th><th>Value</th><th>Points at</th><th>TTL</th></tr></thead><tbody></tbody>
+    </table></div>
+  </section>
+  <section id="acl">
+    <h2>Tailscale ACL grants</h2>
+    <div class="tablewrap"><table id="acl-table">
+      <thead><tr><th>Source</th><th>Destination</th><th>Ports</th></tr></thead><tbody></tbody>
+    </table></div>
+    <details><summary>Named hosts &amp; tag owners</summary><div id="acl-extra" class="small mono"></div></details>
+  </section>
+</main>
+<footer id="footer"></footer>
+<script src="inventory.js"></script>
+<script>
+(function () {
+  const D = window.INVENTORY || { machines: [], gatus: [], dashy: [], dns: {}, meta: {} };
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const badge = (kind, text) => `<span class="badge b-${esc(kind)}">${esc(text ?? kind)}</span>`;
+  const code = s => `<code>${esc(s)}</code>`;
+  const list = (xs, f = x => esc(x)) => (xs && xs.length) ? xs.map(f).join(', ') : '<span class="muted">—</span>';
+  const hostOf = url => { try { return new URL(url).host; } catch { return null; } };
+
+  const machines = D.machines.slice().sort((a, b) => a.name.localeCompare(b.name));
+  const gatusHosts = new Map();
+  for (const e of D.gatus) { const h = hostOf(e.url); if (h) gatusHosts.set(h, e); }
+  const dashyHosts = new Map();
+  for (const i of D.dashy) { const h = hostOf(i.url); if (h) dashyHosts.set(h, i); }
+
+  // Map "host:port" upstreams back to the vhost that proxies them.
+  const frontedBy = new Map();
+  for (const m of machines) for (const v of (m.nginx?.virtualHosts || [])) for (const l of v.locations) {
+    if (!l.proxyPass) continue;
+    const port = (l.proxyPass.match(/:(\d+)(\/|$)/) || [])[1];
+    if (port) frontedBy.set(`${m.name}:${port}`, v.name);
+  }
+
+  // ---- meta
+  document.getElementById('meta').textContent =
+    `nix-config ${String(D.meta.revision || 'unknown').slice(0, 10)} · nixpkgs ${String(D.meta.nixpkgsRevision || '').slice(0, 10)} · NixOS ${D.meta.nixosRelease || ''}`;
+  document.getElementById('footer').textContent =
+    'Generated at build time from the nix-config flake. Edit the config, not this page.';
+
+  // ---- machines
+  document.getElementById('machine-cards').innerHTML = machines.map(m => {
+    const fw = m.firewall;
+    const vh = m.nginx ? m.nginx.virtualHosts : [];
+    const pub = vh.filter(v => v.exposure.kind === 'internet').length;
+    return `<div class="card" data-search="${esc([m.name, ...m.hostNames, ...m.systemRoles, m.publicIP, m.tailscaleIP].join(' '))}">
+      <h3>${esc(m.name)} <span class="muted small">${esc(m.arch)}</span></h3>
+      <dl>
+        <dt>Roles</dt><dd>${list(m.systemRoles)}</dd>
+        <dt>Public IP</dt><dd>${m.publicIP ? badge('public', m.publicIP) : '<span class="muted">none</span>'}</dd>
+        <dt>Tailnet</dt><dd>${m.tailscaleIP ? code(m.tailscaleIP) : ''} ${m.tailnetName ? code(m.tailnetName) : '<span class="muted">tailscale off</span>'}</dd>
+        <dt>Names</dt><dd>${list(m.hostNames, code)}</dd>
+        <dt>OS</dt><dd>NixOS ${esc(m.nixosRelease)} · kernel ${esc(m.kernel)}</dd>
+        <dt>SSH</dt><dd>${list(m.sshPorts)}</dd>
+        <dt>nginx</dt><dd>${m.nginx ? `${esc(m.nginx.version)} · ${vh.length} vhosts${pub ? ` · <span class="warn">${pub} internet-facing</span>` : ''}${m.nginx.tailscaleAuth.enable ? ' · tailscale-auth on' : ''}` : '<span class="muted">not running</span>'}</dd>
+        <dt>Firewall</dt><dd>${fw.enable ? `on · trusted: ${list(fw.trustedInterfaces, code)}` : '<span class="warn">disabled</span>'}</dd>
+        ${m.mail ? `<dt>Mail</dt><dd>${code(m.mail.fqdn)} for ${m.mail.domains.length} domains</dd>` : ''}
+        ${m.remoteUnlock ? `<dt>Unlock</dt><dd>${esc(m.remoteUnlock.clearnetHost || '')} ${m.remoteUnlock.onionHost ? '· onion' : ''}</dd>` : ''}
+      </dl>
+    </div>`;
+  }).join('');
+
+  // ---- web endpoints
+  const dnsCell = d => {
+    if (!d.managed) return '<span class="muted">not in managed zones</span>';
+    if (!d.addresses.length) return '<span class="warn">no record</span>';
+    const addrs = d.addresses.map(a => `${badge(a.kind, a.kind + (a.machine ? ' ' + a.machine : ''))} ${code(a.address)}`).join('<br>');
+    const chain = d.chain.length ? `<div class="muted small">via ${d.chain.map(esc).join(' → ')}</div>` : '';
+    const wild = d.wildcard ? '<div class="muted small">wildcard record</div>' : '';
+    return addrs + chain + wild;
+  };
+  const authCell = v => {
+    const parts = [];
+    if (v.tailscaleAuth.enable) parts.push(`tailscale-auth: ${v.tailscaleAuth.allowedTags.map(esc).join(', ') || 'default tags'}`);
+    if (v.basicAuth || v.locations.some(l => l.basicAuth)) parts.push('basic auth');
+    return parts.length ? parts.join('<br>') : '<span class="muted">none at proxy</span>';
+  };
+  const upstreamCell = v => {
+    const rows = [];
+    if (v.globalRedirect) rows.push(`redirect → ${esc(v.globalRedirect)}`);
+    for (const l of v.locations) {
+      const what = l.proxyPass ? `${code(l.proxyPass)}${l.proxyWebsockets ? ' <span class="muted small">ws</span>' : ''}`
+        : l.return ? `return ${esc(l.return)}`
+        : l.alias ? `alias ${code(l.alias)}`
+        : '<span class="muted">static</span>';
+      rows.push(`<span class="mono muted">${esc(l.path)}</span> ${what}`);
+    }
+    if (!rows.length) rows.push('<span class="muted">static / cert only</span>');
+    return rows.join('<br>');
+  };
+  const webRows = [];
+  for (const m of machines) for (const v of (m.nginx?.virtualHosts || [])) {
+    const names = [v.name, ...v.serverAliases];
+    const mon = names.map(n => gatusHosts.get(n)).find(Boolean);
+    const dash = names.map(n => dashyHosts.get(n)).find(Boolean);
+    const upstreams = v.locations.map(l => l.proxyPass).filter(Boolean);
+    webRows.push({
+      internet: v.exposure.kind === 'internet',
+      search: [...names, m.name, v.exposure.kind, ...upstreams, v.useACMEHost, ...(v.tailscaleAuth.allowedTags || [])].join(' '),
+      html: `<tr>
+        <td>${names.map(n => `<div><a href="https://${esc(n)}/" class="mono">${esc(n)}</a></div>`).join('')}${v.isDefault ? '<div class="muted small">default server</div>' : ''}</td>
+        <td>${esc(m.name)}</td>
+        <td>${badge(v.exposure.kind)}<div class="muted small">${v.exposure.via.map(esc).join(', ')}</div></td>
+        <td>${dnsCell(v.dns)}</td>
+        <td>${v.tls ? (v.useACMEHost ? `wildcard <span class="mono">*.${esc(v.useACMEHost)}</span>` : v.enableACME ? 'ACME' : 'manual') + (v.forceSSL ? '' : ' <span class="muted small">(http too)</span>') : '<span class="warn">plain http</span>'}</td>
+        <td>${v.http2 ? 'on' : 'off'}${v.quic || v.http3 ? ' · h3' : ''}</td>
+        <td>${authCell(v)}</td>
+        <td>${upstreamCell(v)}</td>
+        <td>${mon ? `<span title="${esc(mon.group)} / ${esc(mon.name)}">gatus</span>` : '<span class="warn">no</span>'}${dash ? '<div class="muted small">on dashy</div>' : ''}</td>
+      </tr>`
+    });
+  }
+  document.getElementById('web-table').querySelector('tbody').innerHTML = webRows.map(r => r.html).join('');
+  const webTrs = Array.from(document.getElementById('web-table').querySelectorAll('tbody tr'));
+  webTrs.forEach((tr, i) => { tr.dataset.search = webRows[i].search; tr.dataset.internet = webRows[i].internet ? '1' : ''; });
+  document.getElementById('web-count').textContent = `${webRows.length} vhosts, ${webRows.filter(r => r.internet).length} internet-facing`;
+
+  // ---- ports
+  const ranges = rs => rs.map(r => `${r.from}-${r.to}`);
+  const portRows = [];
+  for (const m of machines) {
+    const fw = m.firewall;
+    const scopeLabel = m.publicIP ? badge('internet', 'all interfaces (public IP)') : badge('lan', 'all interfaces');
+    portRows.push({
+      search: `${m.name} ${fw.allowedTCPPorts.join(' ')} ${fw.allowedUDPPorts.join(' ')}`,
+      internet: !!m.publicIP,
+      html: `<tr><td>${esc(m.name)}</td><td>${fw.enable ? scopeLabel : '<span class="warn">firewall disabled</span>'}</td>
+        <td>${list([...fw.allowedTCPPorts, ...ranges(fw.allowedTCPPortRanges)])}</td>
+        <td>${list([...fw.allowedUDPPorts, ...ranges(fw.allowedUDPPortRanges)])}</td>
+        <td class="small">trusted (everything open): ${list(fw.trustedInterfaces, code)}</td></tr>`
+    });
+    for (const [iface, i] of Object.entries(fw.interfaces)) {
+      portRows.push({
+        search: `${m.name} ${iface} ${i.allowedTCPPorts.join(' ')} ${i.allowedUDPPorts.join(' ')}`,
+        internet: false,
+        html: `<tr><td>${esc(m.name)}</td><td>${badge('custom', iface)}</td>
+          <td>${list([...i.allowedTCPPorts, ...ranges(i.allowedTCPPortRanges)])}</td>
+          <td>${list([...i.allowedUDPPorts, ...ranges(i.allowedUDPPortRanges)])}</td><td></td></tr>`
+      });
+    }
+  }
+  fill('ports-table', portRows);
+
+  // ---- services
+  const svcRows = [];
+  for (const m of machines) for (const s of m.services.slice().sort((a, b) => a.name.localeCompare(b.name))) {
+    const port = s.port == null ? null : String(s.port);
+    const portNum = port ? (port.match(/(\d+)$/) || [])[1] : null;
+    const front = portNum ? frontedBy.get(`${m.name}:${portNum}`) : null;
+    svcRows.push({
+      search: `${m.name} ${s.name} ${port || ''} ${front || ''}`,
+      internet: false,
+      html: `<tr><td>${esc(m.name)}</td><td>${code(s.name)}</td><td>${port ? code(port) : '<span class="muted">—</span>'}</td><td>${front ? `<a href="https://${esc(front)}/" class="mono">${esc(front)}</a>` : ''}</td></tr>`
+    });
+  }
+  fill('services-table', svcRows);
+
+  // ---- containers & workspaces
+  const ctRows = [];
+  for (const m of machines) {
+    for (const c of m.containers) {
+      const ports = c.kind === 'nspawn'
+        ? c.forwardPorts.map(p => `${p.hostPort}→${p.containerPort}/${p.protocol}`)
+        : (c.ports || []);
+      ctRows.push({ search: `${m.name} ${c.name} ${c.kind} ${c.ip || ''} ${ports.join(' ')}`, internet: false,
+        html: `<tr><td>${esc(m.name)}</td><td>${code(c.name)}</td><td>${esc(c.kind)}</td><td>${c.ip ? code(c.ip) : ''}</td><td>${c.kind === 'oci' ? `${code(c.image)} ` : ''}${list(ports, code)}${c.autoStart === false ? ' <span class="muted small">manual start</span>' : ''}</td></tr>` });
+    }
+    if (m.piaVpn) {
+      ctRows.push({ search: `${m.name} pia vpn ${m.piaVpn.bridgeName} ${m.piaVpn.subnet}`, internet: false,
+        html: `<tr><td>${esc(m.name)}</td><td>${code('pia-vpn')}</td><td>vpn container</td><td>${code(m.piaVpn.vpnAddress)}</td><td>bridge ${code(m.piaVpn.bridgeName)} ${code(m.piaVpn.subnet)} · region ${esc(m.piaVpn.serverLocation)} · bootstrap proxy ${esc(m.piaVpn.proxyPort)}</td></tr>` });
+      for (const c of m.piaVpn.containers) {
+        const fwd = c.receiveForwardedPort ? `receives PIA forwarded port → ${c.receiveForwardedPort.port ?? 'same'}/${c.receiveForwardedPort.protocol}` : 'routed through VPN';
+        ctRows.push({ search: `${m.name} ${c.name} vpn ${c.ip}`, internet: false,
+          html: `<tr><td>${esc(m.name)}</td><td>${code(c.name)}</td><td>behind pia-vpn</td><td>${code(c.ip)}</td><td>${esc(fwd)}</td></tr>` });
+      }
+    }
+    for (const w of m.workspaces) {
+      ctRows.push({ search: `${m.name} ${w.name} workspace ${w.type} ${w.ip}`, internet: false,
+        html: `<tr><td>${esc(m.name)}</td><td>${code(w.name)}</td><td>workspace (${esc(w.type)})</td><td>${code(w.ip)}</td><td>${w.autoStart ? 'autostart' : 'manual start'}${w.passHostGpu ? ' · host GPU' : ''}</td></tr>` });
+    }
+  }
+  fill('containers-table', ctRows);
+
+  // ---- dns
+  const dnsRows = [];
+  for (const zone of Object.keys(D.dns).sort()) {
+    for (const r of D.dns[zone]) {
+      const value = r.type === 'MX' ? `${r.priority} ${r.value}` : r.type === 'SRV' ? `${r.priority} ${r.port} ${r.value}` : r.value;
+      const at = r.target ? `${badge(r.target.kind, r.target.kind + (r.target.machine ? ' ' + r.target.machine : ''))}` : '';
+      dnsRows.push({ search: `${zone} ${r.name} ${r.type} ${r.value} ${r.target?.machine || ''}`, internet: r.target?.kind === 'public',
+        html: `<tr><td>${esc(zone)}</td><td class="mono">${esc(r.name)}</td><td>${esc(r.type)}</td><td class="mono">${esc(value)}</td><td>${at}</td><td class="muted">${esc(r.ttl)}</td></tr>` });
+    }
+  }
+  fill('dns-table', dnsRows);
+
+  // ---- acl
+  const acl = D.tailscaleAcl || {};
+  const aclRows = (acl.grants || acl.acls || []).map(g => ({
+    search: `${(g.src || []).join(' ')} ${(g.dst || []).join(' ')} ${(g.ip || g.proto || []).join(' ')}`, internet: false,
+    html: `<tr><td>${list(g.src, code)}</td><td>${list(g.dst, code)}</td><td>${list(g.ip, code)}</td></tr>`
+  }));
+  fill('acl-table', aclRows);
+  document.getElementById('acl-extra').innerHTML =
+    `<div>hosts: ${esc(JSON.stringify(acl.hosts || {}))}</div><div>tagOwners: ${esc(JSON.stringify(acl.tagOwners || {}))}</div>`;
+
+  function fill(id, rows) {
+    const tbody = document.getElementById(id).querySelector('tbody');
+    tbody.innerHTML = rows.map(r => r.html).join('');
+    Array.from(tbody.children).forEach((tr, i) => { tr.dataset.search = rows[i].search; tr.dataset.internet = rows[i].internet ? '1' : ''; });
+  }
+
+  // ---- filtering
+  const q = document.getElementById('q');
+  const onlyInternet = document.getElementById('only-internet');
+  function applyFilter() {
+    const needle = q.value.trim().toLowerCase();
+    const inet = onlyInternet.checked;
+    document.querySelectorAll('tr[data-search], .card[data-search]').forEach(el => {
+      const ok = (!needle || el.dataset.search.toLowerCase().includes(needle)) && (!inet || el.dataset.internet === '1' || el.classList.contains('card'));
+      el.hidden = !ok;
+    });
+  }
+  q.addEventListener('input', applyFilter);
+  onlyInternet.addEventListener('change', applyFilter);
+  try {
+    const saved = localStorage.getItem('inventory-filter');
+    if (saved) { q.value = saved; }
+    q.addEventListener('input', () => { try { localStorage.setItem('inventory-filter', q.value); } catch {} });
+  } catch {}
+  applyFilter();
+})();
+</script>
+</body>
+</html>

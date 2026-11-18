@@ -151,6 +151,16 @@ in
             alerts = [{ type = "ntfy"; }];
           }
           {
+            name = "Service inventory";
+            group = "kif";
+            url = "https://inventory.kif.neet.dev/inventory.json";
+            interval = "5m";
+            conditions = [
+              "[STATUS] == 200"
+            ];
+            alerts = [{ type = "ntfy"; }];
+          }
+          {
             name = "VictoriaMetrics";
             group = "kif";
             url = "https://metrics.kif.neet.dev/health";
