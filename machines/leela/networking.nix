@@ -7,7 +7,7 @@ let
   # exactly the main LAN this router serves, so on the bench the main LAN
   # moves to a throwaway subnet and SSH is admitted on WAN from the live LAN.
   # Must be false for the build that goes live.
-  bench = true;
+  bench = false;
 
   # Mono Gateway Development Kit (NXP LS1046A) port roles.
   #
