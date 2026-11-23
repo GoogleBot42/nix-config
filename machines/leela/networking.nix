@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ config, lib, ... }:
 
 let
   # Bench mode: leela hangs off the live gateway's LAN by its WAN port (double
@@ -489,8 +489,16 @@ in
         "tag:cell,43,01:04:${ipToHex unifiController}"
       ];
 
-      # UniFi devices also look the controller up by the bare name `unifi`.
-      host-record = "unifi,unifi.lan,${unifiController}";
+      # /etc/hosts maps this host's own name to 127.0.0.2 (NixOS does that
+      # whenever networking.domain is set), and dnsmasq would hand that
+      # loopback address to every LAN client asking for leela.lan. Ignore
+      # /etc/hosts and answer for the router by name explicitly.
+      no-hosts = true;
+      host-record = [
+        "${config.networking.hostName},${config.networking.hostName}.lan,${main.router}"
+        # UniFi devices also look the controller up by the bare name `unifi`.
+        "unifi,unifi.lan,${unifiController}"
+      ];
 
       # Pinned addresses. Infrastructure first, then devices whose address is
       # written down elsewhere (s0's nginx, Claude project notes, dev boards).
