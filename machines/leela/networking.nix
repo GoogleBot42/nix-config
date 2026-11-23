@@ -407,6 +407,13 @@ in
           ConfigureWithoutCarrier = true;
           LinkLocalAddressing = "no";
           IPv6AcceptRA = false;
+          # The kernel's loose reverse-path filter (systemd's default on every
+          # interface) drops a reply arriving here whenever the main table has
+          # no route to its source. That is exactly the state during a WAN
+          # outage, when the backup's default lives only in the side table,
+          # so the probe that decides the failover would never be answered.
+          # The tunnel is point-to-point to the modem and policed by nftables.
+          IPv4ReversePathFilter = "no";
         };
         # Standing default route in a side table, reached only by packets
         # explicitly bound to the tunnel (the watchdog's probes), so the
