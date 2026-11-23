@@ -24,6 +24,21 @@ Build errors typically fall into these categories:
 - **Removed/renamed packages or options**: Search nixpkgs history for migration guidance and apply fixes.
 - **stateVersion changes**: If ANY change requires incrementing `system.stateVersion`, `home.stateVersion`, or data migration — STOP and ask the user. Do not proceed.
 
+### 2b. Retire Overrides Upstream Has Caught Up With
+
+Every entry in `overlays/` and `patches/` exists to work around something
+upstream; its comment names the condition for removing it. After the update,
+check each one against the new pin (version bumps, `meta.broken`, whether a
+vendored source still has the bug, whether the upstream PR merged) and drop
+the ones that are dead. Verify a removal from the built closure (`nix
+path-info -r <toplevel> | grep <pkg>`), not from evaluation alone.
+
+Do not judge a removal by comparing machine `drvPath`s before and after:
+every toplevel embeds the repo (`self`) through the flake registry and the
+workspace guests, so any content change in the repo changes all six. Compare
+the affected package's `drvPath` instead, or inspect the build closure
+(`nix-store -qR <toplevel.drv>`).
+
 ### 3. Build All Machines
 
 See [references/machines.md](references/machines.md). Get the machine list,
@@ -66,6 +81,11 @@ src=$(nix flake metadata --json . | nix run nixpkgs#jq -- -r .path)
 #   nix build --no-link "path:$src#checks.x86_64-linux.workspace-guests" \
 #     "path:$src#nixosConfigurations.<each host>.config.system.build.toplevel"
 ```
+
+Rerun it on the final commit: the first run usually finds breakage, and the
+fixes change the tree. Uncached builds (Firefox, kernels, the aarch64 machine
+under binfmt) make a cold run take hours; the rerun is cheap because the
+store keeps what passed.
 
 `nix build --store ssh-ng://s0` is not a substitute: its connection drops
 during long evaluations with `failed to start SSH connection`.

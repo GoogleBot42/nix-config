@@ -30,7 +30,7 @@ to the user by name and one-line purpose, and only write it after they
 agree.
 
 **(d) Memory upkeep.** Check
-`/home/googlebot/.claude/projects/-home-googlebot-workspace-nix-config/memory/`.
+`/home/googlebot/.claude/projects/-home-googlebot-Desktop-nix-config/memory/`.
 If something a memory file was tracking is now codified in `CLAUDE.md`, a
 skill, or the code itself, prune that memory down to a one-line pointer in
 `MEMORY.md` (or delete the file if nothing beyond the pointer is worth
