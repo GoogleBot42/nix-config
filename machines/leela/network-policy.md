@@ -3,8 +3,8 @@
 `machines/leela/networking.nix` configures the Mono Gateway Development Kit as
 the edge router for three local networks plus one WAN uplink and a cellular
 backup uplink. The policy was cross-checked against the OpenWrt APU2 backup
-from 2026-07-21; the cellular backup is the one addition to it
-([CELL-BACKUP.md](./CELL-BACKUP.md)).
+from 2026-07-21; the cellular backup ([CELL-BACKUP.md](./CELL-BACKUP.md)),
+the admin VLAN and the PIA VLAN are the additions to it.
 
 ## Interfaces and networks
 
@@ -16,6 +16,8 @@ from 2026-07-21; the cellular backup is the one addition to it
 | Management | `vlan-management` | `192.168.13.1/24` | `192.168.13.1` | `192.168.13.100`-`192.168.13.249` | VLAN 4 on the SFP+ trunk. IPv4-only. |
 | Cell | `vlan-cell` | `192.168.14.1/24` | `192.168.14.1` | `192.168.14.2` only | VLAN 14 on the trunk. Home of the UniFi 5G Backup modem; one DHCP address so the GRE endpoint is fixed. IPv4-only. |
 | Admin | `vlan-admin` | `192.168.15.1/24` | `192.168.15.1` | `192.168.15.100`-`192.168.15.249` | VLAN 15 on the trunk; the Infosphere SSID. May open connections to every other VLAN by address. IPv4-only. |
+| PIA | `vlan-pia` | `192.168.16.1/24` | none (`192.168.16.1` is the VPN container) | `192.168.16.100`-`192.168.16.249` | VLAN 16 on the trunk. Not an interface of the router: it lives inside the PIA VPN container, which is its only gateway. Everything goes through the PIA tunnel; nothing reaches the LANs. IPv4-only. |
+| VPN bridge | `br-vpn` | `10.100.0.1/24` | `10.100.0.1` | n/a | Host side of the PIA VPN container (`10.100.0.2`). Never forwarded. |
 | Cell tunnel | `gre-cell` | `100.127.125.128/31` | `100.127.125.129` | n/a | GRE to the modem (`192.168.14.1` ↔ `192.168.14.2`), MTU 1400. Carries the default route only while failed over. |
 
 `trunk` is the tagged LAN trunk; `lan1`, `lan2` and `lan3` are the untagged
@@ -44,6 +46,8 @@ Allowed to the router:
   The modem is a vendor appliance and gets nothing else (no SSH, no metrics).
 - From `gre-cell`: ICMP echo and the error types PMTU needs. The router is a
   NAT client inside the tunnel, so nothing initiates towards it.
+- From `br-vpn`: TCP 8888 (tinyproxy) from the VPN container's address only,
+  which is how the container reaches PIA's API before its tunnel exists.
 - WAN DHCPv4 replies to the router's DHCP client.
 - WAN DHCPv6 client traffic.
 - WAN ping: ICMPv4 echo-request and ICMPv6 echo-request/echo-reply (rate
@@ -90,6 +94,9 @@ Allowed forwarding:
 
 Blocked forwarding:
 
+- Anything entering or leaving `br-vpn`, stated before every accept rule.
+  The PIA VLAN never appears in this chain at all: its interface is inside
+  the VPN container (see below).
 - New IoT-to-WAN and management-to-WAN traffic.
 - IoT-to-main, IoT-to-management, management-to-main, and management-to-IoT
   traffic unless a future explicit rule is added.
@@ -102,6 +109,36 @@ itself), and outbound-initiated IPsec from the LAN already works through
 conntrack. Add an explicit DNAT if inbound IPsec to a specific host is ever
 needed.
 
+## PIA VLAN
+
+Clients on VLAN 16 reach the Internet only through the PIA WireGuard tunnel,
+and reach nothing else. The leak protection is the topology of the
+`pia-vpn` module (`common/network/pia-vpn`), not a firewall rule here:
+
+- The VLAN interface `vlan-pia` is created on the trunk by the VPN
+  container's unit and moved into the container by nspawn. The router has no
+  address on it and no route to it, so no host rule can send its traffic out
+  `wan` or `gre-cell`.
+- Inside the container, `192.168.16.1` is the DHCP server (networkd,
+  `.100`-`.249`, MTU 1420 announced), the resolver (systemd-resolved's stub,
+  forwarding to PIA's resolvers through the tunnel) and the only gateway.
+  The container's default route is the tunnel; its bridge side has no gateway
+  at all. Forwarding from `vlan-pia` is accepted to the tunnel and dropped
+  otherwise, so the VLAN cannot reach the bridge (the host's proxy, any
+  service container) either.
+- The tunnel's encrypted UDP leaves from the router's own namespace (the
+  WireGuard interface is created on the host and moved into the container)
+  and follows the router's default route, so it fails over to the cellular
+  backup with everything else.
+- With the tunnel down the VLAN has no connectivity at all, by design.
+- IPv4-only: the container's VLAN side has no link-local address and
+  announces no router, so no client can route IPv6 around the tunnel.
+
+Consequences: `.lan` names do not resolve on this VLAN, the LANs are not
+reachable from it, and its leases are not in the DHCP leases dashboard
+(they are networkd's, inside the ephemeral container, and start over with
+it). The exit country is the module's default (`swiss`).
+
 ## IPv6
 
 The WAN interface runs a DHCPv6 client (solicited even without RA M/O flags,
@@ -112,7 +149,7 @@ policy) is implemented behind `mainLanIpv6` in `networking.nix` and kept off
 for the gateway swap; the OpenWrt router never announced a prefix either. IoT
 and management have IPv6 disabled entirely (no link-local, no RA): they have
 no WAN egress, so global addresses would only widen their local attack
-surface.
+surface. The PIA VLAN has none either (the tunnel carries only IPv4).
 
 ## NAT
 

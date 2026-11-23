@@ -6,6 +6,9 @@
 #   Host creates WG interface, runs tinyproxy on bridge for PIA API bootstrap.
 #   VPN container does all PIA logic via proxy, configures WG, masquerades bridge→piaw.
 #   Service containers default route → VPN container (leak-proof by topology).
+#   LAN interfaces (cfg.lans) are moved into the VPN container, which is then
+#   their only router: DHCP, DNS and forwarding all happen in the container's
+#   namespace, whose only route out is the tunnel.
 #
 # Reference: https://www.wireguard.com/netns/#ordinary-containerization
 
@@ -84,6 +87,45 @@ let
     };
   });
 
+  lanSubmodule = types.submodule {
+    options = {
+      vlan = {
+        parent = mkOption {
+          type = types.str;
+          description = "Host interface carrying the 802.1Q tag";
+        };
+        id = mkOption {
+          type = types.ints.between 1 4094;
+          description = "802.1Q VLAN id";
+        };
+      };
+
+      address = mkOption {
+        type = types.str;
+        description = "The VPN container's address on this LAN: the clients' router and resolver";
+      };
+
+      prefixLength = mkOption {
+        type = types.ints.between 8 30;
+        default = 24;
+        description = "Prefix length of the LAN";
+      };
+
+      dhcp = {
+        poolOffset = mkOption {
+          type = types.ints.unsigned;
+          default = 100;
+          description = "First leased address, as an offset from the network address";
+        };
+        poolSize = mkOption {
+          type = types.ints.positive;
+          default = 150;
+          description = "Number of leasable addresses";
+        };
+      };
+    };
+  };
+
   # NOTE: All derivations of cfg.containers are kept INSIDE config = mkIf ... { }
   # to avoid infinite recursion. The module system's pushDownProperties eagerly
   # evaluates let bindings and mkMerge contents, so any top-level let binding
@@ -153,6 +195,28 @@ in
       description = "Service containers that route through the VPN";
     };
 
+    lans = mkOption {
+      type = types.attrsOf lanSubmodule;
+      default = { };
+      example = literalExpression ''
+        {
+          vlan-pia = {
+            vlan = { parent = "trunk"; id = 16; };
+            address = "192.168.16.1";
+          };
+        }
+      '';
+      description = ''
+        LAN interfaces (by interface name) whose every client is routed
+        through the VPN. Each is an 802.1Q VLAN interface that the VPN
+        container's unit creates on the host and nspawn moves into the
+        container, which serves DHCP and DNS on it and forwards it to the
+        tunnel and nowhere else. The host never holds an address on the LAN,
+        so no host route or firewall rule can send its traffic anywhere but
+        the tunnel.
+      '';
+    };
+
     # Subnet prefix length derived from cfg.subnet (exposed for other submodules)
     subnetPrefixLen = mkOption {
       type = types.str;
@@ -176,8 +240,13 @@ in
         # Include the host and VPN container addresses so a service container
         # can't silently collide with either.
         allIPs = [ cfg.hostAddress cfg.vpnAddress ] ++ mapAttrsToList (_: c: c.ip) cfg.containers;
+        lanNames = attrNames cfg.lans;
       in
       [
+        {
+          assertion = !(elem cfg.interfaceName lanNames) && !(elem "eth0" lanNames);
+          message = "pia-vpn LAN interface names must not collide with the tunnel or bridge interface inside the VPN container";
+        }
         {
           assertion = length (attrNames forwardingContainers) <= 1;
           message = "At most one pia-vpn container may set receiveForwardedPort";

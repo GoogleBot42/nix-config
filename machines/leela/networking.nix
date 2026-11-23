@@ -70,6 +70,7 @@ let
   managementIf = "vlan-management";
   cellIf = "vlan-cell";
   adminIf = "vlan-admin";
+  piaIf = "vlan-pia";
 
   # Local DNS domain; every LAN name is <host>.<lanDomain>.
   lanDomain = "lan";
@@ -124,6 +125,27 @@ let
     poolEnd = "192.168.15.249";
   };
   adminCidr = "${admin.router}/${toString admin.prefixLength}";
+
+  # PIA VLAN: every client on it reaches the Internet through the PIA
+  # WireGuard tunnel and nothing else. The router does not route it at all:
+  # the VLAN interface lives inside the PIA VPN container (pia-vpn.lans),
+  # which is the clients' DHCP server, resolver and only gateway, and whose
+  # only route out is the tunnel. This host never holds an address on the
+  # VLAN, so no rule here could leak it to the WAN. No LAN access either:
+  # the container forwards to the tunnel or drops.
+  pia = {
+    vlanId = 16;
+    router = "192.168.16.1";
+    prefixLength = 24;
+    poolOffset = 100;
+    poolSize = 150;
+  };
+  # The bridge between this host and the VPN container. The host is only a
+  # bootstrap proxy on it (PIA's API, before the tunnel exists); it must
+  # never forward for it.
+  vpnBridge = config.pia-vpn.bridgeName;
+  vpnContainer = config.pia-vpn.vpnAddress;
+  vpnProxyPort = config.pia-vpn.proxyPort;
   cellTunnelIf = "gre-cell";
   cellTunnel = {
     local = "100.127.125.129";
@@ -249,10 +271,20 @@ in
   # This machine replaces the OpenWrt APU2 gateway. The network policy is
   # intentionally unchanged; only the hardware shape and port roles move:
   #   RJ-45 right (wan): WAN DHCP
-  #   RJ-45 (trunk): tagged VLAN trunk for main/iot/management/cell/admin
+  #   RJ-45 (trunk): tagged VLAN trunk for main/iot/management/cell/admin/pia
   #   remaining RJ-45 and both SFP+ cages (lan1..lan3): untagged/native main LAN
   # The cellular backup (cell VLAN + GRE tunnel, failover in wan-failover.nix)
-  # is the one addition to that policy.
+  # and the PIA VLAN are the additions to that policy.
+
+  pia-vpn = {
+    enable = true;
+    lans.${piaIf} = {
+      vlan = { parent = lanTrunk; id = pia.vlanId; };
+      address = pia.router;
+      inherit (pia) prefixLength;
+      dhcp = { inherit (pia) poolOffset poolSize; };
+    };
+  };
 
   router.wanFailover = {
     enable = true;
@@ -273,6 +305,11 @@ in
 
   systemd.network = {
     enable = true;
+
+    # The PIA module switches wait-online to "any interface", which its own
+    # bridge would satisfy before the WAN has a lease. Everything here that
+    # orders after network-online expects the WAN to be routable.
+    wait-online.anyInterface = lib.mkForce false;
 
     # The failover watchdog owns the backup default route in the main table
     # and Tailscale owns its policy rules; a networkd restart must not sweep
@@ -391,6 +428,8 @@ in
         linkConfig.RequiredForOnline = "no";
       };
 
+      # The PIA VLAN is not listed: the VPN container's unit creates that
+      # interface on the trunk and moves it into the container (pia-vpn.lans).
       "20-lan-trunk" = {
         matchConfig.Name = lanTrunk;
         networkConfig = {
@@ -632,6 +671,11 @@ in
         # Inside the tunnel the router is a plain client of the modem's NAT.
         iifname "${cellTunnelIf}" ip protocol icmp icmp type { echo-request, destination-unreachable, time-exceeded, parameter-problem } accept
 
+        # The PIA VPN container bootstraps through the proxy on the bridge
+        # (PIA's API has to be reached before the tunnel exists). Only that
+        # container, only that port.
+        iifname "${vpnBridge}" ip saddr ${vpnContainer} tcp dport ${toString vpnProxyPort} accept
+
         ${lib.optionalString (wanAdminSources != [ ]) ''
           iifname "${wan}" ip saddr ${nftSet wanAdminSources} tcp dport 22 accept
         ''}
@@ -657,6 +701,13 @@ in
 
         ct state established,related accept
         ct state invalid drop
+
+        # The VPN bridge is never forwarded, in either direction: the VPN
+        # container is the only gateway for anything behind it, and the PIA
+        # VLAN is not even an interface of this host. Stated before every
+        # accept so no later rule can widen it.
+        iifname "${vpnBridge}" drop
+        oifname "${vpnBridge}" drop
 
         # Only the main VLAN is allowed to initiate Internet access. IoT and
         # management have no WAN forward rule, so they remain local-only unless a
@@ -714,7 +765,7 @@ in
 
   assertions = [
     {
-      assertion = builtins.length (lib.unique [ 2 4 5 cell.vlanId admin.vlanId ]) == 5;
+      assertion = builtins.length (lib.unique [ 2 4 5 cell.vlanId admin.vlanId pia.vlanId ]) == 6;
       message = "VLAN ids must be distinct.";
     }
     {

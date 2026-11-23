@@ -279,6 +279,13 @@ let
           receiveForwardedPort = c.receiveForwardedPort;
         })
         pia.containers;
+      lans = mapAttrsToList
+        (name: lan: {
+          inherit name;
+          inherit (lan) address prefixLength;
+          vlanId = lan.vlan.id;
+        })
+        pia.lans;
     };
 
   workspacesData = cfg:

@@ -79,7 +79,7 @@ as you face the sockets):
 | Socket | MAC | Role |
 | --- | --- | --- |
 | RJ-45 left | `e8:f6:d7:00:11:18` | `lan1`, untagged main LAN |
-| RJ-45 middle | `e8:f6:d7:00:11:19` | `trunk`, tagged VLANs 2/4/5/14/15 to the switch |
+| RJ-45 middle | `e8:f6:d7:00:11:19` | `trunk`, tagged VLANs 2/4/5/14/15/16 to the switch |
 | RJ-45 right | `e8:f6:d7:00:11:1a` | `wan`, DHCP from the modem |
 | SFP+ left | `e8:f6:d7:00:11:1b` | `lan2`, spare |
 | SFP+ right | `e8:f6:d7:00:11:1c` | `lan3`, spare |

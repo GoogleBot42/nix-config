@@ -1,6 +1,7 @@
 { config, lib, allModules, ... }:
 
-# VPN container: runs all PIA logic, acts as WireGuard gateway + NAT for service containers.
+# VPN container: runs all PIA logic, acts as WireGuard gateway + NAT for
+# service containers and for the LAN interfaces moved into it (cfg.lans).
 
 with lib;
 
@@ -14,6 +15,11 @@ let
   portForwarding = forwardingContainers != { };
   forwardingContainerName = if portForwarding then head (attrNames forwardingContainers) else null;
   forwardingContainer = if portForwarding then forwardingContainers.${forwardingContainerName} else null;
+
+  lanNames = attrNames cfg.lans;
+  # Tunnel MTU as set by connectToServer (scripts.nix); handed to LAN clients
+  # over DHCP so UDP flows need no fragmentation (TCP is clamped anyway).
+  tunnelMtu = 1420;
 
   serverFile = "/var/lib/pia-vpn/server.json";
   wgFile = "/var/lib/pia-vpn/wg.conf";
@@ -86,14 +92,28 @@ in
       # nspawn refuses to move a link udev has not finished initialising
       # ("Network interface piaw is not initialized yet"), and a freshly added
       # link is usually in that state, so wait for udev before ExecStart.
+      #
+      # The LAN VLAN interfaces get the same treatment, for the same reason:
+      # whether the kernel deletes a VLAN link with the container's namespace
+      # or hands it back to the host, the next start must not depend on it.
+      # They are deliberately not networkd netdevs on the host, so nothing on
+      # the host ever configures or addresses them.
       path = [ config.systemd.package ];
       preStart = ''
         ip link show dev ${cfg.interfaceName} >/dev/null 2>&1 || \
           ip link add ${cfg.interfaceName} type wireguard
         udevadm wait --settle --timeout=10 /sys/class/net/${cfg.interfaceName}
+        ${concatMapStringsSep "\n" (name: ''
+          ip link show dev ${name} >/dev/null 2>&1 || \
+            ip link add link ${cfg.lans.${name}.vlan.parent} name ${name} type vlan id ${toString cfg.lans.${name}.vlan.id}
+          udevadm wait --settle --timeout=10 /sys/class/net/${name}
+        '') lanNames}
       '';
       postStop = ''
         ip link del dev ${cfg.interfaceName} 2>/dev/null || true
+        ${concatMapStringsSep "\n" (name: ''
+          ip link del dev ${name} 2>/dev/null || true
+        '') lanNames}
       '';
     };
 
@@ -106,7 +126,7 @@ in
       # into Wants=/After= on the interface's .device unit, and since preStart
       # is what creates the link, every start without an existing link first
       # waits out the 90 s device-job timeout.
-      extraFlags = [ "--network-interface=${cfg.interfaceName}" ];
+      extraFlags = map (name: "--network-interface=${name}") ([ cfg.interfaceName ] ++ lanNames);
 
       # Bind only the needed secrets — mounting all of /run/agenix would expose
       # every host secret to the container that talks to the internet.
@@ -137,13 +157,41 @@ in
           systemd.network.enable = true;
           networking.useDHCP = false;
 
-          systemd.network.networks."20-eth0" = {
-            matchConfig.Name = "eth0";
-            networkConfig = {
-              Address = "${cfg.vpnAddress}/${cfg.subnetPrefixLen}";
-              DHCPServer = false;
+          systemd.network.networks = {
+            "20-eth0" = {
+              matchConfig.Name = "eth0";
+              networkConfig = {
+                Address = "${cfg.vpnAddress}/${cfg.subnetPrefixLen}";
+                DHCPServer = false;
+              };
             };
-          };
+          }
+          # LAN interfaces: the container is the router. IPv4 only; the tunnel
+          # carries no IPv6, and without even a link-local address here no
+          # client can pick this router up for IPv6 and route around it.
+          // mapAttrs'
+            (name: lan: nameValuePair "30-${name}" {
+              matchConfig.Name = name;
+              address = [ "${lan.address}/${toString lan.prefixLength}" ];
+              networkConfig = {
+                DHCPServer = true;
+                ConfigureWithoutCarrier = true;
+                LinkLocalAddressing = "no";
+                IPv6AcceptRA = false;
+              };
+              dhcpServerConfig = {
+                PoolOffset = lan.dhcp.poolOffset;
+                PoolSize = lan.dhcp.poolSize;
+                EmitDNS = true;
+                DNS = "_server_address";
+                # Leases do not survive the ephemeral container; clients just
+                # re-request on the next start.
+                PersistLeases = false;
+                SendOption = "26:uint16:${toString tunnelMtu}";
+              };
+              linkConfig.RequiredForOnline = "no";
+            })
+            cfg.lans;
 
           # Ignore WG interface for wait-online (it's configured manually, not by networkd)
           systemd.network.wait-online.ignoredInterfaces = [ cfg.interfaceName ];
@@ -156,14 +204,57 @@ in
           # Enable forwarding so bridge traffic can go through WG
           boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
 
-          # Trust bridge interface
-          networking.firewall.trustedInterfaces = [ "eth0" ];
+          networking.firewall = mkMerge [
+            {
+              # Trust bridge interface
+              trustedInterfaces = [ "eth0" ];
+
+              # LAN clients get DHCP and DNS from this container and nothing else.
+              interfaces = genAttrs lanNames (_: {
+                allowedUDPPorts = [ 53 67 ];
+                allowedTCPPorts = [ 53 ];
+              });
+            }
+
+            # LAN interfaces are forwarded to the tunnel or not at all: never to
+            # the bridge (the host's proxy, the service containers) nor to each
+            # other. Standing rules in the firewall rather than in pia-vpn-setup
+            # so they hold before the tunnel is up and after it goes down; the
+            # setup script only adds the tunnel accepts. Both firewall backends,
+            # as on the host.
+            (mkIf config.networking.nftables.enable {
+              extraForwardRules = concatMapStrings
+                (name: ''
+                  iifname "${name}" oifname != "${cfg.interfaceName}" drop
+                  oifname "${name}" iifname != "${cfg.interfaceName}" drop
+                '')
+                lanNames;
+            })
+            (mkIf (!config.networking.nftables.enable) {
+              extraCommands = concatMapStrings
+                (name: ''
+                  ip46tables -D FORWARD -i ${name} ! -o ${cfg.interfaceName} -j DROP 2>/dev/null || true
+                  ip46tables -I FORWARD -i ${name} ! -o ${cfg.interfaceName} -j DROP
+                  ip46tables -D FORWARD -o ${name} ! -i ${cfg.interfaceName} -j DROP 2>/dev/null || true
+                  ip46tables -I FORWARD -o ${name} ! -i ${cfg.interfaceName} -j DROP
+                '')
+                lanNames;
+              extraStopCommands = concatMapStrings
+                (name: ''
+                  ip46tables -D FORWARD -i ${name} ! -o ${cfg.interfaceName} -j DROP 2>/dev/null || true
+                  ip46tables -D FORWARD -o ${name} ! -i ${cfg.interfaceName} -j DROP 2>/dev/null || true
+                '')
+                lanNames;
+            })
+          ];
 
           # DNS: use systemd-resolved listening on bridge IP so service containers
-          # can use VPN container as DNS server (queries go through WG tunnel = no DNS leak)
+          # and LAN clients can use VPN container as DNS server (queries go
+          # through WG tunnel = no DNS leak)
           services.resolved = {
             enable = true;
-            settings.Resolve.DNSStubListenerExtra = cfg.vpnAddress;
+            settings.Resolve.DNSStubListenerExtra =
+              [ cfg.vpnAddress ] ++ mapAttrsToList (_: lan: lan.address) cfg.lans;
           };
 
           # Don't use host resolv.conf — resolved manages DNS
@@ -265,6 +356,13 @@ in
               iptables -t nat -A pia-nat-post -o ${cfg.interfaceName} -j MASQUERADE
               iptables -A pia-fwd -i eth0 -o ${cfg.interfaceName} -j ACCEPT
               iptables -A pia-fwd -i ${cfg.interfaceName} -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+              # LAN interfaces → tunnel. Everything else from or to them is
+              # dropped by standing firewall rules (see networking.firewall).
+              ${concatMapStringsSep "\n" (name: ''
+                iptables -A pia-fwd -i ${name} -o ${cfg.interfaceName} -j ACCEPT
+                iptables -A pia-fwd -i ${cfg.interfaceName} -o ${name} -m state --state RELATED,ESTABLISHED -j ACCEPT
+              '') lanNames}
 
               # Clamp TCP MSS to the tunnel PMTU. Service containers see MTU 1500
               # but the tunnel is 1420; without clamping, forwarded TCP relies
