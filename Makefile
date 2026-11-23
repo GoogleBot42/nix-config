@@ -56,3 +56,7 @@ deploy:
 .PHONY: deploy-activate
 deploy-activate:
 	deploy --remote-build --debug-logs --skip-checks .#$(filter-out $@,$(MAKECMDGOALS))
+# The targets above take their argument as a second goal; without this rule
+# make runs the recipe and then fails with "No rule to make target".
+%:
+	@:
