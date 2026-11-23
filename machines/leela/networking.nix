@@ -68,6 +68,7 @@ let
   mainIf = "br-main";
   iotIf = "vlan-iot";
   managementIf = "vlan-management";
+  cellIf = "vlan-cell";
 
   # The main LAN is 192.168.0.0/21 with the router at 192.168.1.1. The DHCP
   # pool is .0.100-.0.249 (offsets from the network address, as OpenWrt
@@ -90,6 +91,44 @@ let
   iotCidr = "192.168.8.1/22";
   managementCidr = "192.168.13.1/24";
 
+  # Cellular backup uplink: a UniFi 5G Backup (U5G) modem on its own VLAN so
+  # it can hang off any PoE switch port in the house. The modem is not a
+  # router: it is adopted by the UniFi Network controller on s0 and exposes
+  # its cellular WAN to the gateway through a GRE tunnel whose inner /31 is
+  # fixed in the modem firmware (modem .128, gateway .129). The outer
+  # endpoints are the VLAN addresses, so the modem's address must never
+  # move: the VLAN's DHCP pool is that single address.
+  cell = {
+    vlanId = 14;
+    router = "192.168.14.1";
+    modem = "192.168.14.2";
+    prefixLength = 24;
+    netmask = "255.255.255.0";
+  };
+  cellCidr = "${cell.router}/${toString cell.prefixLength}";
+  cellTunnelIf = "gre-cell";
+  cellTunnel = {
+    local = "100.127.125.129";
+    remote = "100.127.125.128";
+    # GRE adds 24 bytes to every packet; the modem's own gre1 is 1476 and
+    # oversized packets through it are silently dropped.
+    mtu = 1400;
+    # Side table holding a standing default route through the tunnel so the
+    # backup can be probed while idle. Failover itself (wan-failover.nix)
+    # puts a default route into the main table at this metric, below the WAN
+    # lease's 1024, so everything including Tailscale's own fwmark rules
+    # (which pin its packets to the main table) follows it.
+    table = 100;
+    metric = 512;
+  };
+  # UniFi Network controller the modem informs to (s0). Handed out as DHCP
+  # option 43 and the `unifi` DNS name on the cell VLAN because the controller
+  # sits on another VLAN and cannot be found by L2 discovery from there.
+  unifiController = "192.168.1.2";
+  ipToHex = ip: lib.concatMapStringsSep ":"
+    (octet: lib.fixedWidthString 2 "0" (lib.toLower (lib.toHexString (lib.toInt octet))))
+    (lib.splitString "." ip);
+
   # Main-LAN IPv6 (delegated prefix + SLAAC) is a behaviour change from the
   # OpenWrt gateway, which never announced a prefix on any LAN. Kept off so the
   # swap changes nothing clients can see; flip on as a separate change.
@@ -105,7 +144,12 @@ let
   upstreamDns = [ "1.1.1.1" "8.8.8.8" ];
 
   lanIfs = [ mainIf iotIf managementIf ];
-  internetCidrs = [ mainCidr ];
+  # Every interface the Internet is reached through: masquerade, MSS clamping
+  # and the forward policy treat them alike.
+  wanIfs = [ wan cellTunnelIf ];
+  # The modem itself needs egress on the cable WAN (eSIM provisioning,
+  # UniFi Mobility, firmware) when its cellular side is not up yet.
+  internetCidrs = [ mainCidr cellCidr ];
 
   mkDhcpRange = { tag, start, end, netmask, leaseTime ? "12h" }:
     "set:${tag},${start},${end},${netmask},${leaseTime}";
@@ -151,8 +195,18 @@ in
   # This machine replaces the OpenWrt APU2 gateway. The network policy is
   # intentionally unchanged; only the hardware shape and port roles move:
   #   RJ-45 right (wan): WAN DHCP
-  #   RJ-45 (trunk): tagged VLAN trunk for main/iot/management
+  #   RJ-45 (trunk): tagged VLAN trunk for main/iot/management/cell
   #   remaining RJ-45 and both SFP+ cages (lan1..lan3): untagged/native main LAN
+  # The cellular backup (cell VLAN + GRE tunnel, failover in wan-failover.nix)
+  # is the one addition to that policy.
+
+  router.wanFailover = {
+    enable = true;
+    primaryInterface = wan;
+    backupInterface = cellTunnelIf;
+    backupGateway = cellTunnel.remote;
+    backupMetric = cellTunnel.metric;
+  };
 
   networking = {
     useDHCP = false;
@@ -165,6 +219,14 @@ in
 
   systemd.network = {
     enable = true;
+
+    # The failover watchdog owns the backup default route in the main table
+    # and Tailscale owns its policy rules; a networkd restart must not sweep
+    # either away as foreign.
+    config.networkConfig = {
+      ManageForeignRoutes = false;
+      ManageForeignRoutingPolicyRules = false;
+    };
 
     links = lib.mapAttrs'
       (role: port: lib.nameValuePair "10-${role}" {
@@ -208,6 +270,28 @@ in
         vlanConfig.Id = 4;
       };
 
+      "20-${cellIf}" = {
+        netdevConfig = {
+          Kind = "vlan";
+          Name = cellIf;
+        };
+        vlanConfig.Id = cell.vlanId;
+      };
+
+      "30-${cellTunnelIf}" = {
+        netdevConfig = {
+          Kind = "gre";
+          Name = cellTunnelIf;
+          MTUBytes = cellTunnel.mtu;
+        };
+        tunnelConfig = {
+          Local = cell.router;
+          Remote = cell.modem;
+          TTL = 64;
+          Independent = true;
+        };
+      };
+
       "11-wan-vlan" = lib.mkIf (wanVlanId != null) {
         netdevConfig = {
           Kind = "vlan";
@@ -248,7 +332,7 @@ in
       "20-lan-trunk" = {
         matchConfig.Name = lanTrunk;
         networkConfig = {
-          VLAN = [ "vlan-main-trunk" iotIf managementIf ];
+          VLAN = [ "vlan-main-trunk" iotIf managementIf cellIf ];
           LinkLocalAddressing = "no";
         };
         linkConfig.RequiredForOnline = "no";
@@ -305,6 +389,45 @@ in
         };
         linkConfig.RequiredForOnline = "no";
       };
+
+      "40-${cellIf}" = {
+        matchConfig.Name = cellIf;
+        address = [ cellCidr ];
+        networkConfig = {
+          ConfigureWithoutCarrier = true;
+          LinkLocalAddressing = "no";
+        };
+        linkConfig.RequiredForOnline = "no";
+      };
+
+      "50-${cellTunnelIf}" = {
+        matchConfig.Name = cellTunnelIf;
+        address = [ "${cellTunnel.local}/31" ];
+        networkConfig = {
+          ConfigureWithoutCarrier = true;
+          LinkLocalAddressing = "no";
+          IPv6AcceptRA = false;
+        };
+        # Standing default route in a side table, reached only by packets
+        # explicitly bound to the tunnel (the watchdog's probes), so the
+        # backup can be checked without routing anything else through it.
+        routes = [
+          {
+            Gateway = cellTunnel.remote;
+            GatewayOnLink = true;
+            Table = cellTunnel.table;
+          }
+        ];
+        routingPolicyRules = [
+          {
+            OutgoingInterface = cellTunnelIf;
+            Table = cellTunnel.table;
+            # Below Tailscale's rules (5210-5270) and above main (32766).
+            Priority = 5300;
+          }
+        ];
+        linkConfig.RequiredForOnline = "no";
+      };
     };
   };
 
@@ -316,8 +439,8 @@ in
   services.dnsmasq = {
     enable = true;
     settings = {
-      interface = lanIfs;
-      except-interface = wan;
+      interface = lanIfs ++ [ cellIf ];
+      except-interface = wanIfs;
       bind-dynamic = true;
       domain-needed = true;
       bogus-priv = true;
@@ -346,6 +469,8 @@ in
         (mkDhcpRange { tag = "main"; start = main.poolStart; end = main.poolEnd; netmask = main.netmask; })
         (mkDhcpRange { tag = "iot"; start = "192.168.8.100"; end = "192.168.8.249"; netmask = "255.255.252.0"; })
         (mkDhcpRange { tag = "management"; start = "192.168.13.100"; end = "192.168.13.249"; netmask = "255.255.255.0"; })
+        # One address: the GRE tunnel's outer endpoint must not move.
+        (mkDhcpRange { tag = "cell"; start = cell.modem; end = cell.modem; netmask = cell.netmask; })
       ];
 
       dhcp-option = [
@@ -358,7 +483,14 @@ in
         # option entirely instead of advertising a resolver that refuses them.
         (mkDhcpSuppressedOption "iot" "dns-server")
         (mkDhcpSuppressedOption "management" "dns-server")
+        (mkDhcpOption "cell" "router" cell.router)
+        (mkDhcpOption "cell" "dns-server" cell.router)
+        # UniFi vendor option: sub-option 1 (length 4) = controller IPv4.
+        "tag:cell,43,01:04:${ipToHex unifiController}"
       ];
+
+      # UniFi devices also look the controller up by the bare name `unifi`.
+      host-record = "unifi,unifi.lan,${unifiController}";
 
       # Pinned addresses. Infrastructure first, then devices whose address is
       # written down elsewhere (s0's nginx, Claude project notes, dev boards).
@@ -392,6 +524,11 @@ in
         elements = ${nftStringSet lanIfs}
       }
 
+      set wan_ifaces {
+        type ifname
+        elements = ${nftStringSet wanIfs}
+      }
+
       chain input {
         type filter hook input priority filter; policy drop;
 
@@ -413,6 +550,15 @@ in
         iifname ${nftStringSet [ iotIf managementIf ]} tcp dport 9100 reject
         iifname @lan_ifaces accept
 
+        # The cellular modem is a vendor appliance, not a LAN client: DHCP,
+        # DNS, ping and the GRE tunnel from its fixed address, nothing else.
+        iifname "${cellIf}" ip saddr ${cell.modem} ip protocol gre accept
+        iifname "${cellIf}" udp dport { 53, 67 } accept
+        iifname "${cellIf}" tcp dport 53 accept
+        iifname "${cellIf}" ip protocol icmp accept
+        # Inside the tunnel the router is a plain client of the modem's NAT.
+        iifname "${cellTunnelIf}" ip protocol icmp icmp type { echo-request, destination-unreachable, time-exceeded, parameter-problem } accept
+
         ${lib.optionalString (wanAdminSources != [ ]) ''
           iifname "${wan}" ip saddr ${nftSet wanAdminSources} tcp dport 22 accept
         ''}
@@ -432,16 +578,32 @@ in
         type filter hook forward priority filter; policy drop;
 
         # Clamp TCP MSS to path MTU on WAN in both directions (OpenWrt mtu_fix).
-        iifname "${wan}" tcp flags syn tcp option maxseg size set rt mtu
-        oifname "${wan}" tcp flags syn tcp option maxseg size set rt mtu
+        # On the tunnel this is what keeps TCP working at its smaller MTU.
+        iifname @wan_ifaces tcp flags syn tcp option maxseg size set rt mtu
+        oifname @wan_ifaces tcp flags syn tcp option maxseg size set rt mtu
 
         ct state established,related accept
         ct state invalid drop
 
         # Only the main VLAN is allowed to initiate Internet access. IoT and
         # management have no WAN forward rule, so they remain local-only unless a
-        # future rule explicitly grants egress.
-        iifname "${mainIf}" oifname "${wan}" accept
+        # future rule explicitly grants egress. Which WAN carries it is decided
+        # by routing (the failover watchdog), not here.
+        iifname "${mainIf}" oifname @wan_ifaces accept
+
+        # The modem's own egress (eSIM, UniFi Mobility, firmware) goes out the
+        # cable WAN; its tunnel is for LAN traffic, not for the modem itself.
+        iifname "${cellIf}" ip saddr ${cell.modem} oifname "${wan}" accept
+        # Adoption and management by the UniFi controller on s0: inform
+        # (8080), STUN (3478) and the speed-test port (6789). s0 answers on its
+        # main-LAN address and holds a dynamic lease on the management VLAN,
+        # so both are reachable for these ports and nothing else.
+        iifname "${cellIf}" ip saddr ${cell.modem} oifname "${mainIf}" ip daddr ${unifiController} tcp dport { 8080, 6789 } accept
+        iifname "${cellIf}" ip saddr ${cell.modem} oifname "${mainIf}" ip daddr ${unifiController} udp dport 3478 accept
+        iifname "${cellIf}" ip saddr ${cell.modem} oifname "${managementIf}" tcp dport { 8080, 6789 } accept
+        iifname "${cellIf}" ip saddr ${cell.modem} oifname "${managementIf}" udp dport 3478 accept
+        # The trusted LAN may reach the modem (SSH, its screen's web pages).
+        iifname "${mainIf}" oifname "${cellIf}" accept
 
         # Permit forwarded ICMPv6 control/error and echo traffic required for
         # correct PMTU and NDP behavior (OpenWrt Allow-ICMPv6-Forward).
@@ -466,13 +628,18 @@ in
       chain postrouting {
         type nat hook postrouting priority srcnat; policy accept;
         # Match the forward policy: NAT only subnets that are intentionally allowed to use WAN.
-        # IPv6 is routed (delegated prefix), not NATed.
-        oifname "${wan}" ip saddr @internet4_subnets masquerade
+        # IPv6 is routed (delegated prefix), not NATed. Inside the tunnel the
+        # modem NATs again to the carrier address.
+        oifname ${nftStringSet wanIfs} ip saddr @internet4_subnets masquerade
       }
     '';
   };
 
   assertions = [
+    {
+      assertion = !(lib.hasPrefix "192.168.14." main.router) && cell.vlanId != 2 && cell.vlanId != 4 && cell.vlanId != 5;
+      message = "The cell VLAN must not overlap the main, IoT or management networks.";
+    }
     {
       assertion = !(builtins.elem wan ([ lanTrunk ] ++ mainAccessIfs))
         && !(builtins.elem lanTrunk mainAccessIfs)

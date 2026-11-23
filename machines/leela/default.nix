@@ -4,6 +4,7 @@
   imports = [
     ./hardware-configuration.nix
     ./networking.nix
+    ./wan-failover.nix
     ./fan.nix
   ];
 

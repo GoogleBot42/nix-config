@@ -1,0 +1,207 @@
+{ config, lib, pkgs, ... }:
+
+# WAN failover for a router with a second uplink (networking.nix: the cellular
+# GRE tunnel). The watchdog probes the primary WAN by pinging public anycast
+# resolvers out of that interface; while they stay silent it adds a default
+# route through the backup to the main table at a metric that beats the
+# primary's, and withdraws it once the primary answers again. A route rather
+# than a policy rule because Tailscale pins its own packets to the main table
+# with fwmark rules, so only a main-table route keeps the tailnet up as well.
+# Link state alone is not enough on a cable modem: the link stays up while the
+# upstream is dead, so only an end-to-end probe tells the truth. The switch
+# is only ever made onto a backup that answers at that moment.
+
+let
+  cfg = config.router.wanFailover;
+  hasNtfy = config.thisMachine.hasRole."ntfy";
+  textfileDir = config.services.prometheus.exporters.node.textfileDirectory;
+
+  watchdog = pkgs.writeShellApplication {
+    name = "wan-failover";
+    runtimeInputs = with pkgs; [ coreutils iproute2 iputils conntrack-tools gnugrep ];
+    text = ''
+      primary=${cfg.primaryInterface}
+      backup=${cfg.backupInterface}
+      gateway=${cfg.backupGateway}
+      metric=${toString cfg.backupMetric}
+      targets=(${lib.concatStringsSep " " cfg.probeTargets})
+      metrics=${textfileDir}/wan-failover.prom
+
+      state=primary fails=0 oks=0 backup_ok=0 transitions=0 last_change=$(date +%s) tick=0
+
+      # One answering target is enough; -I binds the probe to the interface so
+      # it cannot sneak out the other uplink.
+      probe() {
+        local t
+        for t in "''${targets[@]}"; do
+          ping -n -q -c 1 -W ${toString cfg.probeTimeoutSec} -I "$1" "$t" > /dev/null 2>&1 && return 0
+        done
+        return 1
+      }
+
+      engage() { ip -4 route replace default via "$gateway" dev "$backup" onlink metric "$metric"; }
+      disengage() { ip -4 route del default via "$gateway" dev "$backup" metric "$metric" 2> /dev/null || true; }
+
+      # Masqueraded flows carry the old uplink's address; drop them so the
+      # clients' retries are NATed afresh through the uplink now in use.
+      flush_nat() { conntrack -D --src-nat > /dev/null 2>&1 || true; }
+
+      notify() {
+        ${lib.optionalString hasNtfy ''
+          ${config.ntfy-alerts.notify} service-failures "$1" "$2" "$3" "$4"
+        ''}
+        :
+      }
+
+      write_metrics() {
+        local active=0 primary_ok=0
+        [ "$state" = backup ] && active=1
+        [ "$fails" -eq 0 ] && primary_ok=1
+        {
+          echo '# HELP wan_failover_active 1 while LAN traffic is routed through the backup uplink.'
+          echo '# TYPE wan_failover_active gauge'
+          echo "wan_failover_active $active"
+          echo '# HELP wan_probe_ok 1 when the last probe out of the interface was answered.'
+          echo '# TYPE wan_probe_ok gauge'
+          echo "wan_probe_ok{interface=\"$primary\"} $primary_ok"
+          echo "wan_probe_ok{interface=\"$backup\"} $backup_ok"
+          echo '# HELP wan_failover_transitions_total Switches between the uplinks since the watchdog started.'
+          echo '# TYPE wan_failover_transitions_total counter'
+          echo "wan_failover_transitions_total $transitions"
+          echo '# HELP wan_failover_last_change_timestamp_seconds When the active uplink last changed.'
+          echo '# TYPE wan_failover_last_change_timestamp_seconds gauge'
+          echo "wan_failover_last_change_timestamp_seconds $last_change"
+        } > "$metrics.tmp"
+        mv "$metrics.tmp" "$metrics"
+      }
+
+      # A restart must not leave a stale route from a previous run behind.
+      disengage
+
+      while :; do
+        if probe "$primary"; then fails=0; oks=$((oks + 1)); else oks=0; fails=$((fails + 1)); fi
+
+        # The backup is metered; probe it rarely while it is idle. A failing
+        # primary probes it on demand below.
+        if [ "$state" = backup ] || { [ "$fails" -eq 0 ] && [ $((tick % ${toString cfg.backupProbeEvery})) -eq 0 ]; }; then
+          if probe "$backup"; then backup_ok=1; else backup_ok=0; fi
+        fi
+        tick=$((tick + 1))
+
+        case $state in
+          primary)
+            if [ "$fails" -ge ${toString cfg.failAfter} ]; then
+              # Switch only onto a backup that answers right now. If both are
+              # dead nothing is gained, and if the primary probe is the one
+              # that is wrong, staying put is what keeps the LAN online.
+              if probe "$backup"; then
+                backup_ok=1
+                echo "primary $primary unanswered $fails times; routing through $backup"
+                engage; flush_nat
+                state=backup transitions=$((transitions + 1)) last_change=$(date +%s)
+                notify high "warning,signal_strength" "WAN failover on ${config.networking.hostName}" \
+                  "$primary stopped answering; traffic now goes through $backup."
+              else
+                backup_ok=0
+                if [ $((fails % 30)) -eq 0 ]; then
+                  echo "primary $primary unanswered $fails times and $backup does not answer either; staying on $primary"
+                fi
+              fi
+            fi
+            ;;
+          backup)
+            if [ "$oks" -ge ${toString cfg.recoverAfter} ]; then
+              echo "primary $primary answered $oks times; routing through it again"
+              disengage; flush_nat
+              state=primary transitions=$((transitions + 1)) last_change=$(date +%s)
+              notify default "white_check_mark" "WAN restored on ${config.networking.hostName}" \
+                "$primary answers again; traffic left $backup."
+            else
+              # Re-assert in case networkd or an admin reloaded the routes.
+              engage
+            fi
+            ;;
+        esac
+
+        write_metrics
+        sleep ${toString cfg.intervalSec}
+      done
+    '';
+  };
+in
+{
+  options.router.wanFailover = {
+    enable = lib.mkEnableOption "probe-driven failover from the primary WAN to a backup uplink";
+
+    primaryInterface = lib.mkOption {
+      type = lib.types.str;
+      description = "Interface carrying the primary default route (in the main table).";
+    };
+
+    backupInterface = lib.mkOption {
+      type = lib.types.str;
+      description = "Interface the backup default route goes out of; probes are bound to it.";
+    };
+
+    backupGateway = lib.mkOption {
+      type = lib.types.str;
+      description = "Next hop of the backup default route (on-link).";
+    };
+
+    backupMetric = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 512;
+      description = "Metric of the backup default route while failed over; must beat the primary's.";
+    };
+
+    probeTargets = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ "1.1.1.1" "8.8.8.8" "9.9.9.9" ];
+      description = "Addresses pinged to judge an uplink; one answer counts as healthy.";
+    };
+
+    probeTimeoutSec = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 1;
+    };
+
+    intervalSec = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 2;
+      description = "Seconds between probe rounds.";
+    };
+
+    failAfter = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 3;
+      description = "Consecutive failed rounds before switching to the backup.";
+    };
+
+    recoverAfter = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 15;
+      description = "Consecutive good rounds before switching back; longer than failAfter so a flapping uplink does not bounce clients.";
+    };
+
+    backupProbeEvery = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 30;
+      description = "Probe the (metered) backup only every N rounds while it is idle.";
+    };
+  };
+
+  config = lib.mkIf cfg.enable {
+    systemd.services.wan-failover = {
+      description = "WAN failover watchdog";
+      wantedBy = [ "multi-user.target" ];
+      after = [ "network.target" "nftables.service" ];
+      serviceConfig = {
+        ExecStart = lib.getExe watchdog;
+        Restart = "always";
+        RestartSec = 5;
+      } // lib.optionalAttrs hasNtfy {
+        EnvironmentFile = "/run/agenix/ntfy-token";
+      };
+    };
+  };
+}
