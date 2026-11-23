@@ -144,13 +144,36 @@ Known limits say. The carrier address is CGNAT (172.58.x.x).
 
 ### 4. Failover drill
 
-Unplug the modem cable from leela's right RJ-45 (`wan`). Within about ten
-seconds the journal (`ssh leela journalctl -fu wan-failover`) reports the
-switch, ntfy gets "WAN failover on leela", and `curl -4 ifconfig.co` from a
-LAN host returns a carrier address. Plug the cable back; roughly thirty
-seconds after the lease returns the watchdog switches back and ntfy gets
-"WAN restored on leela". Do the drill once with a LAN client streaming
-something to see what the 1-3 Mbps upstream feels like.
+Pulling the modem's cable from leela's right RJ-45 (`wan`) is the real
+test. A scripted equivalent runs as root on leela and brings every link
+back up on exit whatever happens (`ip link set wan down` behaves like the
+cable-out, `ip link set vlan-cell down` like the modem vanishing):
+
+```sh
+ip link set wan down;        sleep 20   # failover within ~6 s; curl -4 ifconfig.co shows 172.58.x.x
+ip link set vlan-cell down;  sleep 25   # backup dies while failed over: stays, both probes 0, no flapping
+ip link set wan up;          sleep 25   # back on the cable at the first answer (~12 s with the DHCP renewal)
+ip link set vlan-cell up                # backup healthy again within a minute
+```
+
+Run 2026-11-22 with exactly those results; `journalctl -fu wan-failover`
+narrates each step and ntfy gets the failover and restore messages. The
+LAN rides cellular (30-85 Mbps down, 1-3 Mbps up) for about a minute and
+active connections are reset twice, so pick the moment.
+
+What the watchdog does in each failure:
+
+- Cable out or upstream dead with link up: primary probes fail, the backup
+  is probed on demand and, if it answers, carries traffic after three
+  silent rounds. This needs the reverse-path filter off on `gre-cell`
+  (`IPv4ReversePathFilter=no`): with the cable out, main has no route to
+  the Internet and the kernel's loose filter would otherwise drop the
+  probe replies arriving on the tunnel.
+- Backup dead while on the cable: nothing changes; the metric and the
+  hourly check's ntfy say so.
+- Both dead: stays on whichever it is on and logs every minute.
+- Backup dies while failed over: the first answer from the cable brings it
+  back instead of waiting out the fifteen-round flap guard.
 
 ## Known limits
 
