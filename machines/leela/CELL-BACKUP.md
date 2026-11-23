@@ -125,14 +125,22 @@ The Data Limit set while the foreign eSIM was active (1 MB, monthly) was
 tied to that profile; check Settings → Cellular after adding a plan and
 clear or resize it, or the new plan stops after 1 MB.
 
-Checks once a plan is active, from leela (root):
+Plan: Tello data-only eSIM (T-Mobile), activated 2026-11-22 through the
+controller (device → Settings → Cellular → eSIM → Activate eSIM with the
+code from Tello's "My SIM" page, Manual Install tab).
+
+Checks with a plan active, from leela (root); the modem does not answer
+pings on its inner address, so go straight to the Internet:
 
 ```sh
-ping -c3 -I gre-cell 100.127.125.128      # modem's inner address
-ping -c3 -I gre-cell 8.8.8.8              # Internet via cellular
+ping -c3 -I gre-cell 8.8.8.8              # Internet via cellular (~40 ms on T-Mobile here)
 ping -c3 -M do -s 1372 -I gre-cell 8.8.8.8   # largest unfragmented payload at MTU 1400
 systemctl start cell-backup-check         # fills cell_backup_check_* right away
 ```
+
+One run of the hourly check moved 11 KB in and 6 KB out (systemd's IP
+accounting on the unit), so the check costs about 150 MB a year as the
+Known limits say. The carrier address is CGNAT (172.58.x.x).
 
 ### 4. Failover drill
 
