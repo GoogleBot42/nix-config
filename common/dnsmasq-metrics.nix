@@ -32,19 +32,18 @@ let
     for stat in cachesize insertions evictions misses hits auth; do
       v=$(dig +short +time=2 +tries=1 @127.0.0.1 chaos txt "$stat.bind" 2>/dev/null | tr -d '"')
       case "$v" in
-  ''| * [ !0-9 ] * );
-  ;
-  *) printf 'dnsmasq_%s %s\n' "$stat" "$v" ;;
-  esac
-  done
-  printf 'dnsmasq_metrics_timestamp_seconds %s\n' "$(date +%s)"
+        '''|*[!0-9]*) ;;
+        *) printf 'dnsmasq_%s %s\n' "$stat" "$v" ;;
+      esac
+    done
+    printf 'dnsmasq_metrics_timestamp_seconds %s\n' "$(date +%s)"
   '';
 
   writer = pkgs.writeShellScript "dnsmasq-metrics" ''
-  set -u
-  out = "${textfileDir}/dnsmasq.prom"
+    set -u
+    out="${textfileDir}/dnsmasq.prom"
     ${probe} > "$out.tmp" && mv "$out.tmp" "$out"
-    '' ;
+  '';
 in
 {
   config = lib.mkIf (cfg.enable && config.services.prometheus.exporters.node.enable) {
