@@ -17,13 +17,6 @@
   # prompt on it protects nothing and only gets in the way.
   services.getty.autologinUser = "root";
 
-  # Bench-only root key for the agent working from fry (~/.ssh/leela-bench), so
-  # the bench does not depend on the owner's agent being unlocked. Dropped
-  # together with `bench` in networking.nix before the swap.
-  users.users.root.openssh.authorizedKeys.keys = [
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBQjgM+fQldiXac/dP87KKnY6vRePYrqsvByF7M5QP5x"
-  ];
-
   # Lease table and DNS cache counters for the fleet metrics scraper on kif
   # (common/server/metrics.nix, "DHCP leases" dashboard). The exporter asks
   # dnsmasq over loopback and reads the lease file directly; --expose_leases

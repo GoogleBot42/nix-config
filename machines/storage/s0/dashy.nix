@@ -155,11 +155,11 @@
         networkItems = {
           gateway = {
             title = "Gateway";
-            description = "openwrt";
-            icon = "hl-openwrt";
-            url = "http://openwrt.lan/";
+            description = "leela: DHCP leases and DNS stats";
+            icon = "hl-grafana";
+            url = "https://grafana.kif.neet.dev/d/dhcp-leases";
             target = "sametab";
-            statusCheck = true;
+            statusCheck = false;
             id = "0_746_gateway";
           };
           wireless = {

@@ -1,5 +1,8 @@
 # Swapping the APU2 for leela
 
+Executed 2026-11-22; kept as the record of how, and as the rollback and
+re-bench procedure.
+
 Goal: nothing on the LAN notices. Same addresses, same leases, same router
 MACs, same SSH host key, same public IP. Everything below the "Swap" heading
 is reversible in minutes because the APU2 is never modified.
@@ -105,9 +108,7 @@ Mono's docs) and the agent pins the ports before the first SSH session.
    runs `make rekey-secret attic-netrc.age`, commits, and includes it in the
    next deploy. Every machine's known_hosts then carries the new key for
    `leela`, `openwrt.lan` and `192.168.1.1`; on fry, drop the old
-   `192.168.1.1` line from `~/.ssh/known_hosts` once. (Alternative: the
-   owner runs `cutover/carry-host-key.sh leela.lan` to keep the OpenWrt key;
-   then nothing needs rekeying.)
+   `192.168.1.1` line from `~/.ssh/known_hosts` once.
 3. `tailscale up` on leela; the owner authorises the printed URL. `deploy .#leela`
    now resolves via MagicDNS and kif starts scraping node-exporter.
 4. Checks, all must pass before going further:
@@ -127,9 +128,7 @@ Mono's docs) and the agent pins the ports before the first SSH session.
      mmc.
    - Fan and sensors: `sensors` shows the TMP431/EMC2305; the fan is not pinned
      at full speed.
-5. Flip `bench = false` in `networking.nix`, remove the bench root key from
-   `default.nix` (and `~/.ssh/leela-bench` plus its `~/.ssh/config` stanza on
-   fry), build, and stage it without
+5. Flip `bench = false` in `networking.nix`, build, and stage it without
    activating: `deploy --remote-build --debug-logs --skip-checks --boot .#leela`.
    Confirm `/boot/extlinux/extlinux.conf` on leela defaults to the new
    generation (`grep -A3 '^LABEL' /boot/extlinux/extlinux.conf | head`; the
