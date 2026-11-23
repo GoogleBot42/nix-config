@@ -83,15 +83,17 @@ let
       if [ "$ok" != "$previous" ]; then
         echo "$ok" > "$last"
         ${lib.optionalString hasNtfy ''
-          if [ "$ok" = 1 ]; then
-            [ "$previous" = 0 ] && ${config.ntfy-alerts.notify} service-failures default "white_check_mark,signal_strength" \
-              "Cellular backup usable again on ${config.networking.hostName}" "$summary"
-          else
+          if [ "$ok" = 0 ]; then
             ${config.ntfy-alerts.notify} service-failures high "warning,signal_strength" \
               "Cellular backup NOT usable on ${config.networking.hostName}" "The hourly check through the modem failed: $summary"
+          elif [ "$previous" = 0 ]; then
+            ${config.ntfy-alerts.notify} service-failures default "white_check_mark,signal_strength" \
+              "Cellular backup usable again on ${config.networking.hostName}" "$summary"
           fi
         ''}
       fi
+      # The metric is the result; the unit itself always succeeds.
+      exit 0
     '';
   };
 in
