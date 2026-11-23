@@ -1,0 +1,17 @@
+Linux 6.18.64 backported "fs: provide accessors for ->i_state", so the
+compat definitions of inode_state_read() and friends now collide with the
+kernel's on the 6.18.y branch. Guard them by the first release that has them.
+Applies on top of nixpkgs' linux/version.h patch (adef3bf6), which already
+rewrote this line.
+
+--- a/fs/vfs/fs.h
++++ b/fs/vfs/fs.h
+@@ -13,7 +13,7 @@
+ #include <linux/stat.h>
+ #include <linux/version.h>
+ 
+-#if !defined(__KERNEL__) || LINUX_VERSION_CODE < KERNEL_VERSION(6,19,0)
++#if !defined(__KERNEL__) || LINUX_VERSION_CODE < KERNEL_VERSION(6,18,64)
+ static inline unsigned inode_state_read(struct inode *inode)
+ {
+ 	return inode->i_state;

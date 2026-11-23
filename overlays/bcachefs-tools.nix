@@ -21,5 +21,9 @@ final: prev:
       inherit src;
       hash = "sha256-4ZStyYaT+6Suup1ue2wFFCTAlnsnEO9WaUJHe47BKXY=";
     };
+
+    # 6.18.64 backported the kernel's i_state accessors, which the snapshot's
+    # compat header still defines for everything before 6.19.
+    patches = (old.patches or [ ]) ++ [ ../patches/bcachefs-tools-inode-state-6.18.64.patch ];
   });
 }

@@ -95,6 +95,19 @@ final: prev:
     };
   });
 
+  # lldpd vendors include/linux/types.h, which shadows the kernel UAPI header
+  # and lacks the 128-bit types that Linux 7.3's arm64 sigcontext.h uses.
+  # Fixed upstream after 1.0.22: https://github.com/lldpd/lldpd/pull/805
+  lldpd = prev.lldpd.overrideAttrs (old: {
+    patches = (old.patches or [ ]) ++ [
+      (prev.fetchpatch {
+        name = "lldpd-linux-types-u128.patch";
+        url = "https://github.com/lldpd/lldpd/commit/95ee70d0b87dc81430f7b0891f08e5e232012c57.patch";
+        hash = "sha256-pbwosPLNNVSn+aqiCZhZEhEdMxF+bip5rIoZ7sVnB2k=";
+      })
+    ];
+  });
+
   # Ignore stale Avahi pidfiles when resolvconf refreshes static DNS at boot.
   openresolv = prev.openresolv.overrideAttrs (old: {
     patches = (old.patches or [ ]) ++ [
