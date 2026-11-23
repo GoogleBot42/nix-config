@@ -133,12 +133,12 @@
 			"ip":  ["*"],
 		},
 		// ===========================================
-		// EXPORTERS - scraped by the metrics server: node (9100), dnsmasq (9153)
+		// NODE EXPORTER (9100) - scraped by the metrics server
 		// ===========================================
 		{
 			"src": ["tag:server"],
 			"dst": ["tag:server", "tag:workstation"],
-			"ip":  ["9100", "9153"],
+			"ip":  ["9100"],
 		},
 		// ===========================================
 		// CLAUDE (443 on kif only)
@@ -388,11 +388,11 @@
 		// ===========================================
 		{
 			"src":    "tag:server",
-			"accept": ["tag:server:9100", "tag:workstation:9100", "tag:server:9153"],
+			"accept": ["tag:server:9100", "tag:workstation:9100"],
 		},
 		{
 			"src":  "tag:workstation",
-			"deny": ["tag:server:9100", "tag:server:9153"],
+			"deny": ["tag:server:9100"],
 		},
 		{
 			"src":  "tag:external",

@@ -409,8 +409,8 @@ in
         # devices are untrusted and must not exfiltrate via DNS.
         iifname ${nftStringSet [ iotIf managementIf ]} udp dport 53 reject
         iifname ${nftStringSet [ iotIf managementIf ]} tcp dport 53 reject
-        # Metrics exporters are for the tailnet scraper and the trusted LAN only.
-        iifname ${nftStringSet [ iotIf managementIf ]} tcp dport { 9100, 9153 } reject
+        # node_exporter is for the tailnet scraper and the trusted LAN only.
+        iifname ${nftStringSet [ iotIf managementIf ]} tcp dport 9100 reject
         iifname @lan_ifaces accept
 
         ${lib.optionalString (wanAdminSources != [ ]) ''

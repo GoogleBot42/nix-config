@@ -1,7 +1,7 @@
 {
   "uid": "dhcp-leases",
   "title": "DHCP leases",
-  "description": "dnsmasq lease table and DNS cache counters from the gateway's dnsmasq_exporter. One row per active lease; static leases appear once the device has asked for its address.",
+  "description": "dnsmasq lease table and DNS cache counters from the gateway's dnsmasq metrics (node_exporter textfile). One row per active lease; static leases appear once the device has asked for its address.",
   "tags": ["fleet", "network"],
   "editable": true,
   "graphTooltip": 1,

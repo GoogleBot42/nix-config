@@ -162,8 +162,8 @@ Cross-checked against the live OpenWrt configuration:
 - dnsmasq uses explicit upstream resolvers (`1.1.1.1`, `8.8.8.8`) instead of
   the ISP's, since systemd-resolved is disabled on this machine.
 - No LuCI. The lease table and DNS cache counters go to Grafana on kif
-  instead ("DHCP leases" dashboard, fed by `services.prometheus.exporters.dnsmasq`
-  on this host over the tailnet). The Dashy "openwrt" tile needs retiring once
+  instead ("DHCP leases" dashboard, fed by `common/dnsmasq-metrics.nix`
+  through node_exporter). The Dashy "openwrt" tile needs retiring once
   the APU2 is gone.
 
 ## Image build and install

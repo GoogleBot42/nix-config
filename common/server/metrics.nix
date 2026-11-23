@@ -232,17 +232,6 @@ in
                 })
                 (lib.attrNames config.machines.hosts);
             }
-            # Gateways export their dnsmasq lease table and DNS cache counters
-            # (DHCP leases dashboard); the exporter listens on the tailnet.
-            {
-              job_name = "dnsmasq";
-              static_configs = map
-                (host: {
-                  targets = [ "${host}.${tailnet}:${toString config.services.prometheus.exporters.dnsmasq.port}" ];
-                  labels.instance = host;
-                })
-                config.machines.withRole.router;
-            }
           ] ++ lib.optional config.services.pgs.enable {
             job_name = "pgs";
             static_configs = [{
