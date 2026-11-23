@@ -92,33 +92,47 @@ ssh leela systemctl status wan-failover         # active, "primary wan" in the l
 
 ### 3. The modem
 
-1. Insert the SIM (or rely on the pre-loaded T-Mobile eSIM / UniFi Mobility
-   plan, activated at mobility.ui.com), plug the modem into the `cell` port.
-2. On leela: `ssh leela cat /var/lib/dnsmasq/dnsmasq.leases | grep 192.168.14.2`
-   shows the lease, and `ping 192.168.14.2` answers from fry.
-3. Adopt it in the controller (Devices → it appears pending). If it never
-   shows up, it did not reach s0 on 8080: check
-   `ssh leela journalctl -u dnsmasq | grep 192.168.14.2` for the DHCP exchange
-   (option 43 is sent with it) and `nft list chain inet gateway forward`
-   counters. The modem's screen shows its own status.
-4. In the controller enable SSH for devices (Settings → System → Advanced →
-   Device SSH Authentication) and log into the modem:
-   `ssh <user>@192.168.14.2`, then `ip a show gre1`. Expected:
-   `link/gre 192.168.14.2 peer 192.168.14.1` and `inet 100.127.125.128/31`.
-   This is the one unverified assumption: the OPNsense reports on the larger
-   5G Max show the modem peering with its default gateway, and the same
-   firmware family is assumed here. If the peer is anything else, or `gre1`
-   does not exist, stop and report it; the fix is in `networking.nix`
-   (`cellTunnel`), not on the modem (its root filesystem is RAM-only and
-   forgets everything at reboot).
-5. From leela, the tunnel end to end:
-   ```sh
-   ssh leela ping -c3 -I gre-cell 100.127.125.128   # modem's inner address
-   ssh leela ping -c3 -I gre-cell 8.8.8.8           # Internet via cellular
-   ssh leela ping -c3 -M do -s 1372 -I gre-cell 8.8.8.8   # largest unfragmented payload at MTU 1400
-   ```
-   Once the second ping works `wan_probe_ok{interface="gre-cell"}` reads 1
-   on the next backup probe (within a minute).
+Adopted 2026-11-22: MAC `74:f9:2c:b2:6e:e1`, firmware 1.4.3 (OpenWrt
+22.03.5 underneath), lease `192.168.14.2`, parent USW Lite 8 PoE port 1.
+Verified over SSH (`ssh jeremy@192.168.14.2`, fry's key):
+
+- `gre1` is `link/gre 192.168.14.2 peer 192.168.14.1` with
+  `100.127.125.128/31`: the modem peers with its default gateway, which is
+  what `cellTunnel` in `networking.nix` assumes. The leela side answered
+  (`wan_probe_ok{interface="gre-cell"}` went to 1 while a plan was active).
+- The modem's own default route is leela (`default via 192.168.14.1`); the
+  carrier interface is `rmnet_data0`, and the modem SNATs leela's tunnel
+  address onto it (`-s 100.127.125.129 -o rmnet_data0 -j SNAT`), so the
+  backup path is leela NAT + modem NAT + carrier CGNAT.
+- A modem reboot forgets nothing that matters: the tunnel and its NAT are
+  provisioned by the controller, not configured by hand.
+
+**No plan yet.** The unit came open-box with the previous owner's Google Fi
+eSIM still active; that profile was removed in the controller (device
+settings → Cellular → eSIM → Remove eSIM) and the modem now reports no SIM
+and eSIM disabled. Until a plan is added the tunnel is up but dead, the
+watchdog never fails over (it only switches onto a backup that answers)
+and the hourly check reads 0. To add one:
+
+- eSIM: Settings → Cellular → eSIM → Activate eSIM with the carrier's
+  `LPA:1$...` activation code (UniFi Mobility at mobility.ui.com, or any
+  data-only eSIM), or
+- a physical data-only nano-SIM in the slot next to the reset button.
+  T-Mobile Home Internet SIMs are refused and Verizon is unsupported (the
+  device says so on its overview).
+
+The Data Limit set while the foreign eSIM was active (1 MB, monthly) was
+tied to that profile; check Settings → Cellular after adding a plan and
+clear or resize it, or the new plan stops after 1 MB.
+
+Checks once a plan is active, from leela (root):
+
+```sh
+ping -c3 -I gre-cell 100.127.125.128      # modem's inner address
+ping -c3 -I gre-cell 8.8.8.8              # Internet via cellular
+ping -c3 -M do -s 1372 -I gre-cell 8.8.8.8   # largest unfragmented payload at MTU 1400
+systemctl start cell-backup-check         # fills cell_backup_check_* right away
+```
 
 ### 4. Failover drill
 
