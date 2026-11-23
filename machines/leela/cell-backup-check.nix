@@ -3,20 +3,24 @@
 # Hourly end-to-end check of the cellular backup uplink (networking.nix: the
 # GRE tunnel to the UniFi 5G Backup): a ping and a small HTTPS fetch bound to
 # the tunnel, plus the carrier-side public address, exported through
-# node_exporter's textfile collector. The cellular plan is 10 GB a year, so a
-# run moves a few kilobytes and is never a speed test. The unit exits 0 when
-# the uplink is down: the metric is the result, and a failed unit would raise
-# a service-failure alert every hour on top of the dashboard.
+# node_exporter's textfile collector. A run moves a few kilobytes and is
+# never a speed test. The unit exits 0 when the uplink is down: the metric is
+# the result, and a failed unit would raise a service-failure alert every
+# hour. Instead a change between usable and unusable is announced once on
+# ntfy, so a dead backup is known before the outage that needs it.
 
 let
   textfileDir = config.services.prometheus.exporters.node.textfileDirectory;
   tunnel = "gre-cell";
+  hasNtfy = config.thisMachine.hasRole."ntfy";
 
   check = pkgs.writeShellApplication {
     name = "cell-backup-check";
     runtimeInputs = with pkgs; [ coreutils gawk gnugrep iputils curl ];
     text = ''
       out=${textfileDir}/cell-backup-check.prom
+      # Last result, so a change of state is announced once, not every hour.
+      last=$STATE_DIRECTORY/last-ok
       now=$(date +%s)
 
       ping_ok=0 rtt=""
@@ -72,7 +76,22 @@ let
       } > "$out.tmp"
       mv "$out.tmp" "$out"
 
-      echo "cellular backup: ok=$ok ping=$ping_ok rtt=''${rtt:-n/a}s http=''${http_code:-none} time=''${http_time:-n/a}s ip=''${public_ip:-unknown}"
+      summary="ok=$ok ping=$ping_ok rtt=''${rtt:-n/a}s http=''${http_code:-none} time=''${http_time:-n/a}s ip=''${public_ip:-unknown}"
+      echo "cellular backup: $summary"
+
+      previous=$(cat "$last" 2> /dev/null || echo unknown)
+      if [ "$ok" != "$previous" ]; then
+        echo "$ok" > "$last"
+        ${lib.optionalString hasNtfy ''
+          if [ "$ok" = 1 ]; then
+            [ "$previous" = 0 ] && ${config.ntfy-alerts.notify} service-failures default "white_check_mark,signal_strength" \
+              "Cellular backup usable again on ${config.networking.hostName}" "$summary"
+          else
+            ${config.ntfy-alerts.notify} service-failures high "warning,signal_strength" \
+              "Cellular backup NOT usable on ${config.networking.hostName}" "The hourly check through the modem failed: $summary"
+          fi
+        ''}
+      fi
     '';
   };
 in
@@ -84,6 +103,9 @@ in
     serviceConfig = {
       Type = "oneshot";
       ExecStart = lib.getExe check;
+      StateDirectory = "cell-backup-check";
+    } // lib.optionalAttrs hasNtfy {
+      EnvironmentFile = "/run/agenix/ntfy-token";
     };
   };
 

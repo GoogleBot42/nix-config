@@ -110,13 +110,19 @@ let
             fi
             ;;
           backup)
-            if [ "$oks" -ge ${toString cfg.recoverAfter} ]; then
-              echo "primary $primary answered $oks times; routing through it again"
+            # Back to the primary after a steady run of answers, or at the
+            # first answer when the backup has died underneath us: a dead
+            # backup is never worth waiting out a flap for.
+            if [ "$oks" -ge ${toString cfg.recoverAfter} ] || { [ "$oks" -ge 1 ] && [ "$backup_ok" -eq 0 ]; }; then
+              echo "primary $primary answered $oks times (backup probe ok=$backup_ok); routing through it again"
               disengage; flush_nat
               state=primary transitions=$((transitions + 1)) last_change=$(date +%s)
               notify default "white_check_mark" "WAN restored on ${config.networking.hostName}" \
                 "$primary answers again; traffic left $backup."
             else
+              if [ "$backup_ok" -eq 0 ] && [ $((fails % 30)) -eq 0 ]; then
+                echo "both $primary and $backup unanswered; staying on $backup until either answers"
+              fi
               # Re-assert in case networkd or an admin reloaded the routes.
               engage
             fi
