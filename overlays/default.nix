@@ -113,44 +113,24 @@ final: prev:
 
   inherit (import ./bcachefs-tools.nix final prev) bcachefs-tools;
 
-  # Plasma Bigscreen: TV-optimized KDE shell (not yet packaged in nixpkgs)
-  plasma-bigscreen = import ./plasma-bigscreen.nix {
-    inherit (prev.kdePackages)
-      mkKdeDerivation plasma-workspace plasma-wayland-protocols
-      kdeconnect-kde qtmultimedia qtwayland qtwebengine qcoro;
-    inherit (prev) lib fetchFromGitLab pkg-config sdl3 libcec wayland;
-  };
-
   # Keep Logseq building until upstream moves off electron_39, which is now
-  # blocked as insecure (EOL). Electron 42 also requires better-sqlite3 12.10.1+.
+  # blocked as insecure (EOL). better-sqlite3 13 is N-API based, so its prebuilt
+  # binary is independent of the Electron major; 12.x had to match it.
   # Cleanup: https://git.neet.dev/zuckerberg/nix-config/issues/58
   logseq = (prev.logseq.override {
-    electron_39 = final.electron_42;
+    electron_39 = final.electron_45;
   }).overrideAttrs (old: rec {
     patches = (old.patches or [ ]) ++ [
-      ../patches/logseq-better-sqlite3-12.11.1.patch
+      ../patches/logseq-better-sqlite3-13.2.0.patch
     ];
     yarnOfflineCacheStaticResources = prev.fetchYarnDeps {
       name = "logseq-${old.version}-yarn-deps-static-resources";
       inherit (old) src;
       inherit patches;
       postPatch = "cd ./static";
-      hash = "sha256-jF3mGuLYL2NZ96w+tPRgB77pfdnviKF/s63TuiHOyfQ=";
+      hash = "sha256-ZFxO862i5gRO8JEReitZwUppKnsz39+A3tucQa5D8rg=";
     };
   });
-
-  # TEMPORARY: build open-webui against mcp 1. Its 0.12.x backend imports
-  # mcp.client.streamable_http.streamablehttp_client, which mcp 2 removed, and
-  # its posthog dependency is marked broken whenever mcp is 2.x, so nixpkgs'
-  # open-webui neither evaluates nor runs against the default mcp.
-  # Revert once nixpkgs' open-webui evaluates and starts with the default mcp
-  # (posthog unbroken: https://github.com/NixOS/nixpkgs/pull/578265, plus
-  # open-webui moved to mcp 2 or pinned to mcp_1 upstream).
-  open-webui = prev.open-webui.override {
-    python3Packages = prev.python3Packages.overrideScope (pyfinal: pyprev: {
-      mcp = pyfinal.mcp_1;
-    });
-  };
 
   pgs = prev.callPackage ../pkgs/pgs { };
 

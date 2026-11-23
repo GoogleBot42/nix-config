@@ -48,15 +48,15 @@ let
 in
 {
   config = lib.mkIf cfg.enable {
-    # kresd doesn't work with tailscale MagicDNS
-    mailserver.localDnsResolver = false;
+    # The mailserver needs a local caching resolver; resolved is the one that
+    # coexists with tailscale MagicDNS.
     services.resolved.enable = true;
 
     mailserver = {
       fqdn = "mail.neet.dev";
       dkim.defaults.keyLength = 2048;
       indexDir = "/var/lib/mailindex";
-      enableManageSieve = true;
+      listeners.manageSieve.enable = true;
       fullTextSearch.enable = true;
       fullTextSearch.memoryLimit = 500;
       inherit domains;

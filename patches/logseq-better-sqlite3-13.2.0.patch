@@ -1,0 +1,44 @@
+--- a/resources/package.json
++++ b/resources/package.json
+@@ -25,7 +25,7 @@
+     "@logseq/rsapi": "0.0.92",
+     "@sentry/electron": "2.5.1",
+     "abort-controller": "3.0.0",
+-    "better-sqlite3": "12.8.0",
++    "better-sqlite3": "13.2.0",
+     "chokidar": "^3.5.1",
+     "command-exists": "1.2.9",
+     "diff-match-patch": "1.0.5",
+--- a/static/yarn.lock
++++ b/static/yarn.lock
+@@ -1643,13 +1643,12 @@
+   resolved "https://registry.yarnpkg.com/baseline-browser-mapping/-/baseline-browser-mapping-2.8.28.tgz#9ef511f5a7c19d74a94cafcbf951608398e9bdb3"
+   integrity sha512-gYjt7OIqdM0PcttNYP2aVrr2G0bMALkBaoehD4BuRGjAOtipg0b6wHg1yNL+s5zSnLZZrGHOw4IrND8CD+3oIQ==
+ 
+-better-sqlite3@12.8.0:
+-  version "12.8.0"
+-  resolved "https://registry.yarnpkg.com/better-sqlite3/-/better-sqlite3-12.8.0.tgz#ec9ccd4a426a35f3b9355c147af6c92a6ddd6862"
+-  integrity sha512-RxD2Vd96sQDjQr20kdP+F+dK/1OUNiVOl200vKBZY8u0vTwysfolF6Hq+3ZK2+h8My9YvZhHsF+RSGZW2VYrPQ==
++better-sqlite3@13.2.0:
++  version "13.2.0"
++  resolved "https://registry.yarnpkg.com/better-sqlite3/-/better-sqlite3-13.2.0.tgz#61b452adbc3db9fb13e1d0e5ad04347b6fc7f833"
++  integrity sha512-Z8Q/9x/uNyKxA1v4FNodyItRVRw1TeKBrmj32JhxhR0ceNcBY+wMobt/Bv7M7TzwPAXjnZRtNaEsATnUZSKWZQ==
+   dependencies:
+-    bindings "^1.5.0"
+-    prebuild-install "^7.1.1"
++    node-addon-api "^8.0.0"
+ 
+ binary-extensions@^2.0.0:
+   version "2.3.0"
+@@ -4187,6 +4186,11 @@
+   resolved "https://registry.yarnpkg.com/node-addon-api/-/node-addon-api-2.0.2.tgz#432cfa82962ce494b132e9d72a15b29f71ff5d32"
+   integrity sha512-Ntyt4AIXyaLIuMHF6IOoTakB3K+RWxwtsHNRxllEoA6vPwP9o4866g6YWDLUdnucilZhmkxiHwHr11gAENw+QA==
+ 
++node-addon-api@^8.0.0:
++  version "8.9.2"
++  resolved "https://registry.yarnpkg.com/node-addon-api/-/node-addon-api-8.9.2.tgz#db7ac94a13ffd9b55e6cb04584bd5ef8e1d74b18"
++  integrity sha512-VijLXbi3UACN69I0JVXJsX4tjACjNoQDgv2gTF6sx2wWEi8tkSg2eX8p5gSIFi8z2+DL3oHmY6OyKce38SDolg==
++
+ node-api-version@^0.2.0, node-api-version@^0.2.1:
+   version "0.2.1"
+   resolved "https://registry.yarnpkg.com/node-api-version/-/node-api-version-0.2.1.tgz#19bad54f6d65628cbee4e607a325e4488ace2de9"
