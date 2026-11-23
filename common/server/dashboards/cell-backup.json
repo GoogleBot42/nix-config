@@ -1,7 +1,7 @@
 {
   "uid": "cell-backup",
   "title": "Cellular backup",
-  "description": "The gateway's cellular backup uplink (UniFi 5G Backup over a GRE tunnel): the hourly end-to-end check through the tunnel and the failover watchdog's state. Both come from node_exporter textfile metrics on the gateway.",
+  "description": "The gateway's cellular backup uplink (UniFi 5G Backup over a GRE tunnel): the five-minute end-to-end check through the tunnel and the failover watchdog's state. Both come from node_exporter textfile metrics on the gateway.",
   "tags": ["fleet", "network"],
   "editable": true,
   "graphTooltip": 1,
@@ -27,7 +27,7 @@
   "panels": [
     {
       "id": 1, "type": "stat", "title": "Backup uplink",
-      "description": "Last hourly check: ping and HTTPS fetch through the cellular tunnel both succeeded.",
+      "description": "Last check: ping and HTTPS fetch through the cellular tunnel both succeeded.",
       "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "victoriametrics" },
       "targets": [{ "refId": "A", "expr": "cell_backup_check_ok{instance=\"$instance\"}" }],
@@ -61,7 +61,7 @@
     },
     {
       "id": 3, "type": "stat", "title": "Last check",
-      "description": "The check runs hourly; older than about 70 minutes means the timer is not running.",
+      "description": "The check runs every five minutes; older than about 15 minutes means the timer is not running.",
       "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "victoriametrics" },
       "targets": [{ "refId": "A", "expr": "cell_backup_check_timestamp_seconds{instance=\"$instance\"} * 1000" }],
@@ -87,7 +87,7 @@
     },
     {
       "id": 6, "type": "timeseries", "title": "Tunnel ping RTT",
-      "description": "Average of three pings to 1.1.1.1 through the cellular tunnel, hourly.",
+      "description": "Average of three pings to 1.1.1.1 through the cellular tunnel, every five minutes.",
       "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "victoriametrics" },
       "targets": [{ "refId": "A", "expr": "cell_backup_check_ping_rtt_seconds{instance=\"$instance\"}", "legendFormat": "avg RTT" }],
@@ -96,7 +96,7 @@
     },
     {
       "id": 7, "type": "timeseries", "title": "HTTP fetch time",
-      "description": "Total time of an HTTPS fetch of a 204 page through the cellular tunnel, hourly (DNS, TLS and request).",
+      "description": "Total time of an HTTPS fetch of a 204 page through the cellular tunnel, every five minutes (DNS, TLS and request).",
       "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "victoriametrics" },
       "targets": [{ "refId": "A", "expr": "cell_backup_check_http_duration_seconds{instance=\"$instance\"}", "legendFormat": "fetch time" }],

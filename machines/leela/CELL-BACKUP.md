@@ -38,7 +38,7 @@ Design in one picture:
   Transitions go to the journal, ntfy (`service-failures`) and node_exporter
   (`wan_failover_active`, `wan_probe_ok{interface}`).
 - `cell-backup-check.timer` (`cell-backup-check.nix`) checks the backup end
-  to end once an hour, about 15 KB per run: three pings to 1.1.1.1 and an HTTPS
+  to end every five minutes, about 17 KB per run: three pings to 1.1.1.1 and an HTTPS
   fetch of `https://www.google.com/generate_204`, both bound to `gre-cell`,
   plus the carrier address from `ifconfig.co`. Results go to node_exporter as
   `cell_backup_check_ok`, `_ping_ok`, `_http_ok`, `_ping_rtt_seconds`,
@@ -112,7 +112,7 @@ eSIM still active; that profile was removed in the controller (device
 settings → Cellular → eSIM → Remove eSIM) and the modem now reports no SIM
 and eSIM disabled. Until a plan is added the tunnel is up but dead, the
 watchdog never fails over (it only switches onto a backup that answers)
-and the hourly check reads 0. To add one:
+and the check reads 0. To add one:
 
 - eSIM: Settings → Cellular → eSIM → Activate eSIM with the carrier's
   `LPA:1$...` activation code (UniFi Mobility at mobility.ui.com, or any
@@ -138,8 +138,8 @@ ping -c3 -M do -s 1372 -I gre-cell 8.8.8.8   # largest unfragmented payload at M
 systemctl start cell-backup-check         # fills cell_backup_check_* right away
 ```
 
-One run of the hourly check moved 11 KB in and 6 KB out (systemd's IP
-accounting on the unit), so the check costs about 150 MB a year as the
+One run of the check moved 11 KB in and 6 KB out (systemd's IP
+accounting on the unit), so at every five minutes the check costs about 1.8 GB a year as the
 Known limits say. The carrier address is CGNAT (172.58.x.x).
 
 ### 4. Failover drill
@@ -170,7 +170,7 @@ What the watchdog does in each failure:
   the Internet and the kernel's loose filter would otherwise drop the
   probe replies arriving on the tunnel.
 - Backup dead while on the cable: nothing changes; the metric and the
-  hourly check's ntfy say so.
+  check's ntfy say so.
 - Both dead: stays on whichever it is on and logs every minute.
 - Backup dies while failed over: the first answer from the cable brings it
   back instead of waiting out the fifteen-round flap guard.
@@ -184,6 +184,6 @@ What the watchdog does in each failure:
   while failed over; Tailscale keeps working through DERP.
 - 5G RedCap: reviews measure 30-85 Mbps down and 1-3 Mbps up. The UniFi
   Mobility plan is 10 GB a year; the watchdog's idle probes use about 50 MB
-  of that and the hourly check (two TLS fetches, ~15 KB) about 150 MB.
+  of that and the five-minute check (two TLS fetches, ~17 KB) about 1.8 GB.
 - The failover decision is leela's alone; the controller's own WAN failover
   features need a UniFi gateway and are not involved.

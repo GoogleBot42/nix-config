@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 
-# Hourly end-to-end check of the cellular backup uplink (networking.nix: the
+# Five-minutely end-to-end check of the cellular backup uplink (networking.nix: the
 # GRE tunnel to the UniFi 5G Backup): a ping and a small HTTPS fetch bound to
 # the tunnel, plus the carrier-side public address, exported through
 # node_exporter's textfile collector. A run moves a few kilobytes and is
@@ -85,7 +85,7 @@ let
         ${lib.optionalString hasNtfy ''
           if [ "$ok" = 0 ]; then
             ${config.ntfy-alerts.notify} service-failures high "warning,signal_strength" \
-              "Cellular backup NOT usable on ${config.networking.hostName}" "The hourly check through the modem failed: $summary"
+              "Cellular backup NOT usable on ${config.networking.hostName}" "The check through the modem failed: $summary"
           elif [ "$previous" = 0 ]; then
             ${config.ntfy-alerts.notify} service-failures default "white_check_mark,signal_strength" \
               "Cellular backup usable again on ${config.networking.hostName}" "$summary"
@@ -112,12 +112,12 @@ in
   };
 
   systemd.timers.cell-backup-check = {
-    description = "Hourly check of the cellular backup uplink";
+    description = "Check the cellular backup uplink every five minutes";
     wantedBy = [ "timers.target" ];
     timerConfig = {
-      OnBootSec = "5min";
-      OnUnitActiveSec = "1h";
-      RandomizedDelaySec = "5min";
+      OnBootSec = "2min";
+      OnUnitActiveSec = "5min";
+      RandomizedDelaySec = "30s";
       Persistent = false;
     };
   };
