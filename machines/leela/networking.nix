@@ -70,6 +70,9 @@ let
   managementIf = "vlan-management";
   cellIf = "vlan-cell";
 
+  # Local DNS domain; every LAN name is <host>.<lanDomain>.
+  lanDomain = "lan";
+
   # The main LAN is 192.168.0.0/21 with the router at 192.168.1.1. The DHCP
   # pool is .0.100-.0.249 (offsets from the network address, as OpenWrt
   # computed them); s0/fry and the other pinned leases sit outside it.
@@ -164,6 +167,42 @@ let
   # appear in; dnsmasq picks the one matching the interface it asks on.
   mkDhcpStaticLease = { macs, hostname ? null, addresses }:
     lib.concatStringsSep "," (macs ++ lib.optional (hostname != null) hostname ++ addresses);
+  # Fixed DNS records for a pinned host, one per address. A name derived from
+  # a DHCP lease hangs off exactly one lease at a time, so a host leasing on
+  # several VLANs (s0 is on all three) would resolve to whichever lease was
+  # renewed last, often an address the client cannot even reach. With every
+  # address in a record, localise-queries answers with the one on the
+  # querying client's own subnet. host-record names are not expanded, so the
+  # domain is spelled out.
+  mkHostRecords = { hostname ? null, addresses, ... }:
+    lib.optionals (hostname != null)
+      (map (address: "${hostname},${hostname}.${lanDomain},${address}") addresses);
+
+  # Pinned addresses. Infrastructure first, then devices whose address is
+  # written down elsewhere (s0's nginx, Claude project notes, dev boards).
+  # One address per subnet the host may appear in; dnsmasq picks the one
+  # matching the interface it asks on.
+  staticLeases = [
+    # s0 has an interface on every VLAN; its IoT and management addresses
+    # are the ones it has held since before the gateway swap.
+    { macs = [ "58:11:22:D9:0F:74" "58:11:22:D9:0F:75" ]; hostname = "s0"; addresses = [ "192.168.1.2" "192.168.8.116" "192.168.13.116" ]; }
+    { macs = [ "9C:BF:0D:00:E3:56" ]; hostname = "fry"; addresses = [ "192.168.1.3" ]; }
+    { macs = [ "70:C9:32:3D:20:02" ]; hostname = "vacuum"; addresses = [ "192.168.1.125" ]; }
+    # eight-pod lives on the main LAN today (s0 proxies sandman to it there)
+    # and keeps its IoT address for when it moves.
+    { macs = [ "C0:EE:40:A3:8C:32" ]; hostname = "eight-pod"; addresses = [ "192.168.0.109" "192.168.9.14" ]; }
+    { macs = [ "D4:43:0E:24:22:57" ]; hostname = "dog-cam"; addresses = [ "192.168.10.31" ]; }
+    { macs = [ "90:82:C3:6E:F1:30" ]; hostname = "frame"; addresses = [ "192.168.0.125" ]; }
+    # NanoKVMs
+    { macs = [ "48:DA:35:6D:6D:73" ]; hostname = "kvm-6d73"; addresses = [ "192.168.0.224" ]; }
+    { macs = [ "48:DA:35:6D:A9:15" ]; hostname = "kvm-a915"; addresses = [ "192.168.0.221" ]; }
+    # ESP32 boards
+    { macs = [ "B4:8A:0A:6C:04:24" ]; addresses = [ "192.168.0.140" ]; }
+    { macs = [ "C0:4E:30:06:81:A0" ]; addresses = [ "192.168.0.241" ]; }
+    { macs = [ "44:BD:8D:F6:B0:A8" ]; hostname = "luxel-f6b0a8"; addresses = [ "192.168.0.238" ]; }
+    { macs = [ "C8:F0:9E:79:7E:10" ]; hostname = "luxel-797e10"; addresses = [ "192.168.0.183" ]; }
+    { macs = [ "90:70:69:EA:6F:70" ]; hostname = "luxel-ea6f70"; addresses = [ "192.168.0.142" ]; }
+  ];
 
   # DHCP/RA settings for whichever interface carries the WAN address.
   wanAddressing = {
@@ -214,7 +253,7 @@ in
     dhcpcd.enable = false;
     nftables.enable = true;
     firewall.enable = lib.mkForce false;
-    domain = "lan";
+    domain = lanDomain;
   };
 
   systemd.network = {
@@ -363,7 +402,7 @@ in
           EmitDNS = true;
           DNS = "_link_local";
           EmitDomains = true;
-          Domains = [ "lan" ];
+          Domains = [ lanDomain ];
         };
         linkConfig.RequiredForOnline = "no";
       };
@@ -454,10 +493,13 @@ in
       localise-queries = true;
       stop-dns-rebind = true;
       rebind-localhost-ok = true;
+      # Our own zone publishes tailnet (100.64/10) addresses for s0's services,
+      # which rebind protection would otherwise swallow for LAN clients.
+      rebind-domain-ok = [ "/neet.dev/" ];
       # Only answer DNS for directly attached subnets (OpenWrt localservice).
       local-service = true;
-      local = "/lan/";
-      domain = "lan";
+      local = "/${lanDomain}/";
+      domain = lanDomain;
       expand-hosts = true;
       cache-size = 1000;
       # Also makes dnsmasq ACK a renewal for an in-pool address it has no
@@ -502,32 +544,12 @@ in
       # /etc/hosts and answer for the router by name explicitly.
       no-hosts = true;
       host-record = [
-        "${config.networking.hostName},${config.networking.hostName}.lan,${main.router}"
+        "${config.networking.hostName},${config.networking.hostName}.${lanDomain},${main.router}"
         # UniFi devices also look the controller up by the bare name `unifi`.
-        "unifi,unifi.lan,${unifiController}"
-      ];
+        "unifi,unifi.${lanDomain},${unifiController}"
+      ] ++ lib.concatMap mkHostRecords staticLeases;
 
-      # Pinned addresses. Infrastructure first, then devices whose address is
-      # written down elsewhere (s0's nginx, Claude project notes, dev boards).
-      dhcp-host = [
-        (mkDhcpStaticLease { macs = [ "58:11:22:D9:0F:74" "58:11:22:D9:0F:75" ]; hostname = "s0"; addresses = [ "192.168.1.2" ]; })
-        (mkDhcpStaticLease { macs = [ "9C:BF:0D:00:E3:56" ]; hostname = "fry"; addresses = [ "192.168.1.3" ]; })
-        (mkDhcpStaticLease { macs = [ "70:C9:32:3D:20:02" ]; hostname = "vacuum"; addresses = [ "192.168.1.125" ]; })
-        # eight-pod lives on the main LAN today (s0 proxies sandman to it there)
-        # and keeps its IoT address for when it moves.
-        (mkDhcpStaticLease { macs = [ "C0:EE:40:A3:8C:32" ]; hostname = "eight-pod"; addresses = [ "192.168.0.109" "192.168.9.14" ]; })
-        (mkDhcpStaticLease { macs = [ "D4:43:0E:24:22:57" ]; hostname = "dog-cam"; addresses = [ "192.168.10.31" ]; })
-        (mkDhcpStaticLease { macs = [ "90:82:C3:6E:F1:30" ]; hostname = "frame"; addresses = [ "192.168.0.125" ]; })
-        # NanoKVMs
-        (mkDhcpStaticLease { macs = [ "48:DA:35:6D:6D:73" ]; hostname = "kvm-6d73"; addresses = [ "192.168.0.224" ]; })
-        (mkDhcpStaticLease { macs = [ "48:DA:35:6D:A9:15" ]; hostname = "kvm-a915"; addresses = [ "192.168.0.221" ]; })
-        # ESP32 boards
-        (mkDhcpStaticLease { macs = [ "B4:8A:0A:6C:04:24" ]; addresses = [ "192.168.0.140" ]; })
-        (mkDhcpStaticLease { macs = [ "C0:4E:30:06:81:A0" ]; addresses = [ "192.168.0.241" ]; })
-        (mkDhcpStaticLease { macs = [ "44:BD:8D:F6:B0:A8" ]; hostname = "luxel-f6b0a8"; addresses = [ "192.168.0.238" ]; })
-        (mkDhcpStaticLease { macs = [ "C8:F0:9E:79:7E:10" ]; hostname = "luxel-797e10"; addresses = [ "192.168.0.183" ]; })
-        (mkDhcpStaticLease { macs = [ "90:70:69:EA:6F:70" ]; hostname = "luxel-ea6f70"; addresses = [ "192.168.0.142" ]; })
-      ];
+      dhcp-host = map mkDhcpStaticLease staticLeases;
     };
   };
 
