@@ -4,6 +4,7 @@ with builtins;
 
 let
   cfg = config.mailserver;
+  tailnetDomain = config.services.tailscale.tailnetDomain;
   webmailHostname = "webmail.kif.neet.dev";
   autoconfigDomains = [
     "neet.dev"
@@ -48,9 +49,33 @@ let
 in
 {
   config = lib.mkIf cfg.enable {
-    # The mailserver needs a local caching resolver; resolved is the one that
-    # coexists with tailscale MagicDNS.
-    services.resolved.enable = true;
+    # The mail stack needs a recursive, DNSSEC-validating resolver of its own:
+    # postfix only engages DANE when the resolver sets the AD bit, and the DNS
+    # blocklists (Spamhaus, URIBL, DNSWL) refuse queries that arrive from
+    # public resolvers such as the tailnet's Cloudflare upstream, which makes
+    # rspamd disable them. So this host recurses from its own address with
+    # unbound instead of the resolved stub. MagicDNS names stay reachable
+    # through a forward zone to tailscaled's resolver, and tailscale is told
+    # not to take over the system resolver.
+    services.resolved.enable = false;
+    services.unbound = {
+      enable = true;
+      settings = {
+        server = {
+          qname-minimisation = true;
+          prefetch = true;
+          # The tailnet zone is served by tailscaled and is not signed.
+          domain-insecure = [ tailnetDomain ];
+          private-domain = [ tailnetDomain ];
+        };
+        forward-zone = [{
+          name = tailnetDomain;
+          forward-addr = [ "100.100.100.100" ];
+        }];
+      };
+    };
+    networking.nameservers = lib.mkForce [ "127.0.0.1" ];
+    services.tailscale.extraSetFlags = [ "--accept-dns=false" ];
 
     mailserver = {
       fqdn = "mail.neet.dev";
