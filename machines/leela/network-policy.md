@@ -15,6 +15,7 @@ from 2026-07-21; the cellular backup is the one addition to it
 | IoT | `vlan-iot` | `192.168.8.1/22` | `192.168.8.1` | `192.168.8.100`-`192.168.8.249` | VLAN 2 on the SFP+ trunk. IPv4-only. |
 | Management | `vlan-management` | `192.168.13.1/24` | `192.168.13.1` | `192.168.13.100`-`192.168.13.249` | VLAN 4 on the SFP+ trunk. IPv4-only. |
 | Cell | `vlan-cell` | `192.168.14.1/24` | `192.168.14.1` | `192.168.14.2` only | VLAN 14 on the trunk. Home of the UniFi 5G Backup modem; one DHCP address so the GRE endpoint is fixed. IPv4-only. |
+| Admin | `vlan-admin` | `192.168.15.1/24` | `192.168.15.1` | `192.168.15.100`-`192.168.15.249` | VLAN 15 on the trunk; the Infosphere SSID. May open connections to every other VLAN by address. IPv4-only. |
 | Cell tunnel | `gre-cell` | `100.127.125.128/31` | `100.127.125.129` | n/a | GRE to the modem (`192.168.14.1` ↔ `192.168.14.2`), MTU 1400. Carries the default route only while failed over. |
 
 `trunk` is the tagged LAN trunk; `lan1`, `lan2` and `lan3` are the untagged
@@ -35,9 +36,10 @@ Allowed to the router:
   LAN `192.168.0.0/21` arriving on WAN, because that is the only path to the
   router while it sits behind the old gateway. An assertion keeps this rule
   out of the live build.
-- Traffic arriving from the local LAN interfaces (`br-main`, `vlan-iot`, and
-  `vlan-management`) after the explicit DNS rejects below. This permits DHCP,
-  SSH/admin access, and local diagnostics from those networks.
+- Traffic arriving from the local LAN interfaces (`br-main`, `vlan-iot`,
+  `vlan-management` and `vlan-admin`) after the explicit DNS rejects below.
+  This permits DHCP, SSH/admin access, and local diagnostics from those
+  networks.
 - From `vlan-cell`: DHCP, DNS, ICMP, and GRE from the modem's fixed address.
   The modem is a vendor appliance and gets nothing else (no SSH, no metrics).
 - From `gre-cell`: ICMP echo and the error types PMTU needs. The router is a
@@ -70,9 +72,13 @@ this is what keeps TCP working at MTU 1400).
 Allowed forwarding:
 
 - Established/related return traffic.
-- New main-LAN traffic from `br-main` to either WAN interface (`wan` or
-  `gre-cell`). Which one carries it is a routing decision made by the
+- New traffic from `br-main` or `vlan-admin` to either WAN interface (`wan`
+  or `gre-cell`). Which one carries it is a routing decision made by the
   failover watchdog, not a firewall one.
+- New traffic from `vlan-admin` to any other VLAN (`br-main`, `vlan-iot`,
+  `vlan-management`, `vlan-cell`). Only replies come back; nothing on those
+  VLANs can initiate towards the admin VLAN, and broadcast or discovery
+  traffic (mDNS, SSDP, Wake-on-LAN) does not cross.
 - The modem (`192.168.14.2`) to the cable WAN, for its own eSIM, UniFi
   Mobility and firmware traffic.
 - The modem to the UniFi controller on s0: TCP 8080 (inform) and 6789
@@ -111,8 +117,8 @@ surface.
 ## NAT
 
 The IPv4 NAT table masquerades only packets leaving through `wan` or
-`gre-cell` whose source is in `internetCidrs`: the main LAN and the cell VLAN
-(for the modem's own egress). Inside the tunnel the modem NATs again to the
+`gre-cell` whose source is in `internetCidrs`: the main LAN, the admin VLAN
+and the cell VLAN (for the modem's own egress). Inside the tunnel the modem NATs again to the
 carrier address, so the backup path is double NAT behind CGNAT.
 
 ## Failover

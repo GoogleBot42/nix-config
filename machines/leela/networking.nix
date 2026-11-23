@@ -69,6 +69,7 @@ let
   iotIf = "vlan-iot";
   managementIf = "vlan-management";
   cellIf = "vlan-cell";
+  adminIf = "vlan-admin";
 
   # Local DNS domain; every LAN name is <host>.<lanDomain>.
   lanDomain = "lan";
@@ -109,6 +110,20 @@ let
     netmask = "255.255.255.0";
   };
   cellCidr = "${cell.router}/${toString cell.prefixLength}";
+
+  # Admin VLAN: the one network that may open connections to every other
+  # VLAN by address (the Infosphere SSID). Replies come back through
+  # conntrack; nothing on the other VLANs can initiate towards it, and no
+  # broadcast or discovery traffic crosses.
+  admin = {
+    vlanId = 15;
+    router = "192.168.15.1";
+    prefixLength = 24;
+    netmask = "255.255.255.0";
+    poolStart = "192.168.15.100";
+    poolEnd = "192.168.15.249";
+  };
+  adminCidr = "${admin.router}/${toString admin.prefixLength}";
   cellTunnelIf = "gre-cell";
   cellTunnel = {
     local = "100.127.125.129";
@@ -146,13 +161,13 @@ let
   # without it, so dnsmasq must be given explicit upstreams.
   upstreamDns = [ "1.1.1.1" "8.8.8.8" ];
 
-  lanIfs = [ mainIf iotIf managementIf ];
+  lanIfs = [ mainIf iotIf managementIf adminIf ];
   # Every interface the Internet is reached through: masquerade, MSS clamping
   # and the forward policy treat them alike.
   wanIfs = [ wan cellTunnelIf ];
   # The modem itself needs egress on the cable WAN (eSIM provisioning,
   # UniFi Mobility, firmware) when its cellular side is not up yet.
-  internetCidrs = [ mainCidr cellCidr ];
+  internetCidrs = [ mainCidr cellCidr adminCidr ];
 
   mkDhcpRange = { tag, start, end, netmask, leaseTime ? "12h" }:
     "set:${tag},${start},${end},${netmask},${leaseTime}";
@@ -234,7 +249,7 @@ in
   # This machine replaces the OpenWrt APU2 gateway. The network policy is
   # intentionally unchanged; only the hardware shape and port roles move:
   #   RJ-45 right (wan): WAN DHCP
-  #   RJ-45 (trunk): tagged VLAN trunk for main/iot/management/cell
+  #   RJ-45 (trunk): tagged VLAN trunk for main/iot/management/cell/admin
   #   remaining RJ-45 and both SFP+ cages (lan1..lan3): untagged/native main LAN
   # The cellular backup (cell VLAN + GRE tunnel, failover in wan-failover.nix)
   # is the one addition to that policy.
@@ -317,6 +332,14 @@ in
         vlanConfig.Id = cell.vlanId;
       };
 
+      "20-${adminIf}" = {
+        netdevConfig = {
+          Kind = "vlan";
+          Name = adminIf;
+        };
+        vlanConfig.Id = admin.vlanId;
+      };
+
       "30-${cellTunnelIf}" = {
         netdevConfig = {
           Kind = "gre";
@@ -371,7 +394,7 @@ in
       "20-lan-trunk" = {
         matchConfig.Name = lanTrunk;
         networkConfig = {
-          VLAN = [ "vlan-main-trunk" iotIf managementIf cellIf ];
+          VLAN = [ "vlan-main-trunk" iotIf managementIf cellIf adminIf ];
           LinkLocalAddressing = "no";
         };
         linkConfig.RequiredForOnline = "no";
@@ -432,6 +455,16 @@ in
       "40-${cellIf}" = {
         matchConfig.Name = cellIf;
         address = [ cellCidr ];
+        networkConfig = {
+          ConfigureWithoutCarrier = true;
+          LinkLocalAddressing = "no";
+        };
+        linkConfig.RequiredForOnline = "no";
+      };
+
+      "40-${adminIf}" = {
+        matchConfig.Name = adminIf;
+        address = [ adminCidr ];
         networkConfig = {
           ConfigureWithoutCarrier = true;
           LinkLocalAddressing = "no";
@@ -520,6 +553,7 @@ in
         (mkDhcpRange { tag = "management"; start = "192.168.13.100"; end = "192.168.13.249"; netmask = "255.255.255.0"; })
         # One address: the GRE tunnel's outer endpoint must not move.
         (mkDhcpRange { tag = "cell"; start = cell.modem; end = cell.modem; netmask = cell.netmask; })
+        (mkDhcpRange { tag = "admin"; start = admin.poolStart; end = admin.poolEnd; netmask = admin.netmask; })
       ];
 
       dhcp-option = [
@@ -534,6 +568,8 @@ in
         (mkDhcpSuppressedOption "management" "dns-server")
         (mkDhcpOption "cell" "router" cell.router)
         (mkDhcpOption "cell" "dns-server" cell.router)
+        (mkDhcpOption "admin" "router" admin.router)
+        (mkDhcpOption "admin" "dns-server" admin.router)
         # UniFi vendor option: sub-option 1 (length 4) = controller IPv4.
         "tag:cell,43,01:04:${ipToHex unifiController}"
       ];
@@ -626,7 +662,11 @@ in
         # management have no WAN forward rule, so they remain local-only unless a
         # future rule explicitly grants egress. Which WAN carries it is decided
         # by routing (the failover watchdog), not here.
-        iifname "${mainIf}" oifname @wan_ifaces accept
+        iifname ${nftStringSet [ mainIf adminIf ]} oifname @wan_ifaces accept
+
+        # The admin VLAN may open connections to any other VLAN by address.
+        # Only replies flow back (conntrack); nothing initiates towards it.
+        iifname "${adminIf}" oifname ${nftStringSet [ mainIf iotIf managementIf cellIf ]} accept
 
         # The modem's own egress (eSIM, UniFi Mobility, firmware) goes out the
         # cable WAN; its tunnel is for LAN traffic, not for the modem itself.
@@ -674,8 +714,8 @@ in
 
   assertions = [
     {
-      assertion = !(lib.hasPrefix "192.168.14." main.router) && cell.vlanId != 2 && cell.vlanId != 4 && cell.vlanId != 5;
-      message = "The cell VLAN must not overlap the main, IoT or management networks.";
+      assertion = builtins.length (lib.unique [ 2 4 5 cell.vlanId admin.vlanId ]) == 5;
+      message = "VLAN ids must be distinct.";
     }
     {
       assertion = !(builtins.elem wan ([ lanTrunk ] ++ mainAccessIfs))
