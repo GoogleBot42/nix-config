@@ -16,7 +16,7 @@ the admin VLAN and the PIA VLAN are the additions to it.
 | Management | `vlan-management` | `192.168.13.1/24` | `192.168.13.1` | `192.168.13.100`-`192.168.13.249` | VLAN 4 on the SFP+ trunk. IPv4-only. |
 | Cell | `vlan-cell` | `192.168.14.1/24` | `192.168.14.1` | `192.168.14.2` only | VLAN 14 on the trunk. Home of the UniFi 5G Backup modem; one DHCP address so the GRE endpoint is fixed. IPv4-only. |
 | Admin | `vlan-admin` | `192.168.15.1/24` | `192.168.15.1` | `192.168.15.100`-`192.168.15.249` | VLAN 15 on the trunk; the Infosphere SSID. May open connections to every other VLAN by address. IPv4-only. |
-| PIA | `vlan-pia` | `192.168.16.1/24` | none (`192.168.16.1` is the VPN container) | `192.168.16.100`-`192.168.16.249` | VLAN 16 on the trunk. Not an interface of the router: it lives inside the PIA VPN container, which is its only gateway. Everything goes through the PIA tunnel; nothing reaches the LANs. IPv4-only. |
+| PIA | `vlan-pia` | `192.168.16.1/24` | none (`192.168.16.1` is the VPN container) | `192.168.16.100`-`192.168.16.249` | VLAN 16 on the trunk; the Panama Wormhole SSID. Not an interface of the router: it lives inside the PIA VPN container, which is its only gateway. Everything goes through the PIA tunnel; nothing reaches the LANs. IPv4-only. |
 | VPN bridge | `br-vpn` | `10.100.0.1/24` | `10.100.0.1` | n/a | Host side of the PIA VPN container (`10.100.0.2`). Never forwarded. |
 | Cell tunnel | `gre-cell` | `100.127.125.128/31` | `100.127.125.129` | n/a | GRE to the modem (`192.168.14.1` ↔ `192.168.14.2`), MTU 1400. Carries the default route only while failed over. |
 
