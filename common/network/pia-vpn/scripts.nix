@@ -22,13 +22,20 @@ in
       fi
     }
 
+    # First line of the server list, without a pipe: under pipefail, head
+    # closing the pipe before echo has written the whole (large) list makes
+    # echo die on SIGPIPE and fails the whole setup run.
+    serverListJson() {
+      printf '%s' "''${1%%$'\n'*}"
+    }
+
     # Verify the server list RSA-SHA256 signature (line 1 = JSON, lines 3+ = base64 signature).
     verifyServerList() {
       local raw=$1
       local sig_file
       sig_file=$(mktemp)
       echo "$raw" | tail -n +3 | base64 -d > "$sig_file"
-      if ! echo -n "$(echo "$raw" | head -n 1 | tr -d '\n')" | \
+      if ! serverListJson "$raw" | \
            openssl dgst -sha256 -verify "${pubKeyPath}" \
            -signature "$sig_file"; then
         echo "ERROR: Server list signature verification failed" >&2
@@ -63,7 +70,7 @@ in
       raw=$(curl -s $(proxy_args) \
         "https://serverlist.piaservers.net/vpninfo/servers/v6")
       verifyServerList "$raw"
-      echo "$raw" | head -n 1 | tr -d '\n' > "$servers_json"
+      serverListJson "$raw" > "$servers_json"
 
       totalservers=$(jq -r \
         '.regions | .[] | select(.id=="'"$serverLocation"'") | .servers.wg | length' \
