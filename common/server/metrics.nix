@@ -31,6 +31,7 @@ let
     cp ${powerDashboard} $out/power.json
     cp ${./dashboards/bcachefs.json} $out/bcachefs.json
     cp ${./dashboards/dhcp-leases.json} $out/dhcp-leases.json
+    cp ${./dashboards/cell-backup.json} $out/cell-backup.json
   '';
 
   diskCfg = grafanaCfg.diskAlerts;

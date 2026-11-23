@@ -5,6 +5,7 @@
     ./hardware-configuration.nix
     ./networking.nix
     ./wan-failover.nix
+    ./cell-backup-check.nix
     ./fan.nix
   ];
 

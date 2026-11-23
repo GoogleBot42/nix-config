@@ -37,6 +37,16 @@ Design in one picture:
   primary. The backup is probed once a minute while idle (it is metered).
   Transitions go to the journal, ntfy (`service-failures`) and node_exporter
   (`wan_failover_active`, `wan_probe_ok{interface}`).
+- `cell-backup-check.timer` (`cell-backup-check.nix`) checks the backup end
+  to end once an hour, about 15 KB per run: three pings to 1.1.1.1 and an HTTPS
+  fetch of `https://www.google.com/generate_204`, both bound to `gre-cell`,
+  plus the carrier address from `ifconfig.co`. Results go to node_exporter as
+  `cell_backup_check_ok`, `_ping_ok`, `_http_ok`, `_ping_rtt_seconds`,
+  `_http_duration_seconds`, `_timestamp_seconds` and `_public_ip_info{ip}`;
+  the unit exits 0 either way, so a dead backup shows on the dashboard
+  rather than as a service-failure alert. The "Cellular backup" dashboard
+  (`https://grafana.kif.neet.dev/d/cell-backup`) shows the check next to the
+  watchdog's state.
 - Firewall: the modem may talk to the router for DHCP/DNS/ping/GRE, out the
   cable WAN for its own needs (eSIM, UniFi Mobility, firmware), and to s0 on
   the inform/STUN/speed-test ports. The main LAN may reach the modem. Nothing
@@ -46,18 +56,21 @@ Design in one picture:
 
 ### 1. Controller: the VLAN
 
-In the UniFi Network application on s0 (`https://unifi.s0.neet.dev`,
-10.6.109; the U5G needs 10.4.57 or later):
+Done in the UniFi Network application on s0 (`https://unifi.s0.neet.dev`,
+10.6.109; the U5G needs 10.4.57 or later). The controller has no UniFi
+gateway, so the network is a plain VLAN ("third-party gateway") with no
+DHCP or gateway settings of its own:
 
-1. Settings → Networks → New Virtual Network. Name `cell`, VLAN ID `14`.
-   The controller has no UniFi gateway, so the network is a plain VLAN with
-   no DHCP or gateway settings of its own ("third-party gateway"). Leave
-   everything else off.
-2. Confirm the switch port facing leela's middle RJ-45 (`trunk`) carries the
-   new VLAN tagged. A port profile of "All" does; a hand-picked tagged list
-   needs `cell` added.
-3. Pick the PoE port the modem will live on. Port profile → Native VLAN
-   `cell`, tagged VLANs none. Repeat for any other port you may move it to.
+- Settings → Networks: `cell`, VLAN ID 14, DHCP guarding on with
+  `192.168.14.1` (leela) as the only trusted DHCP server.
+- USW Lite 8 PoE port 8 is the uplink to leela's middle RJ-45 (`trunk`):
+  native VLAN none, tagged "Allow All", so every network including `cell`
+  reaches leela tagged.
+- USW Lite 8 PoE port 1 is the modem's port: native VLAN `cell`, tagged
+  VLANs blocked, PoE+. Any other port the modem may move to needs the same
+  profile.
+- Device SSH is on (Settings → System → Device SSH Settings) with fry's
+  public key registered, so the hardware check below works from fry.
 
 ### 2. Deploy leela
 
@@ -126,6 +139,6 @@ something to see what the 1-3 Mbps upstream feels like.
   while failed over; Tailscale keeps working through DERP.
 - 5G RedCap: reviews measure 30-85 Mbps down and 1-3 Mbps up. The UniFi
   Mobility plan is 10 GB a year; the watchdog's idle probes use about 50 MB
-  of that.
+  of that and the hourly check (two TLS fetches, ~15 KB) about 150 MB.
 - The failover decision is leela's alone; the controller's own WAN failover
   features need a UniFi gateway and are not involved.

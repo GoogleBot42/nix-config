@@ -1,0 +1,149 @@
+{
+  "uid": "cell-backup",
+  "title": "Cellular backup",
+  "description": "The gateway's cellular backup uplink (UniFi 5G Backup over a GRE tunnel): the hourly end-to-end check through the tunnel and the failover watchdog's state. Both come from node_exporter textfile metrics on the gateway.",
+  "tags": ["fleet", "network"],
+  "editable": true,
+  "graphTooltip": 1,
+  "refresh": "1m",
+  "schemaVersion": 39,
+  "time": { "from": "now-7d", "to": "now" },
+  "timezone": "browser",
+  "templating": {
+    "list": [
+      {
+        "name": "instance",
+        "label": "Gateway",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+        "query": "label_values(wan_failover_active, instance)",
+        "definition": "label_values(wan_failover_active, instance)",
+        "refresh": 1,
+        "sort": 1,
+        "current": { "text": "leela", "value": "leela" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1, "type": "stat", "title": "Backup uplink",
+      "description": "Last hourly check: ping and HTTPS fetch through the cellular tunnel both succeeded.",
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "expr": "cell_backup_check_ok{instance=\"$instance\"}" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none", "textMode": "value" },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [{ "type": "value", "options": {
+            "0": { "text": "FAIL", "color": "red", "index": 0 },
+            "1": { "text": "OK", "color": "green", "index": 1 }
+          } }],
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 1 } ] }
+        }
+      }
+    },
+    {
+      "id": 2, "type": "stat", "title": "Failover active",
+      "description": "Which uplink LAN traffic currently uses.",
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "expr": "wan_failover_active{instance=\"$instance\"}" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none", "textMode": "value" },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [{ "type": "value", "options": {
+            "0": { "text": "Cable", "color": "green", "index": 0 },
+            "1": { "text": "Cellular", "color": "orange", "index": 1 }
+          } }],
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "orange", "value": 1 } ] }
+        }
+      }
+    },
+    {
+      "id": 3, "type": "stat", "title": "Last check",
+      "description": "The check runs hourly; older than about 70 minutes means the timer is not running.",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "expr": "cell_backup_check_timestamp_seconds{instance=\"$instance\"} * 1000" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "none", "graphMode": "none", "textMode": "value" },
+      "fieldConfig": { "defaults": { "unit": "dateTimeFromNow" } }
+    },
+    {
+      "id": 4, "type": "stat", "title": "Carrier IP",
+      "description": "Public address the carrier presents for the cellular uplink (CGNAT, so not reachable inbound).",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "expr": "cell_backup_check_public_ip_info{instance=\"$instance\"}", "legendFormat": "{{ip}}", "instant": true }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "none", "graphMode": "none", "textMode": "name" }
+    },
+    {
+      "id": 5, "type": "stat", "title": "Failover transitions",
+      "description": "Switches between the uplinks over the selected range.",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "expr": "increase(wan_failover_transitions_total{instance=\"$instance\"}[$__range])", "instant": true }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "none", "graphMode": "none", "textMode": "value" },
+      "fieldConfig": { "defaults": { "unit": "none", "decimals": 0 } }
+    },
+    {
+      "id": 6, "type": "timeseries", "title": "Tunnel ping RTT",
+      "description": "Average of three pings to 1.1.1.1 through the cellular tunnel, hourly.",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "expr": "cell_backup_check_ping_rtt_seconds{instance=\"$instance\"}", "legendFormat": "avg RTT" }],
+      "fieldConfig": { "defaults": { "unit": "s", "min": 0, "custom": { "fillOpacity": 10, "showPoints": "always", "spanNulls": 7200000 } } },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "single" } }
+    },
+    {
+      "id": 7, "type": "timeseries", "title": "HTTP fetch time",
+      "description": "Total time of an HTTPS fetch of a 204 page through the cellular tunnel, hourly (DNS, TLS and request).",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "expr": "cell_backup_check_http_duration_seconds{instance=\"$instance\"}", "legendFormat": "fetch time" }],
+      "fieldConfig": { "defaults": { "unit": "s", "min": 0, "custom": { "fillOpacity": 10, "showPoints": "always", "spanNulls": 7200000 } } },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "single" } }
+    },
+    {
+      "id": 8, "type": "state-timeline", "title": "Uplink probes",
+      "description": "Failover watchdog: whether each uplink answered its last probe (the cable WAN every 2 s, the idle backup once a minute), and which uplink carries LAN traffic.",
+      "gridPos": { "x": 0, "y": 12, "w": 24, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [
+        { "refId": "A", "expr": "wan_probe_ok{instance=\"$instance\", interface=~\"wan|gre-cell\"}", "legendFormat": "{{interface}} probe" },
+        { "refId": "B", "expr": "wan_failover_active{instance=\"$instance\"}", "legendFormat": "LAN uplink" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [{ "type": "value", "options": {
+            "0": { "text": "down", "color": "red", "index": 0 },
+            "1": { "text": "up", "color": "green", "index": 1 }
+          } }],
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 1 } ] },
+          "custom": { "fillOpacity": 80, "lineWidth": 0 }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "LAN uplink" },
+            "properties": [
+              { "id": "mappings", "value": [{ "type": "value", "options": {
+                "0": { "text": "Cable", "color": "green", "index": 0 },
+                "1": { "text": "Cellular", "color": "orange", "index": 1 }
+              } }] },
+              { "id": "thresholds", "value": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "orange", "value": 1 } ] } }
+            ]
+          }
+        ]
+      },
+      "options": { "showValue": "never", "mergeValues": true, "rowHeight": 0.8, "alignValue": "left", "legend": { "showLegend": true, "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "id": 9, "type": "timeseries", "title": "Failover transitions over time",
+      "description": "Switches between the uplinks per hour.",
+      "gridPos": { "x": 0, "y": 19, "w": 24, "h": 6 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "expr": "increase(wan_failover_transitions_total{instance=\"$instance\"}[1h])", "legendFormat": "transitions / h" }],
+      "fieldConfig": { "defaults": { "unit": "none", "decimals": 0, "min": 0, "custom": { "drawStyle": "bars", "fillOpacity": 60 } } },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "single" } }
+    }
+  ]
+}
