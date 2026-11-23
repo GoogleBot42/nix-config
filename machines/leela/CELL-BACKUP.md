@@ -125,7 +125,7 @@ The Data Limit set while the foreign eSIM was active (1 MB, monthly) was
 tied to that profile; check Settings → Cellular after adding a plan and
 clear or resize it, or the new plan stops after 1 MB.
 
-Plan: Tello data-only eSIM (T-Mobile), activated 2026-11-22 through the
+Plan: Tello unlimited data-only eSIM (T-Mobile), activated 2026-11-22 through the
 controller (device → Settings → Cellular → eSIM → Activate eSIM with the
 code from Tello's "My SIM" page, Manual Install tab).
 
