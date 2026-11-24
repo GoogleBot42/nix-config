@@ -661,6 +661,9 @@ in
         iifname ${nftStringSet [ iotIf managementIf ]} tcp dport 53 reject
         # node_exporter is for the tailnet scraper and the trusted LAN only.
         iifname ${nftStringSet [ iotIf managementIf ]} tcp dport 9100 reject
+        # The PIA bootstrap proxy answers on the bridge address, which is a local
+        # address like any other: only the VPN container may use it (below).
+        iifname @lan_ifaces tcp dport ${toString vpnProxyPort} reject
         iifname @lan_ifaces accept
 
         # The cellular modem is a vendor appliance, not a LAN client: DHCP,

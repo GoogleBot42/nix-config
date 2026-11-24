@@ -66,6 +66,10 @@ Blocked to the router:
   untrusted; they are also not offered a resolver via DHCP, and the reject
   ensures they cannot use the router for DNS-based exfiltration even if they
   try anyway.
+- The PIA bootstrap proxy (`tcp/8888` on the bridge address) from every LAN
+  VLAN, rejected before the general LAN accept rule. The bridge address is a
+  router-local address like any other, and the proxy exists for the VPN
+  container alone; tinyproxy's own allow list is the second line.
 
 ## Forwarding
 
@@ -126,6 +130,9 @@ and reach nothing else. The leak protection is the topology of the
   at all. Forwarding from `vlan-pia` is accepted to the tunnel and dropped
   otherwise, so the VLAN cannot reach the bridge (the host's proxy, any
   service container) either.
+- The container itself answers the VLAN for DHCP, DNS and ping only. It runs
+  no sshd and no mosh (it is administered with `nixos-container root-login`),
+  so a VLAN client finds no service to attack on its gateway.
 - The tunnel's encrypted UDP leaves from the router's own namespace (the
   WireGuard interface is created on the host and moved into the container)
   and follows the router's default route, so it fails over to the cellular

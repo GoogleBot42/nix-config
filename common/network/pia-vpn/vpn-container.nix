@@ -204,6 +204,16 @@ in
           # Enable forwarding so bridge traffic can go through WG
           boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
 
+          # The fleet modules bring sshd and mosh; the container is administered
+          # with nixos-container root-login and must offer nothing to a LAN VLAN
+          # whose clients are untrusted, so neither runs here.
+          services.openssh.enable = mkForce false;
+          programs.mosh.enable = mkForce false;
+          # Secrets reach the container as bind mounts of the host's decrypted files;
+          # it has no host key of its own, so agenix has nothing to decrypt with
+          # (and without sshd no identity to assert on).
+          age.enable = false;
+
           networking.firewall = mkMerge [
             {
               # Trust bridge interface
