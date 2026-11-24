@@ -24,7 +24,7 @@
       },
       {
         "name": "search",
-        "label": "Filter (regex on host, MAC or address)",
+        "label": "Filter (regex on host, network, address or MAC)",
         "type": "textbox",
         "query": ".*",
         "current": { "text": ".*", "value": ".*" }
@@ -73,7 +73,7 @@
       "datasource": { "type": "prometheus", "uid": "victoriametrics" },
       "targets": [{
         "refId": "A",
-        "expr": "dnsmasq_lease_expiry{instance=\"$instance\", computer_name=~\"$search\"} or dnsmasq_lease_expiry{instance=\"$instance\", mac_addr=~\"$search\"} or dnsmasq_lease_expiry{instance=\"$instance\", ip_addr=~\"$search\"}",
+        "expr": "dnsmasq_lease_expiry{instance=\"$instance\", computer_name=~\"$search\"} or dnsmasq_lease_expiry{instance=\"$instance\", mac_addr=~\"$search\"} or dnsmasq_lease_expiry{instance=\"$instance\", ip_addr=~\"$search\"} or dnsmasq_lease_expiry{instance=\"$instance\", network=~\"$search\"}",
         "format": "table",
         "instant": true
       }],
@@ -82,8 +82,8 @@
           "id": "organize",
           "options": {
             "excludeByName": { "Time": true, "__name__": true, "job": true, "instance": true },
-            "indexByName": { "computer_name": 0, "ip_addr": 1, "mac_addr": 2, "Value": 3, "client_id": 4 },
-            "renameByName": { "computer_name": "Host", "ip_addr": "Address", "mac_addr": "MAC", "Value": "Lease expires", "client_id": "Client id" }
+            "indexByName": { "computer_name": 0, "network": 1, "ip_addr": 2, "mac_addr": 3, "Value": 4, "client_id": 5 },
+            "renameByName": { "computer_name": "Host", "network": "Network", "ip_addr": "Address", "mac_addr": "MAC", "Value": "Lease expires", "client_id": "Client id" }
           }
         },
         {
@@ -99,7 +99,7 @@
           "id": "organize",
           "options": {
             "excludeByName": { "Lease expires": true },
-            "indexByName": { "Host": 0, "Address": 1, "MAC": 2, "Expires": 3, "Client id": 4 }
+            "indexByName": { "Host": 0, "Network": 1, "Address": 2, "MAC": 3, "Expires": 4, "Client id": 5 }
           }
         }
       ],
@@ -108,10 +108,11 @@
         "overrides": [
           { "matcher": { "id": "byName", "options": "Expires" }, "properties": [ { "id": "unit", "value": "dateTimeFromNow" }, { "id": "custom.width", "value": 160 } ] },
           { "matcher": { "id": "byName", "options": "MAC" }, "properties": [ { "id": "custom.width", "value": 170 } ] },
+          { "matcher": { "id": "byName", "options": "Network" }, "properties": [ { "id": "custom.width", "value": 130 } ] },
           { "matcher": { "id": "byName", "options": "Address" }, "properties": [ { "id": "custom.width", "value": 150 } ] }
         ]
       },
-      "options": { "showHeader": true, "sortBy": [ { "displayName": "Address", "desc": false } ], "footer": { "show": true, "reducer": ["count"], "fields": ["Address"] } }
+      "options": { "showHeader": true, "sortBy": [ { "displayName": "Network", "desc": false }, { "displayName": "Address", "desc": false } ], "footer": { "show": true, "reducer": ["count"], "fields": ["Address"] } }
     },
     {
       "id": 11, "type": "timeseries", "title": "Active leases over time",
