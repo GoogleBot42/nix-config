@@ -10,6 +10,7 @@ in
 
   imports = [
     ./pia-vpn
+    ./dns-over-tls.nix
     ./tailscale.nix
     ./sandbox.nix
     ./nginx-tailscale-auth.nix

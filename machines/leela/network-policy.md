@@ -124,8 +124,9 @@ and reach nothing else. The leak protection is the topology of the
   address on it and no route to it, so no host rule can send its traffic out
   `wan` or `gre-cell`.
 - Inside the container, `192.168.16.1` is the DHCP server (networkd,
-  `.100`-`.249`, MTU 1420 announced), the resolver (systemd-resolved's stub,
-  forwarding to PIA's resolvers through the tunnel) and the only gateway.
+  `.100`-`.249`, MTU 1420 announced), the resolver (unbound, forwarding over
+  DNS-over-TLS to Quad9 and Cloudflare through the tunnel, private addresses
+  stripped from answers) and the only gateway.
   The container's default route is the tunnel; its bridge side has no gateway
   at all. Forwarding from `vlan-pia` is accepted to the tunnel and dropped
   otherwise, so the VLAN cannot reach the bridge (the host's proxy, any
@@ -182,9 +183,13 @@ is probed while idle. State is exported as `wan_failover_active` and
 ## DNS
 
 dnsmasq serves the LAN interfaces only (`local-service`, `except-interface`
-WAN, DNS rebind protection on). Upstream resolvers are explicit (`1.1.1.1`,
-`8.8.8.8`) via `no-resolv`: systemd-resolved is disabled on this machine, so
-DHCP-learned ISP resolvers are deliberately not used. Main-LAN clients receive
+WAN, DNS rebind protection on). Its single upstream (`no-resolv`) is unbound on
+`127.0.0.1:5335` (`dnsOverTls`, `common/network/dns-over-tls.nix`), which
+forwards over DNS-over-TLS to Quad9 (`9.9.9.9`, `149.112.112.112`) and
+Cloudflare (`1.1.1.1`, `1.0.0.1`), authenticated by certificate name, so the
+ISP sees TCP 853 to those four addresses and no query content.
+systemd-resolved is disabled on this machine and DHCP-learned ISP resolvers
+are deliberately not used. Main-LAN clients receive
 the router as their resolver over DHCPv4 and RDNSS; IoT and management receive
 no resolver at all. The cell VLAN receives the router as resolver plus DHCP
 option 43 and the name `unifi`, both pointing at the UniFi controller on s0,

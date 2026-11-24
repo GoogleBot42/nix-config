@@ -178,10 +178,12 @@ let
   # bench, where WAN faces the live LAN; the live gateway exposes no WAN service.
   wanAdminSources = lib.optionals bench [ "192.168.0.0/21" ];
 
-  # Upstream resolvers for dnsmasq. systemd-resolved is disabled on this
-  # machine and networkd's DHCP-learned DNS servers are not written anywhere
-  # without it, so dnsmasq must be given explicit upstreams.
-  upstreamDns = [ "1.1.1.1" "8.8.8.8" ];
+  # dnsmasq hands everything it cannot answer itself to the local DNS-over-TLS
+  # forwarder (dnsOverTls below), so the ISP never sees a query in the clear.
+  # systemd-resolved is disabled on this machine and networkd's DHCP-learned
+  # resolvers are deliberately not used.
+  dotPort = 5335;
+  upstreamDns = [ "127.0.0.1#${toString dotPort}" ];
 
   lanIfs = [ mainIf iotIf managementIf adminIf ];
   # Every interface the Internet is reached through: masquerade, MSS clamping
@@ -276,6 +278,14 @@ in
   #   remaining RJ-45 and both SFP+ cages (lan1..lan3): untagged/native main LAN
   # The cellular backup (cell VLAN + GRE tunnel, failover in wan-failover.nix)
   # and the PIA VLAN are the additions to that policy.
+
+  # The resolver behind dnsmasq: DNS over TLS to public resolvers, listening
+  # on loopback only. Its own traffic follows the default route, so it fails
+  # over to the cellular backup with everything else.
+  dnsOverTls = {
+    enable = true;
+    port = dotPort;
+  };
 
   pia-vpn = {
     enable = true;

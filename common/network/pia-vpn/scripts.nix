@@ -189,7 +189,6 @@ in
       wg set "$interfaceName" listen-port 0 2>/dev/null || true
       ip -4 address flush dev "$interfaceName" 2>/dev/null || true
       ip route del default dev "$interfaceName" 2>/dev/null || true
-      resolvectl revert "$interfaceName" 2>/dev/null || true
       while read -r table parent chain; do
         iptables -t "$table" -D "$parent" -j "$chain" 2>/dev/null || true
         iptables -t "$table" -F "$chain" 2>/dev/null || true

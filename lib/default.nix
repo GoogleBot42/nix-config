@@ -62,4 +62,16 @@ with lib;
       octets = map (i: builtins.substring i 2 hash) [ 0 2 4 6 8 ];
     in
     "02:${builtins.concatStringsSep ":" octets}";
+
+  # IPv4 network of an address and prefix length, in CIDR form:
+  # ipv4Network "192.168.16.1" 24 == "192.168.16.0/24"
+  ipv4Network = address: prefixLength:
+    let
+      octets = map toInt (splitString "." address);
+      asInt = foldl (acc: o: acc * 256 + o) 0 octets;
+      hostBits = foldl (acc: _: acc * 2) 1 (range 1 (32 - prefixLength));
+      network = asInt / hostBits * hostBits;
+      octet = shift: toString (mod (network / shift) 256);
+    in
+    "${concatStringsSep "." (map octet [ 16777216 65536 256 1 ])}/${toString prefixLength}";
 }

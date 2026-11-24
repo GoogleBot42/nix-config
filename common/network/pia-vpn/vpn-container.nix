@@ -17,6 +17,9 @@ let
   forwardingContainer = if portForwarding then forwardingContainers.${forwardingContainerName} else null;
 
   lanNames = attrNames cfg.lans;
+  # The container's own `lib` is nixpkgs' (the host's extended lib does not
+  # reach into a container evaluation); keep the helper from this scope.
+  lanNetwork = lan: lib.ipv4Network lan.address lan.prefixLength;
   # Tunnel MTU as set by connectToServer (scripts.nix); handed to LAN clients
   # over DHCP so UDP flows need no fragmentation (TCP is clamped anyway).
   tunnelMtu = 1420;
@@ -258,17 +261,22 @@ in
             })
           ];
 
-          # DNS: use systemd-resolved listening on bridge IP so service containers
-          # and LAN clients can use VPN container as DNS server (queries go
-          # through WG tunnel = no DNS leak)
-          services.resolved = {
+          # DNS: the forwarder answers the bridge (service containers), every LAN
+          # and the container itself, and asks public resolvers over TLS through
+          # the tunnel, so neither the exit network nor the VPN provider reads
+          # queries. Private answers are stripped: a LAN client must not be led
+          # to a LAN address by a name. Until the tunnel is up nothing
+          # resolves, since the tunnel is the only default route.
+          dnsOverTls = {
             enable = true;
-            settings.Resolve.DNSStubListenerExtra =
-              [ cfg.vpnAddress ] ++ mapAttrsToList (_: lan: lan.address) cfg.lans;
+            listenAddresses = [ "127.0.0.1" cfg.vpnAddress ] ++ mapAttrsToList (_: lan: lan.address) cfg.lans;
+            allowFrom = [ "127.0.0.0/8" cfg.subnet ] ++ mapAttrsToList (_: lanNetwork) cfg.lans;
+            privateAddresses = [ "10.0.0.0/8" "172.16.0.0/12" "192.168.0.0/16" "169.254.0.0/16" "fd00::/8" "fe80::/10" ];
           };
-
-          # Don't use host resolv.conf — resolved manages DNS
+          networking.nameservers = [ "127.0.0.1" ];
           networking.useHostResolvConf = false;
+          # networkd would bring resolved along; the forwarder is the only resolver.
+          services.resolved.enable = false;
 
           # State directory for PIA config files
           systemd.tmpfiles.rules = [
@@ -280,7 +288,7 @@ in
             description = "PIA VPN WireGuard Setup";
 
             wants = [ "network-online.target" ];
-            after = [ "network.target" "network-online.target" "systemd-networkd.service" "systemd-resolved.service" ];
+            after = [ "network.target" "network-online.target" "systemd-networkd.service" ];
             wantedBy = [ "multi-user.target" ];
 
             path = scriptPkgs ++ [ pkgs.systemd pkgs.iputils ];
@@ -347,18 +355,8 @@ in
               ip route replace default dev ${cfg.interfaceName}
               echo "Default route set through ${cfg.interfaceName}"
 
-              # Point resolved at PIA's DNS servers via the tunnel link. Without
-              # explicit servers, resolved silently falls back to its
-              # compiled-in FallbackDNS (Cloudflare/Google). Degrade to that
-              # fallback rather than failing the whole VPN if this errors.
-              if [[ -n "$PIA_DNS_SERVERS" ]]; then
-                resolvectl dns ${cfg.interfaceName} $PIA_DNS_SERVERS \
-                  && resolvectl domain ${cfg.interfaceName} '~.' \
-                  && resolvectl default-route ${cfg.interfaceName} true \
-                  || echo "WARNING: failed to configure PIA DNS; resolved fallback DNS remains in use" >&2
-              else
-                echo "WARNING: PIA returned no DNS servers; resolved fallback DNS remains in use" >&2
-              fi
+              # DNS needs nothing here: the forwarder (dnsOverTls) reaches its
+              # resolvers through the default route, which is now the tunnel.
 
               # 5. NAT: masquerade bridge → WG (so service containers' traffic appears to come from VPN IP)
               echo "Setting up NAT masquerade..."
