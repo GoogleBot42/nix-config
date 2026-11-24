@@ -18,9 +18,9 @@ let
   # them (ethaddr, eth1addr..eth4addr = device-tree aliases ethernet0..4) and
   # the alias-to-socket mapping is Mono's documented one. A null MAC leaves
   # the kernel name in place, which is only acceptable on the bench.
-  # The SFP+ cages are spare LAN ports for now: the SFP-10G-T module never
-  # brings its link up on the in-tree driver (no PHY access, host side stays
-  # down), so WAN and trunk live on RJ-45 sockets.
+  # The SFP+ cages are plain LAN ports until WAN (left cage, copper module;
+  # the right cage's latch is the free one) and the switch trunk (right
+  # cage, DAC) move onto them.
   livePorts = {
     wan = { mac = "e8:f6:d7:00:11:1a"; fallback = "eth0"; }; # RJ-45 right (ethernet2): WAN DHCP
     trunk = { mac = "e8:f6:d7:00:11:19"; fallback = "eth1"; }; # RJ-45 (ethernet1): tagged VLAN trunk

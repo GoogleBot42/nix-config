@@ -84,11 +84,16 @@ as you face the sockets):
 | SFP+ left | `e8:f6:d7:00:11:1b` | `lan2`, spare |
 | SFP+ right | `e8:f6:d7:00:11:1c` | `lan3`, spare |
 
-The SFP+ cages are parked: an OEM SFP-10G-T module (multi-rate per its
-seller) is detected but exposes no PHY over I2C, and its host side never
-comes up on the in-tree driver, so neither Linux nor the switch sees a link.
-Revisit with a module whose PHY the kernel can drive (RollBall or C45
-over I2C) or once the `sfp` quirk table covers this one.
+The SFP+ cages work on the in-tree driver (phylink in-band, Lynx 10G PCS)
+once the DTS declares their TX-disable lines active-low: on this board the
+module only runs while the SoC drives that line high, the opposite of what
+Mono's DTS says, and with the wrong polarity a module looks dead (LOS
+asserted, no PHY over I2C, no host signal). The OEM 10GBASE-T modules in
+use keep their host side at a fixed 10GBASE-R whatever speed the copper
+negotiates, so the cage links at 10G even against a 1G or 2.5G peer; their
+RollBall PHY probe still fails, which only costs copper-side statistics.
+The cages stay plain main-LAN ports until the WAN and the switch trunk
+move onto them.
 
 For reference, Mono's docs give this Linux naming for *their* kernels (which carry a patch
 that names ports after the `ethernet*` aliases):
