@@ -199,11 +199,12 @@ let
   # defaulting to the router's own address.
   mkDhcpSuppressedOption = tag: option:
     "tag:${tag},option:${option}";
-  # All MACs in one entry: dnsmasq refuses to start when the same address
-  # appears in multiple dhcp-host lines. One address per subnet the host may
-  # appear in; dnsmasq picks the one matching the interface it asks on.
-  mkDhcpStaticLease = { macs, hostname ? null, addresses }:
-    lib.concatStringsSep "," (macs ++ lib.optional (hostname != null) hostname ++ addresses);
+  # One dhcp-host line per address: a line holds a single IPv4 address (a
+  # further one silently replaces it), and with one line per subnet dnsmasq
+  # picks the one matching the interface the host asks on. All MACs in each
+  # line: dnsmasq refuses to start when the same address appears in two lines.
+  mkDhcpStaticLeases = { macs, hostname ? null, addresses }:
+    map (address: lib.concatStringsSep "," (macs ++ lib.optional (hostname != null) hostname ++ [ address ])) addresses;
   # Fixed DNS records for a pinned host, one per address. A name derived from
   # a DHCP lease hangs off exactly one lease at a time, so a host leasing on
   # several VLANs (s0 is on all three) would resolve to whichever lease was
@@ -624,7 +625,7 @@ in
         "unifi,unifi.${lanDomain},${unifiController}"
       ] ++ lib.concatMap mkHostRecords staticLeases;
 
-      dhcp-host = map mkDhcpStaticLease staticLeases;
+      dhcp-host = lib.concatMap mkDhcpStaticLeases staticLeases;
     };
   };
 

@@ -198,6 +198,10 @@
         vlanConfig.Id = 4;
       };
     };
+    # The VLAN interfaces share eno1's MAC, from which networkd would derive one
+    # DHCP client identity for all three; dnsmasq keeps one lease per client and
+    # would answer two of the three renewals with NAK. The VLAN id as IAID makes
+    # each interface its own client.
     networks = {
       # eno1 — trunk port carrying all VLANs (no IP on the raw interface)
       "40-eno1" = {
@@ -212,7 +216,10 @@
       "50-vlan-main" = {
         matchConfig.Name = "vlan-main";
         networkConfig.DHCP = "yes";
-        dhcpV4Config.RouteMetric = 100;
+        dhcpV4Config = {
+          IAID = 5;
+          RouteMetric = 100;
+        };
         linkConfig.RequiredForOnline = "routable";
       };
 
@@ -221,6 +228,7 @@
         matchConfig.Name = "vlan-iot";
         networkConfig.DHCP = "yes";
         dhcpV4Config = {
+          IAID = 2;
           UseGateway = false;
           RouteMetric = 200;
         };
@@ -232,6 +240,7 @@
         matchConfig.Name = "vlan-mgmt";
         networkConfig.DHCP = "yes";
         dhcpV4Config = {
+          IAID = 4;
           UseGateway = false;
           RouteMetric = 300;
         };
