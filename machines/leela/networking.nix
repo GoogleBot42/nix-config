@@ -584,7 +584,9 @@ in
       local = "/${lanDomain}/";
       domain = lanDomain;
       expand-hosts = true;
-      cache-size = 1000;
+      # Room for every name the LAN uses in a day; the default would evict
+      # entries that are still valid.
+      cache-size = 10000;
       # Also makes dnsmasq ACK a renewal for an in-pool address it has no
       # lease for, so clients keep their addresses across the gateway swap
       # even where the lease file was not carried over.

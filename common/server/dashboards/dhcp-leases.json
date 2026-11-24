@@ -62,7 +62,7 @@
       "datasource": { "type": "prometheus", "uid": "victoriametrics" },
       "targets": [
         { "refId": "A", "expr": "rate(dnsmasq_hits{instance=\"$instance\"}[5m])", "legendFormat": "cache hits" },
-        { "refId": "B", "expr": "rate(dnsmasq_misses{instance=\"$instance\"}[5m])", "legendFormat": "cache misses (forwarded)" }
+        { "refId": "B", "expr": "rate(dnsmasq_misses{instance=\"$instance\"}[5m])", "legendFormat": "cache misses (forwarded to unbound)" }
       ],
       "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "fillOpacity": 15, "stacking": { "mode": "normal" } } } },
       "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } }
