@@ -63,6 +63,10 @@ fork branch directly updates the PR.
 
 ## Cleanup, every time
 
+Remove only the worktrees this session created. Other sessions keep theirs
+under their own scratchpad ids (`git worktree list` shows them all), and
+`--force` destroys any uncommitted work they hold.
+
 ```bash
 git worktree remove --force <path>
 git worktree prune

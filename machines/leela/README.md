@@ -90,8 +90,9 @@ module only runs while the SoC drives that line high, the opposite of what
 Mono's DTS says, and with the wrong polarity a module looks dead (LOS
 asserted, no PHY over I2C, no host signal). The OEM 10GBASE-T modules in
 use keep their host side at a fixed 10GBASE-R whatever speed the copper
-negotiates, so the cage links at 10G even against a 1G or 2.5G peer; their
-RollBall PHY probe still fails, which only costs copper-side statistics.
+negotiates; with the line driven correctly the kernel also reaches the
+module's Aquantia AQR113C PHY over I2C (RollBall), so `ethtool` reports
+the real copper speed and a 2.5G peer moves about 2.2-2.4 Gbit/s each way.
 The cages carry WAN and the switch trunk; the RJ-45 sockets are spare
 main-LAN ports.
 
