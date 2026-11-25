@@ -80,9 +80,9 @@ as you face the sockets):
 | --- | --- | --- |
 | RJ-45 left | `e8:f6:d7:00:11:18` | `lan1`, untagged main LAN |
 | RJ-45 middle | `e8:f6:d7:00:11:19` | `lan2`, untagged main LAN |
-| RJ-45 right | `e8:f6:d7:00:11:1a` | `lan3`, untagged main LAN |
+| RJ-45 right | `e8:f6:d7:00:11:1a` | `trunk`, tagged VLANs 2/4/5/14/15/16 to the switch |
 | SFP+ left (10GBASE-T module, latch jammed) | `e8:f6:d7:00:11:1b` | `wan`, DHCP from the modem |
-| SFP+ right (10GBASE-T module) | `e8:f6:d7:00:11:1c` | `trunk`, tagged VLANs 2/4/5/14/15/16 to the switch |
+| SFP+ right (10GBASE-T module) | `e8:f6:d7:00:11:1c` | `lan3`, untagged main LAN, spare |
 
 The SFP+ cages work on the in-tree driver (phylink in-band, Lynx 10G PCS)
 once the DTS declares their TX-disable lines active-low: on this board the
@@ -93,8 +93,10 @@ use keep their host side at a fixed 10GBASE-R whatever speed the copper
 negotiates; with the line driven correctly the kernel also reaches the
 module's Aquantia AQR113C PHY over I2C (RollBall), so `ethtool` reports
 the real copper speed and a 2.5G peer moves about 2.2-2.4 Gbit/s each way.
-The cages carry WAN and the switch trunk; the RJ-45 sockets are spare
-main-LAN ports.
+The left cage carries WAN. The right cage's module links a laptop and the
+Omada's SFP+ cage but never negotiates with the unmanaged 2.5G switch the
+trunk runs through, so the trunk stays on a 1G RJ-45 and that cage is a
+spare main-LAN port.
 
 For reference, Mono's docs give this Linux naming for *their* kernels (which carry a patch
 that names ports after the `ethernet*` aliases):
