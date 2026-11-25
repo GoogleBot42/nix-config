@@ -79,10 +79,10 @@ as you face the sockets):
 | Socket | MAC | Role |
 | --- | --- | --- |
 | RJ-45 left | `e8:f6:d7:00:11:18` | `lan1`, untagged main LAN |
-| RJ-45 middle | `e8:f6:d7:00:11:19` | `trunk`, tagged VLANs 2/4/5/14/15/16 to the switch |
-| RJ-45 right | `e8:f6:d7:00:11:1a` | `wan`, DHCP from the modem |
-| SFP+ left | `e8:f6:d7:00:11:1b` | `lan2`, spare |
-| SFP+ right | `e8:f6:d7:00:11:1c` | `lan3`, spare |
+| RJ-45 middle | `e8:f6:d7:00:11:19` | `lan2`, untagged main LAN |
+| RJ-45 right | `e8:f6:d7:00:11:1a` | `lan3`, untagged main LAN |
+| SFP+ left (10GBASE-T module, latch jammed) | `e8:f6:d7:00:11:1b` | `wan`, DHCP from the modem |
+| SFP+ right (10GBASE-T module) | `e8:f6:d7:00:11:1c` | `trunk`, tagged VLANs 2/4/5/14/15/16 to the switch |
 
 The SFP+ cages work on the in-tree driver (phylink in-band, Lynx 10G PCS)
 once the DTS declares their TX-disable lines active-low: on this board the
@@ -92,8 +92,8 @@ asserted, no PHY over I2C, no host signal). The OEM 10GBASE-T modules in
 use keep their host side at a fixed 10GBASE-R whatever speed the copper
 negotiates, so the cage links at 10G even against a 1G or 2.5G peer; their
 RollBall PHY probe still fails, which only costs copper-side statistics.
-The cages stay plain main-LAN ports until the WAN and the switch trunk
-move onto them.
+The cages carry WAN and the switch trunk; the RJ-45 sockets are spare
+main-LAN ports.
 
 For reference, Mono's docs give this Linux naming for *their* kernels (which carry a patch
 that names ports after the `ethernet*` aliases):
