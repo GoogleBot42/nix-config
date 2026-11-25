@@ -64,8 +64,14 @@
         { "refId": "A", "expr": "rate(dnsmasq_hits{instance=\"$instance\"}[5m])", "legendFormat": "cache hits" },
         { "refId": "B", "expr": "rate(dnsmasq_misses{instance=\"$instance\"}[5m])", "legendFormat": "cache misses (forwarded to unbound)" }
       ],
-      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "fillOpacity": 15, "stacking": { "mode": "normal" } } } },
-      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } }
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "decimals": 1, "custom": { "lineWidth": 1, "fillOpacity": 0, "stacking": { "mode": "none" } } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "cache hits" }, "properties": [ { "id": "custom.fillOpacity", "value": 35 }, { "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } } ] },
+          { "matcher": { "id": "byName", "options": "cache misses (forwarded to unbound)" }, "properties": [ { "id": "custom.lineWidth", "value": 2 }, { "id": "color", "value": { "mode": "fixed", "fixedColor": "yellow" } } ] }
+        ]
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["mean", "max", "lastNotNull"] }, "tooltip": { "mode": "multi", "sort": "desc" } }
     },
     {
       "id": 10, "type": "table", "title": "Leases",
