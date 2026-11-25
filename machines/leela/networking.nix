@@ -19,15 +19,14 @@ let
   # the alias-to-socket mapping is Mono's documented one. A null MAC leaves
   # the kernel name in place, which is only acceptable on the bench.
   # The left SFP+ cage (10GBASE-T module, latch jammed so it stays) carries
-  # WAN. The switch trunk stays on a 1G RJ-45: the right cage's module does
-  # not negotiate with the 2.5G switch it would have to feed, so that cage
-  # is a spare main-LAN port.
+  # WAN; the right cage carries the switch trunk over a passive SFP+ DAC into
+  # the Omada's SFP+ port. The three RJ-45 sockets are spare main-LAN ports.
   livePorts = {
     wan = { mac = "e8:f6:d7:00:11:1b"; fallback = "eth3"; }; # SFP+ left (ethernet3), 10GBASE-T module: WAN DHCP
-    trunk = { mac = "e8:f6:d7:00:11:1a"; fallback = "eth0"; }; # RJ-45 right (ethernet2): tagged VLAN trunk
+    trunk = { mac = "e8:f6:d7:00:11:1c"; fallback = "eth4"; }; # SFP+ right (ethernet4), DAC to the Omada: tagged VLAN trunk
     lan1 = { mac = "e8:f6:d7:00:11:18"; fallback = "eth2"; }; # RJ-45 left (ethernet0): untagged main LAN
     lan2 = { mac = "e8:f6:d7:00:11:19"; fallback = "eth1"; }; # RJ-45 middle (ethernet1): untagged main LAN
-    lan3 = { mac = "e8:f6:d7:00:11:1c"; fallback = "eth4"; }; # SFP+ right (ethernet4): untagged main LAN
+    lan3 = { mac = "e8:f6:d7:00:11:1a"; fallback = "eth0"; }; # RJ-45 right (ethernet2): untagged main LAN
   };
 
   # Bench cabling: which socket carries the live LAN into leela (by live
