@@ -113,6 +113,22 @@ itself), and outbound-initiated IPsec from the LAN already works through
 conntrack. Add an explicit DNAT if inbound IPsec to a specific host is ever
 needed.
 
+### Fast path
+
+Forwarding is CPU-bound on this SoC (about 1 Gbit/s per core, a single flow
+never spreads beyond one core), so established TCP and UDP connections take
+an nftables flowtable (`inet fastpath`, loaded by `nftables-fastpath.service`
+once the interfaces exist). The policy above is still what decides: a flow
+is only added to the flowtable by a chain that runs after the `forward`
+chain, on a packet in `established` state, so nothing the policy denies is
+ever fast-pathed, and conntrack keeps tracking the connection (FIN/RST
+always take the full path). The flowtable covers `br-main`, the IoT,
+management, admin and cell VLANs and `wan`, so it serves LAN-to-WAN NAT
+traffic and admin-to-other-VLAN traffic alike. `gre-cell` is deliberately
+not in it, so traffic on the cell backup keeps the full path and its MTU
+handling. Rules that need to see every packet of a connection (per-packet
+counters, logging) would not see fast-pathed packets; there are none today.
+
 ## PIA VLAN
 
 Clients on VLAN 16 reach the Internet only through the PIA WireGuard tunnel,

@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, utils, ... }:
 
 let
   # Bench mode: leela hangs off the live gateway's LAN by its WAN port (double
@@ -778,6 +778,59 @@ in
       }
     '';
   };
+
+  # Fast path for forwarded traffic. The forward chain above judges the first
+  # packets of every connection; once a TCP or UDP connection has passed it and
+  # is established, its remaining packets are matched at ingress by this
+  # flowtable and handed straight to the egress device with the conntrack NAT
+  # mapping applied, skipping the routing lookup, the forward chain and the
+  # NAT chains. The chain sits one priority step after the policy chain, so it
+  # only sees packets that chain did not drop; FIN/RST and oversized packets
+  # fall back to the full path by design. Both ends of a flow must be on the
+  # listed devices: the cell tunnel is left out so its MTU-1400 traffic keeps
+  # the full path, and the VPN bridge is never forwarded at all.
+  #
+  # It is a table of its own, loaded by its own unit: nftables.service runs
+  # before any interface exists, and a flowtable can only be created once its
+  # devices do. The nftables unit replaces only its own tables on reload, so
+  # this one survives firewall reloads.
+  systemd.services.nftables-fastpath =
+    let
+      fastpathIfs = lanIfs ++ [ cellIf wan ];
+      ruleset = pkgs.writeText "fastpath.nft" ''
+        table inet fastpath {
+          set fastpath_ifaces {
+            type ifname
+            elements = ${nftStringSet fastpathIfs}
+          }
+
+          flowtable ft {
+            hook ingress priority filter
+            devices = ${nftSet fastpathIfs}
+            counter
+          }
+
+          chain forward {
+            type filter hook forward priority filter + 1; policy accept;
+            iifname @fastpath_ifaces oifname @fastpath_ifaces meta l4proto { tcp, udp } ct state established flow add @ft
+          }
+        }
+      '';
+      deviceUnits = map (name: "sys-subsystem-net-devices-${utils.escapeSystemdPath name}.device") fastpathIfs;
+    in
+    {
+      description = "nftables flowtable fast path for forwarded traffic";
+      requires = [ "nftables.service" ];
+      wants = deviceUnits;
+      after = [ "nftables.service" "systemd-networkd.service" ] ++ deviceUnits;
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        ExecStart = "${pkgs.nftables}/bin/nft -f ${ruleset}";
+        ExecStop = "${pkgs.nftables}/bin/nft delete table inet fastpath";
+      };
+    };
 
   assertions = [
     {
