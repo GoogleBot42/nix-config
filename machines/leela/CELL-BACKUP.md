@@ -10,16 +10,20 @@ matter.
 Design in one picture:
 
 ```
- any PoE switch port ──VLAN 14 (untagged on that port)──┐
-                                                        │ trunk (tagged 14)
- U5G 192.168.14.2  ═══ GRE outer 192.168.14.2 ↔ .14.1 ═══ leela vlan-cell 192.168.14.1
+ U5G ── PoE injector ── leela lan3 (RJ-45 right, untagged) ──┐
+ (or any PoE switch port on VLAN 14 ── trunk, tagged 14 ──┘) br-cell 192.168.14.1
+ U5G 192.168.14.2  ═══ GRE outer 192.168.14.2 ↔ .14.1 ═══ leela br-cell
       gre1 100.127.125.128/31  ─────── inner ───────  gre-cell 100.127.125.129/31
       wwan0 carrier IP (NAT)                           failover: default via 100.127.125.128 metric 512
 ```
 
-- `vlan-cell` (VLAN 14, `192.168.14.0/24`): the modem's home. DHCP hands out
-  exactly one address, `192.168.14.2`, so the GRE outer endpoint never moves
-  whatever switch port the modem is on. Option 43 and the DNS name `unifi`
+- `br-cell` (`192.168.14.0/24`): the modem's home, a bridge of `lan3` (the
+  right RJ-45, untagged, the modem's normal port through its PoE injector) and
+  `vlan-cell` (VLAN 14 on the trunk, so a PoE switch port on the cell VLAN
+  works as well). The modem sits on leela directly because its 1 Gb/s PHY
+  drops and renegotiates every few minutes on the Omada's 2.5G ports. DHCP
+  hands out exactly one address, `192.168.14.2`, so the GRE outer endpoint
+  never moves whatever port the modem is on. Option 43 and the DNS name `unifi`
   point it at the controller (`192.168.1.2`).
 - `gre-cell`: the tunnel. Inner addresses are the firmware's fixed pair.
   MTU 1400, TCP MSS clamped by the existing `rt mtu` rule.
@@ -38,7 +42,7 @@ Design in one picture:
   Transitions go to the journal, ntfy (`service-failures`) and node_exporter
   (`wan_failover_active`, `wan_probe_ok{interface}`).
 - `cell-backup-check.timer` (`cell-backup-check.nix`) checks the backup every
-  five minutes, layer by layer, about 17 KB per run: carrier on `vlan-cell`,
+  five minutes, layer by layer, about 17 KB per run: carrier on `br-cell`,
   an ARP probe of the modem at `192.168.14.2`, three pings to 1.1.1.1 and an
   HTTPS fetch of `https://www.google.com/generate_204` bound to `gre-cell`, the
   carrier address from `ifconfig.co`, and the modem's last `DHCPDISCOVER` in
@@ -73,9 +77,9 @@ DHCP or gateway settings of its own:
 - USW Lite 8 PoE port 8 is the uplink to leela's middle RJ-45 (`trunk`):
   native VLAN none, tagged "Allow All", so every network including `cell`
   reaches leela tagged.
-- USW Lite 8 PoE port 1 is the modem's port: native VLAN `cell`, tagged
-  VLANs blocked, PoE+. Any other port the modem may move to needs the same
-  profile.
+- USW Lite 8 PoE port 1 is the fallback port for the modem: native VLAN
+  `cell`, tagged VLANs blocked, PoE on. Any other switch port the modem may
+  move to needs the same profile; the Omada's 2.5G ports do not hold its link.
 - Device SSH is on (Settings → System → Device SSH Settings) with fry's
   public key registered, so the hardware check below works from fry.
 
@@ -90,7 +94,7 @@ Nothing changes for existing clients: the new VLAN, tunnel and watchdog sit
 beside the live policy. After the deploy, from fry:
 
 ```sh
-ssh leela ip -br addr show vlan-cell gre-cell   # 192.168.14.1/24, 100.127.125.129/31
+ssh leela ip -br addr show br-cell gre-cell   # 192.168.14.1/24, 100.127.125.129/31
 ssh leela ip -4 rule                            # 5300: oif gre-cell lookup 100
 ssh leela ip -4 route show table 100            # default via 100.127.125.128 dev gre-cell onlink
 ssh leela ip -4 route show default              # only the wan route (metric 1024) while healthy
@@ -154,13 +158,13 @@ Known limits say. The carrier address is CGNAT (172.58.x.x).
 Pulling the modem's cable from leela's right RJ-45 (`wan`) is the real
 test. A scripted equivalent runs as root on leela and brings every link
 back up on exit whatever happens (`ip link set wan down` behaves like the
-cable-out, `ip link set vlan-cell down` like the modem vanishing):
+cable-out, `ip link set br-cell down` like the modem vanishing):
 
 ```sh
 ip link set wan down;        sleep 20   # failover within ~6 s; curl -4 ifconfig.co shows 172.58.x.x
-ip link set vlan-cell down;  sleep 25   # backup dies while failed over: stays, both probes 0, no flapping
+ip link set br-cell down;  sleep 25   # backup dies while failed over: stays, both probes 0, no flapping
 ip link set wan up;          sleep 25   # back on the cable at the first answer (~12 s with the DHCP renewal)
-ip link set vlan-cell up                # backup healthy again within a minute
+ip link set br-cell up                  # backup healthy again within a minute
 ```
 
 Run 2026-11-22 with exactly those results; `journalctl -fu wan-failover`

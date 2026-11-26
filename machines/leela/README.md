@@ -80,7 +80,7 @@ as you face the sockets):
 | --- | --- | --- |
 | RJ-45 left | `e8:f6:d7:00:11:18` | `lan1`, untagged main LAN |
 | RJ-45 middle | `e8:f6:d7:00:11:19` | `lan2`, untagged main LAN |
-| RJ-45 right | `e8:f6:d7:00:11:1a` | `lan3`, untagged main LAN |
+| RJ-45 right | `e8:f6:d7:00:11:1a` | `lan3`, untagged cell VLAN: the 5G modem through its PoE injector |
 | SFP+ left (10GBASE-T module, latch jammed) | `e8:f6:d7:00:11:1b` | `wan`, DHCP from the modem |
 | SFP+ right (passive DAC to the Omada's SFP+ port 9) | `e8:f6:d7:00:11:1c` | `trunk`, tagged VLANs 2/4/5/14/15/16 to the switch |
 
@@ -97,8 +97,10 @@ The left cage carries WAN. The right cage carries the switch trunk over a
 passive SFP+ DAC straight into the Omada's SFP+ port 9 (10GBASE-R in-band,
 no PHY), linking at 10 Gbit/s. The second 10GBASE-T module is out of
 service: in that cage it links a laptop or the Omada's SFP+ cage, but only
-ever reaches 10 Mbit/s through the unmanaged 2.5G switch. The three RJ-45
-sockets are spare main-LAN ports. Both cages share one I2C mux, so never
+ever reaches 10 Mbit/s through the unmanaged 2.5G switch. The left and middle RJ-45
+sockets are spare main-LAN ports; the right one is the 5G modem's port, bridged
+with VLAN 14 on the trunk (`br-cell`), because the modem's 1 Gb/s PHY does not
+hold a link on the Omada's 2.5G ports. Both cages share one I2C mux, so never
 reseat the right cage while the left carries WAN without being ready to
 bounce `wan`: a reseat has broken an I2C read of the WAN PHY and halted
 WAN until the port was set down and up again.

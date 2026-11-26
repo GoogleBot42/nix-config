@@ -26,7 +26,7 @@ let
     trunk = { mac = "e8:f6:d7:00:11:1c"; fallback = "eth4"; }; # SFP+ right (ethernet4), DAC to the Omada: tagged VLAN trunk
     lan1 = { mac = "e8:f6:d7:00:11:18"; fallback = "eth2"; }; # RJ-45 left (ethernet0): untagged main LAN
     lan2 = { mac = "e8:f6:d7:00:11:19"; fallback = "eth1"; }; # RJ-45 middle (ethernet1): untagged main LAN
-    lan3 = { mac = "e8:f6:d7:00:11:1a"; fallback = "eth0"; }; # RJ-45 right (ethernet2): untagged main LAN
+    lan3 = { mac = "e8:f6:d7:00:11:1a"; fallback = "eth0"; }; # RJ-45 right (ethernet2): untagged cell VLAN, the 5G modem
   };
 
   # Bench cabling: which socket carries the live LAN into leela (by live
@@ -53,7 +53,8 @@ let
   wanVlanId = if bench then benchWan.vlan else null;
   wan = if wanVlanId != null then "${wanPort}.${toString wanVlanId}" else wanPort;
   lanTrunk = portName "trunk";
-  mainAccessIfs = map portName [ "lan1" "lan2" "lan3" ];
+  mainAccessIfs = map portName [ "lan1" "lan2" ];
+  cellAccessIfs = map portName [ "lan3" ];
 
   # MACs carried over from the APU2 this router replaces. The WAN MAC keeps the
   # ISP's DHCP lease and public IP (the cable modem binds to the CPE MAC, so a
@@ -68,7 +69,10 @@ let
   mainIf = "br-main";
   iotIf = "vlan-iot";
   managementIf = "vlan-management";
-  cellIf = "vlan-cell";
+  # The cell network is a bridge: the modem's own port on the router plus the
+  # tagged VLAN on the trunk, so a PoE switch port on the cell VLAN works too.
+  cellIf = "br-cell";
+  cellVlanIf = "vlan-cell";
   adminIf = "vlan-admin";
   piaIf = "vlan-pia";
 
@@ -276,6 +280,7 @@ in
   #   RJ-45 right (wan): WAN DHCP
   #   RJ-45 (trunk): tagged VLAN trunk for main/iot/management/cell/admin/pia
   #   remaining RJ-45 and both SFP+ cages (lan1..lan3): untagged/native main LAN
+  #   lan3: untagged cell VLAN for the 5G modem (bridged with the trunk's VLAN 14)
   # The cellular backup (cell VLAN + GRE tunnel, failover in wan-failover.nix)
   # and the PIA VLAN are the additions to that policy.
 
@@ -372,10 +377,15 @@ in
         vlanConfig.Id = 4;
       };
 
-      "20-${cellIf}" = {
+      "10-${cellIf}".netdevConfig = {
+        Kind = "bridge";
+        Name = cellIf;
+      };
+
+      "20-${cellVlanIf}" = {
         netdevConfig = {
           Kind = "vlan";
-          Name = cellIf;
+          Name = cellVlanIf;
         };
         vlanConfig.Id = cell.vlanId;
       };
@@ -444,7 +454,16 @@ in
       "20-lan-trunk" = {
         matchConfig.Name = lanTrunk;
         networkConfig = {
-          VLAN = [ "vlan-main-trunk" iotIf managementIf cellIf adminIf ];
+          VLAN = [ "vlan-main-trunk" iotIf managementIf cellVlanIf adminIf ];
+          LinkLocalAddressing = "no";
+        };
+        linkConfig.RequiredForOnline = "no";
+      };
+
+      "20-cell-access" = {
+        matchConfig.Name = cellAccessIfs;
+        networkConfig = {
+          Bridge = cellIf;
           LinkLocalAddressing = "no";
         };
         linkConfig.RequiredForOnline = "no";
@@ -454,6 +473,15 @@ in
         matchConfig.Name = "vlan-main-trunk";
         networkConfig = {
           Bridge = mainIf;
+          LinkLocalAddressing = "no";
+        };
+        linkConfig.RequiredForOnline = "no";
+      };
+
+      "30-${cellVlanIf}" = {
+        matchConfig.Name = cellVlanIf;
+        networkConfig = {
+          Bridge = cellIf;
           LinkLocalAddressing = "no";
         };
         linkConfig.RequiredForOnline = "no";
@@ -838,9 +866,9 @@ in
       message = "VLAN ids must be distinct.";
     }
     {
-      assertion = !(builtins.elem wan ([ lanTrunk ] ++ mainAccessIfs))
-        && !(builtins.elem lanTrunk mainAccessIfs)
-        && builtins.length mainAccessIfs == builtins.length (lib.unique mainAccessIfs);
+      assertion = !(builtins.elem wan ([ lanTrunk ] ++ mainAccessIfs ++ cellAccessIfs))
+        && !(builtins.elem lanTrunk (mainAccessIfs ++ cellAccessIfs))
+        && builtins.length (mainAccessIfs ++ cellAccessIfs) == builtins.length (lib.unique (mainAccessIfs ++ cellAccessIfs));
       message = "Gateway WAN, LAN trunk, and LAN access interfaces must be distinct.";
     }
     {

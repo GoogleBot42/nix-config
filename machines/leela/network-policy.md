@@ -20,8 +20,9 @@ the admin VLAN and the PIA VLAN are the additions to it.
 | VPN bridge | `br-vpn` | `10.100.0.1/24` | `10.100.0.1` | n/a | Host side of the PIA VPN container (`10.100.0.2`). Never forwarded. |
 | Cell tunnel | `gre-cell` | `100.127.125.128/31` | `100.127.125.129` | n/a | GRE to the modem (`192.168.14.1` ↔ `192.168.14.2`), MTU 1400. Carries the default route only while failed over. |
 
-`trunk` is the tagged LAN trunk; `lan1`, `lan2` and `lan3` are the untagged
-main-LAN access ports. Each name is pinned to a physical port by MAC in
+`trunk` is the tagged LAN trunk; `lan1` and `lan2` are the untagged main-LAN
+access ports; `lan3` is the untagged cell access port for the 5G modem, bridged
+with the trunk's VLAN 14 as `br-cell`. Each name is pinned to a physical port by MAC in
 `networking.nix`; the kernel `eth*` names are only a bench-time fallback.
 
 ## Router-local access

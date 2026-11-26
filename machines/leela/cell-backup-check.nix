@@ -16,7 +16,7 @@
 let
   textfileDir = config.services.prometheus.exporters.node.textfileDirectory;
   # The modem's VLAN, address and tunnel as networking.nix defines them.
-  lan = "vlan-cell";
+  lan = "br-cell";
   modem = "192.168.14.2";
   tunnel = "gre-cell";
   hasNtfy = config.thisMachine.hasRole."ntfy";
