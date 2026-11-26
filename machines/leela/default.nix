@@ -6,6 +6,7 @@
     ./networking.nix
     ./wan-failover.nix
     ./cell-backup-check.nix
+    ./cell-modem-events.nix
     ./fan.nix
   ];
 

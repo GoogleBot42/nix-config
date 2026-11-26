@@ -41,6 +41,16 @@ Design in one picture:
   primary. The backup is probed once a minute while idle (it is metered).
   Transitions go to the journal, ntfy (`service-failures`) and node_exporter
   (`wan_failover_active`, `wan_probe_ok{interface}`).
+  The idle backup probe (once a minute) also raises an alarm when the backup
+  stops answering two probes in a row and clears it on the first answer
+  (`wan_backup_silent`), so a dead cellular side is known within two minutes.
+- `cell-modem-events.service` (`cell-modem-events.nix`) follows the dnsmasq
+  journal and announces every DHCP discover on the cell network at once: a
+  discover with no address is a modem reboot, one asking for its old address
+  is an Ethernet link bounce. These are the events the five-minute check
+  misses when the tunnel is back within a couple of minutes. State:
+  `/var/lib/cell-modem-events/last-rejoin`; test with
+  `echo "DHCPDISCOVER(br-cell) 192.168.14.2 00:11:22:33:44:55" | NTFY_DRY_RUN=1 cell-modem-events -`.
 - `cell-backup-check.timer` (`cell-backup-check.nix`) checks the backup every
   five minutes, layer by layer, about 17 KB per run: carrier on `br-cell`,
   an ARP probe of the modem at `192.168.14.2`, three pings to 1.1.1.1 and an

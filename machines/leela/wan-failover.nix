@@ -28,6 +28,7 @@ let
       metrics=${textfileDir}/wan-failover.prom
 
       state=primary fails=0 oks=0 backup_ok=0 transitions=0 last_change=$(date +%s) tick=0
+      backup_misses=0 backup_silent=0 backup_first_miss=0
 
       # One answering target is enough; -I binds the probe to the interface so
       # it cannot sneak out the other uplink.
@@ -53,6 +54,38 @@ let
         :
       }
 
+      # Every backup probe passes through here, so the backup going silent or
+      # answering again is announced within a probe interval instead of waiting
+      # for the five-minute end-to-end check. Two misses in a row before the
+      # alarm and a minute of silence: one lost ping is noise on a cellular link,
+      # and while failed over the backup is probed every round.
+      track_backup() {
+        local now; now=$(date +%s)
+        if [ "$backup_ok" -eq 1 ]; then
+          if [ "$backup_silent" -eq 1 ]; then
+            backup_silent=0
+            echo "backup $backup answers again after $(( (now - backup_first_miss) / 60 )) min of silence"
+            notify default "white_check_mark,signal_strength" "Cellular backup answering again on ${config.networking.hostName}" \
+              "$backup answered a probe again after $(( (now - backup_first_miss) / 60 )) min of silence."
+          fi
+          backup_misses=0
+        else
+          [ "$backup_misses" -eq 0 ] && backup_first_miss=$now
+          backup_misses=$((backup_misses + 1))
+          if [ "$backup_silent" -eq 0 ] && [ "$backup_misses" -ge ${toString cfg.backupSilentAfter} ] \
+            && [ $((now - backup_first_miss)) -ge ${toString cfg.backupSilentSec} ]; then
+            backup_silent=1
+            echo "backup $backup unanswered $backup_misses probes in a row since $(date -d "@$backup_first_miss" +%H:%M:%S)"
+            notify high "warning,signal_strength" "Cellular backup stopped answering on ${config.networking.hostName}" \
+              "$backup did not answer $backup_misses probes in a row, the first at $(date -d "@$backup_first_miss" +%H:%M:%S). The five-minute check will say which layer failed."
+          fi
+        fi
+      }
+      probe_backup() {
+        if probe "$backup"; then backup_ok=1; else backup_ok=0; fi
+        track_backup
+      }
+
       write_metrics() {
         local active=0 primary_ok=0
         [ "$state" = backup ] && active=1
@@ -65,6 +98,9 @@ let
           echo '# TYPE wan_probe_ok gauge'
           echo "wan_probe_ok{interface=\"$primary\"} $primary_ok"
           echo "wan_probe_ok{interface=\"$backup\"} $backup_ok"
+          echo '# HELP wan_backup_silent 1 while the backup uplink has stopped answering its probes.'
+          echo '# TYPE wan_backup_silent gauge'
+          echo "wan_backup_silent $backup_silent"
           echo '# HELP wan_failover_transitions_total Switches between the uplinks since the watchdog started.'
           echo '# TYPE wan_failover_transitions_total counter'
           echo "wan_failover_transitions_total $transitions"
@@ -84,7 +120,7 @@ let
         # The backup is metered; probe it rarely while it is idle. A failing
         # primary probes it on demand below.
         if [ "$state" = backup ] || { [ "$fails" -eq 0 ] && [ $((tick % ${toString cfg.backupProbeEvery})) -eq 0 ]; }; then
-          if probe "$backup"; then backup_ok=1; else backup_ok=0; fi
+          probe_backup
         fi
         tick=$((tick + 1))
 
@@ -94,15 +130,14 @@ let
               # Switch only onto a backup that answers right now. If both are
               # dead nothing is gained, and if the primary probe is the one
               # that is wrong, staying put is what keeps the LAN online.
-              if probe "$backup"; then
-                backup_ok=1
+              probe_backup
+              if [ "$backup_ok" -eq 1 ]; then
                 echo "primary $primary unanswered $fails times; routing through $backup"
                 engage; flush_nat
                 state=backup transitions=$((transitions + 1)) last_change=$(date +%s)
                 notify high "warning,signal_strength" "WAN failover on ${config.networking.hostName}" \
                   "$primary stopped answering; traffic now goes through $backup."
               else
-                backup_ok=0
                 if [ $((fails % 30)) -eq 0 ]; then
                   echo "primary $primary unanswered $fails times and $backup does not answer either; staying on $primary"
                 fi
@@ -193,6 +228,18 @@ in
       type = lib.types.ints.positive;
       default = 30;
       description = "Probe the (metered) backup only every N rounds while it is idle.";
+    };
+
+    backupSilentAfter = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 2;
+      description = "Consecutive unanswered backup probes before the backup is announced silent (one probe a minute while idle).";
+    };
+
+    backupSilentSec = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 60;
+      description = "Seconds since the first unanswered backup probe before the backup is announced silent.";
     };
   };
 
