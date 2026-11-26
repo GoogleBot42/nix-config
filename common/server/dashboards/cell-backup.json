@@ -137,9 +137,41 @@
       "options": { "showValue": "never", "mergeValues": true, "rowHeight": 0.8, "alignValue": "left", "legend": { "showLegend": true, "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } }
     },
     {
+      "id": 10, "type": "state-timeline", "title": "Backup layers",
+      "description": "The five-minute check, layer by layer: carrier on the modem VLAN, the modem answering ARP, a ping through the GRE tunnel, an HTTPS fetch through it. The first red row from the top is the broken part.",
+      "gridPos": { "x": 0, "y": 19, "w": 18, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [
+        { "refId": "A", "expr": "cell_backup_check_link_ok{instance=\"$instance\"}", "legendFormat": "router link" },
+        { "refId": "B", "expr": "cell_backup_check_modem_ok{instance=\"$instance\"}", "legendFormat": "modem on LAN" },
+        { "refId": "C", "expr": "cell_backup_check_ping_ok{instance=\"$instance\"}", "legendFormat": "tunnel ping" },
+        { "refId": "D", "expr": "cell_backup_check_http_ok{instance=\"$instance\"}", "legendFormat": "HTTPS" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [{ "type": "value", "options": {
+            "0": { "text": "down", "color": "red", "index": 0 },
+            "1": { "text": "up", "color": "green", "index": 1 }
+          } }],
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 1 } ] },
+          "custom": { "fillOpacity": 80, "lineWidth": 0 }
+        }
+      },
+      "options": { "showValue": "never", "mergeValues": true, "rowHeight": 0.8, "alignValue": "left", "legend": { "showLegend": true, "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } }
+    },
+    {
+      "id": 11, "type": "stat", "title": "Modem last re-joined",
+      "description": "When the modem last asked for its DHCP lease anew: a reboot or an Ethernet link bounce.",
+      "gridPos": { "x": 18, "y": 19, "w": 6, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "victoriametrics" },
+      "targets": [{ "refId": "A", "expr": "cell_backup_check_modem_rejoin_timestamp_seconds{instance=\"$instance\"} * 1000" }],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "none", "graphMode": "none", "textMode": "value" },
+      "fieldConfig": { "defaults": { "unit": "dateTimeFromNow" } }
+    },
+    {
       "id": 9, "type": "timeseries", "title": "Failover transitions over time",
       "description": "Switches between the uplinks per hour.",
-      "gridPos": { "x": 0, "y": 19, "w": 24, "h": 6 },
+      "gridPos": { "x": 0, "y": 26, "w": 24, "h": 6 },
       "datasource": { "type": "prometheus", "uid": "victoriametrics" },
       "targets": [{ "refId": "A", "expr": "increase(wan_failover_transitions_total{instance=\"$instance\"}[1h])", "legendFormat": "transitions / h" }],
       "fieldConfig": { "defaults": { "unit": "none", "decimals": 0, "min": 0, "custom": { "drawStyle": "bars", "fillOpacity": 60 } } },

@@ -37,16 +37,23 @@ Design in one picture:
   primary. The backup is probed once a minute while idle (it is metered).
   Transitions go to the journal, ntfy (`service-failures`) and node_exporter
   (`wan_failover_active`, `wan_probe_ok{interface}`).
-- `cell-backup-check.timer` (`cell-backup-check.nix`) checks the backup end
-  to end every five minutes, about 17 KB per run: three pings to 1.1.1.1 and an HTTPS
-  fetch of `https://www.google.com/generate_204`, both bound to `gre-cell`,
-  plus the carrier address from `ifconfig.co`. Results go to node_exporter as
-  `cell_backup_check_ok`, `_ping_ok`, `_http_ok`, `_ping_rtt_seconds`,
-  `_http_duration_seconds`, `_timestamp_seconds` and `_public_ip_info{ip}`;
-  the unit exits 0 either way, so a dead backup shows on the dashboard
-  rather than as a service-failure alert. The "Cellular backup" dashboard
-  (`https://grafana.kif.neet.dev/d/cell-backup`) shows the check next to the
-  watchdog's state.
+- `cell-backup-check.timer` (`cell-backup-check.nix`) checks the backup every
+  five minutes, layer by layer, about 17 KB per run: carrier on `vlan-cell`,
+  an ARP probe of the modem at `192.168.14.2`, three pings to 1.1.1.1 and an
+  HTTPS fetch of `https://www.google.com/generate_204` bound to `gre-cell`, the
+  carrier address from `ifconfig.co`, and the modem's last `DHCPDISCOVER` in
+  the dnsmasq journal (no address in it = the modem rebooted, its old address
+  = an Ethernet link bounce). Results go to node_exporter as
+  `cell_backup_check_ok`, `_link_ok`, `_modem_ok`, `_ping_ok`, `_http_ok`,
+  `_tunnel_rx_packets`, `_ping_rtt_seconds`, `_http_duration_seconds`,
+  `_modem_rejoin_timestamp_seconds`, `_timestamp_seconds` and
+  `_public_ip_info{ip}`; the unit exits 0 either way, so a dead backup shows
+  on the dashboard rather than as a service-failure alert. A change between
+  usable and unusable goes to ntfy once, naming the first layer that failed
+  (router link, modem off the LAN, tunnel silent, carrier dropping ICMP or
+  HTTPS) and when the modem last re-joined. The "Cellular backup" dashboard
+  (`https://grafana.kif.neet.dev/d/cell-backup`) shows the layers next to
+  the watchdog's state.
 - Firewall: the modem may talk to the router for DHCP/DNS/ping/GRE, out the
   cable WAN for its own needs (eSIM, UniFi Mobility, firmware), and to s0 on
   the inform/STUN/speed-test ports. The main LAN may reach the modem. Nothing
