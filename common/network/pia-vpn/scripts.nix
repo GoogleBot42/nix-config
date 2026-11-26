@@ -22,6 +22,31 @@ in
       fi
     }
 
+    # Block until PIA's API answers through the configured egress, or the
+    # deadline (seconds) passes. At boot the container's own network is up
+    # long before the host has a WAN lease or the bootstrap proxy listens, so
+    # the first API call would otherwise fail outright and the unit would
+    # fail once per boot before Restart= made it work. -f turns the proxy's
+    # own error pages into failures; past the deadline the caller's normal
+    # error handling takes over, so a real outage still surfaces.
+    waitForPIAApi() {
+      local deadline=$1 start now
+      start=$(date +%s)
+      until curl -sf $(proxy_args) --max-time 5 -o /dev/null \
+          "https://serverlist.piaservers.net/vpninfo/servers/v6"; do
+        now=$(date +%s)
+        if (( now - start >= deadline )); then
+          echo "PIA API still unreachable after ''${deadline}s; continuing" >&2
+          return 0
+        fi
+        sleep 2
+      done
+      now=$(date +%s)
+      if (( now - start > 0 )); then
+        echo "PIA API reachable after $(( now - start ))s"
+      fi
+    }
+
     # First line of the server list, without a pipe: under pipefail, head
     # closing the pipe before echo has written the whole (large) list makes
     # echo die on SIGPIPE and fails the whole setup run.

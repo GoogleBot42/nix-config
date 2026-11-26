@@ -306,6 +306,9 @@ in
               RestartSteps = 6;
               RestartMaxDelaySec = "10m";
               RuntimeMaxSec = "30d";
+              # Room for the egress wait (up to 60s) plus the server-list fetch
+              # and jq passes, which take ~25s on the slower router SoC.
+              TimeoutStartSec = "3min";
               # The shell stays alive when PIA drops the WireGuard session, so
               # Restart= alone never notices a dead tunnel. After readiness the
               # script monitors handshake age and exits on a dead session so
@@ -330,6 +333,10 @@ in
               cleanupVpn ${cfg.interfaceName}
 
               proxy="${proxy}"
+
+              # The host's WAN and the bootstrap proxy come up independently of
+              # this container's network-online; wait for real egress first.
+              waitForPIAApi 60
 
               # 1. Authenticate with PIA via proxy (VPN container has no internet yet)
               echo "Choosing PIA server in region '${cfg.serverLocation}'..."
